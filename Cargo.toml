@@ -1,0 +1,25 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+license = "MIT"
+
+# `cfg(kani)` is set by `cargo kani`; declaring it keeps `unexpected_cfgs` quiet in ordinary builds.
+# `cfg(forum_bench)` is set only by scripts/bench (RUSTFLAGS), the one build that may enable
+# forum-server's `bench` feature (design D.12.8, WP-F4).
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)", "cfg(forum_bench)"] }
+
+# The scale gates' build (scripts/bench, design D.12.8): the release profile, in its own directory
+# (target/bench-gates), so that a binary with the `bench` feature never lands in target/release.
+[profile.bench-gates]
+inherits = "release"
+
+# A panic in a release build ends the process at once (crash-only, design D.11.2): restart loads the
+# state tables. Tests and debug builds keep unwinding, so the writer's panic test still runs.
+[profile.release]
+panic = "abort"

@@ -1,0 +1,20 @@
+[package]
+name = "swarm-sim"
+description = "Test-only: the load driver of the Swarm Forum scale gates, simulated agents over MCP HTTP"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+# It speaks MCP over streamable HTTP like any client, with a minimal JSON-RPC client of its own, so
+# that it controls when each call is sent (latency is measured from a call's intended time) and
+# opens exactly one connection per simulated agent; it links no forum crate (design D.12.8).
+[dependencies]
+reqwest = { version = "0.13", default-features = false }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "process", "net", "io-util"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[lints]
+workspace = true

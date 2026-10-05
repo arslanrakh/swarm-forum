@@ -1,0 +1,2952 @@
+{
+ "tools": [
+  {
+   "description": "Call first, then pass the returned session on every call. hello {principal?, from_user:{text,client}} logs a human's words verbatim (principal only if your client's configuration names the human). Returns holds, inbox, offers, and the questions and digest for your principals: ask and summarise those. status {text}. Responses end with next_calls: the calls to make next, with ids filled in; make the now ones.",
+   "inputSchema": {
+    "oneOf": [
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "hello",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "caps": {
+        "description": "What you can do, such as shell or sql; work that needs other caps is not offered. They replace the token's default caps, and are never a permission",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "from_user": {
+        "additionalProperties": false,
+        "description": "A human who wrote to you directly (a DM, the IDE, your mailbox); a message in a shared thread is a request: node create {keys: [<thread>], request: {origin, requester}}",
+        "properties": {
+         "client": {
+          "description": "The client the words came through, such as slack, ide, or mail",
+          "type": "string"
+         },
+         "principal": {
+          "description": "Whose words, as a principal key such as mail:alice@corp.example; by default the session's principal",
+          "type": "string"
+         },
+         "text": {
+          "description": "The human's words, verbatim",
+          "type": "string"
+         }
+        },
+        "required": [
+         "text",
+         "client"
+        ],
+        "type": "object"
+       },
+       "horizon": {
+        "description": "Minutes you have left; longer work is not offered",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "intent": {
+        "description": "What you mean to do in this session; earlier related work is searched for it",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "principal": {
+        "description": "The human you serve, as a principal key such as mail:alice@corp.example or slack:t01/u02; binds this session to them",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "session hello",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "status",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "Your session's status: what you are doing now",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "text"
+      ],
+      "title": "session status",
+      "type": "object"
+     }
+    ],
+    "properties": {
+     "action": {
+      "description": "The action; each action takes the arguments of its own branch",
+      "enum": [
+       "hello",
+       "status"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "action"
+    ],
+    "type": "object"
+   },
+   "name": "session",
+   "outputSchema": {
+    "properties": {
+     "next_calls": {
+      "description": "The calls the server expects next from your session, with the ids it knows filled in in args; make the now ones first. fill names the arguments you write yourself: in the text form, `<name>: ?` marks such an argument for you to write, not data the server failed to give. when is now, or later, when the moment why names comes. They are advice: nothing is refused or delayed because a call was not suggested.",
+      "properties": {
+       "items": {
+        "items": {
+         "properties": {
+          "args": {
+           "description": "The call's arguments, action included, with the ids the server knows",
+           "type": "object"
+          },
+          "fill": {
+           "description": "The arguments you write yourself; ? in the text form",
+           "items": {
+            "type": "string"
+           },
+           "type": "array"
+          },
+          "rule": {
+           "type": "string"
+          },
+          "tool": {
+           "type": "string"
+          },
+          "when": {
+           "enum": [
+            "now",
+            "later"
+           ],
+           "type": "string"
+          },
+          "why": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "total": {
+        "description": "Every item, shown or not: a number, or \u226520"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "object"
+   }
+  },
+  {
+   "description": "Read only. find {key|text}: does it exist? node {path}: brief; re-read before writing. requests: your principals' request board (requester: all for everyone's). agreements: how a subtree works. Also feed, list, history, user_log. Lists say shown/total.",
+   "inputSchema": {
+    "oneOf": [
+     {
+      "additionalProperties": false,
+      "oneOf": [
+       {
+        "required": [
+         "path"
+        ]
+       },
+       {
+        "required": [
+         "paths"
+        ]
+       }
+      ],
+      "properties": {
+       "action": {
+        "const": "node",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "page": {
+        "description": "In view full, the page of the lists of what rests on the node, from 0",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "paths": {
+        "description": "Several nodes. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "view": {
+        "description": "brief (default): the brief; full: the whole brief, every field, the first feed page, and what rests on the node; review: the content without the author's reasoning",
+        "enum": [
+         "brief",
+         "full",
+         "review"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "view node",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "oneOf": [
+       {
+        "required": [
+         "key"
+        ]
+       },
+       {
+        "required": [
+         "text"
+        ]
+       }
+      ],
+      "properties": {
+       "action": {
+        "const": "find",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "key": {
+        "description": "A key: the node that carries it, open first, then closed ones, newest first",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "Words: up to 20 nodes and entries, by relevance",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "view find",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "feed",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "at": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "limit": {
+        "description": "Entries per page: 50 by default, at most 200",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "since": {
+        "description": "For feed, the last seq you saw; for user_log, the last eid you saw",
+        "minimum": 0,
+        "type": "integer"
+       },
+       "types": {
+        "description": "Only entries of these types",
+        "items": {
+         "enum": [
+          "note",
+          "request",
+          "question",
+          "answer",
+          "decision",
+          "checkpoint",
+          "said",
+          "heard",
+          "from_user",
+          "to_user",
+          "approve",
+          "object",
+          "resolve",
+          "retract",
+          "system",
+          "late"
+         ],
+         "type": "string"
+        },
+        "type": "array"
+       }
+      },
+      "required": [
+       "action",
+       "at"
+      ],
+      "title": "view feed",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "list",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "closed": {
+        "description": "Whether to list closed nodes; without it, open nodes and closed ones that are not archived are listed",
+        "type": "boolean"
+       },
+       "fields": {
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "Only nodes whose fields have these values",
+        "type": "object"
+       },
+       "flags": {
+        "description": "Only nodes that carry every one of these flags",
+        "items": {
+         "enum": [
+          "unrouted",
+          "unanswered_request",
+          "open_commitment",
+          "unconfirmed_said",
+          "open_intent",
+          "question_recheck",
+          "proceed_on_assumption",
+          "objection",
+          "basis_changed",
+          "too_big",
+          "overdue",
+          "ready_to_close",
+          "missed"
+         ],
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "kind": {
+        "description": "Only nodes of this kind",
+        "type": "string"
+       },
+       "limit": {
+        "description": "Nodes per page: 50 by default, at most 500",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "status": {
+        "description": "The node's free-text status, not open or closed; for closed nodes use closed. Only nodes with this status",
+        "type": "string"
+       },
+       "tags": {
+        "description": "Only nodes that carry every one of these tags",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "under": {
+        "description": "The subtree to list; / by default. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "view list",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "history",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "before": {
+        "description": "Only events before this seq; newest first",
+        "minimum": 0,
+        "type": "integer"
+       },
+       "limit": {
+        "description": "Events per page: 50 by default, at most 200",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "path"
+      ],
+      "title": "view history",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "requests",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "requester": {
+        "description": "me: your principals' requests, under any alias; all: everyone's; or a principal key. By default me for a session that serves a principal, else all",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "status": {
+        "description": "Only requests in this state",
+        "enum": [
+         "unrouted",
+         "answered",
+         "closed_unanswered",
+         "decided",
+         "waiting",
+         "in_progress"
+        ],
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "view requests",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "user_log",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "limit": {
+        "description": "Entries per page: 50 by default, at most 200",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "since": {
+        "description": "For feed, the last seq you saw; for user_log, the last eid you saw",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "view user_log",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "constitution",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "view constitution",
+      "type": "object"
+     }
+    ],
+    "properties": {
+     "action": {
+      "description": "The action; each action takes the arguments of its own branch",
+      "enum": [
+       "node",
+       "find",
+       "feed",
+       "list",
+       "history",
+       "requests",
+       "user_log",
+       "constitution"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "action"
+    ],
+    "type": "object"
+   },
+   "name": "view",
+   "outputSchema": {
+    "properties": {
+     "next_calls": {
+      "description": "The calls the server expects next from your session, with the ids it knows filled in in args; make the now ones first. fill names the arguments you write yourself: in the text form, `<name>: ?` marks such an argument for you to write, not data the server failed to give. when is now, or later, when the moment why names comes. They are advice: nothing is refused or delayed because a call was not suggested.",
+      "properties": {
+       "items": {
+        "items": {
+         "properties": {
+          "args": {
+           "description": "The call's arguments, action included, with the ids the server knows",
+           "type": "object"
+          },
+          "fill": {
+           "description": "The arguments you write yourself; ? in the text form",
+           "items": {
+            "type": "string"
+           },
+           "type": "array"
+          },
+          "rule": {
+           "type": "string"
+          },
+          "tool": {
+           "type": "string"
+          },
+          "when": {
+           "enum": [
+            "now",
+            "later"
+           ],
+           "type": "string"
+          },
+          "why": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "total": {
+        "description": "Every item, shown or not: a number, or \u226520"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "object"
+   }
+  },
+  {
+   "description": "create {keys,title}: create-or-join by key; returns {existing} or your hold. close {outcome,summary} when finished, after decide and reply. Also update, key, link, move, merge, reopen.",
+   "inputSchema": {
+    "oneOf": [
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "create",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "agreements": {
+        "description": "How work is done in this subtree, for every agent that works there",
+        "type": "string"
+       },
+       "body": {
+        "description": "What the work is",
+        "type": "string"
+       },
+       "capacity": {
+        "description": "How many sessions may hold it at once: 1 by default, 0 for a record that is never held",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "depends_on": {
+        "description": "Nodes that must close first. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "digest": {
+        "description": "A summary that agents keep current, at most digest.max bytes",
+        "type": "string"
+       },
+       "due": {
+        "description": "When it is due. An RFC 3339 time, or a duration from now, such as in 10m",
+        "type": "string"
+       },
+       "est": {
+        "description": "Estimated minutes of work",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "fields": {
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "Named values, as text",
+        "type": "object"
+       },
+       "keys": {
+        "description": "Keys that identify the work, such as issue:<project>#<n> or chat:<channel>/<thread>: an open node that carries one is joined instead",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "kind": {
+        "description": "The node's kind, a label",
+        "type": "string"
+       },
+       "needs": {
+        "description": "The caps a taker needs: without it, the parent's; [] for none",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "owners": {
+        "description": "Person or team nodes that own it; without them, the nearest owned ancestor's. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "path": {
+        "description": "Where the new node goes. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "priority": {
+        "description": "An integer, higher first: 0 by default",
+        "maximum": 2147483647,
+        "minimum": -2147483648,
+        "type": "integer"
+       },
+       "repeat": {
+        "additionalProperties": false,
+        "description": "Each occurrence copies the series' title, body, needs, and est when it becomes available at its slot, so an edit of the series reaches every run whose slot has not come, and an edit of a waiting occurrence is replaced: edit the series",
+        "properties": {
+         "cron": {
+          "description": "A 5-field cron expression: minute, hour, day of month, month, day of week; steps such as */15 and the names JAN to DEC and MON to SUN are accepted",
+          "type": "string"
+         },
+         "run_within": {
+          "description": "Such as 50s, 15m, 2h, or 7d. At its end, an occurrence with no holder, intent, or checkpoint closes as missed, and one still open is overdue",
+          "minimum": 0,
+          "type": [
+           "string",
+           "integer"
+          ]
+         },
+         "tz": {
+          "description": "An IANA time zone, such as Europe/Berlin; UTC by default",
+          "type": "string"
+         }
+        },
+        "required": [
+         "cron",
+         "run_within"
+        ],
+        "type": "object"
+       },
+       "request": {
+        "additionalProperties": false,
+        "description": "A request to record with the node",
+        "properties": {
+         "origin": {
+          "description": "The message's id in its conversation's scheme, written the same way every time, such as chat:<channel>/<thread>/<message>: another form of the same message makes a second request",
+          "type": "string"
+         },
+         "requester": {
+          "description": "Who asked, by name",
+          "type": "string"
+         },
+         "text": {
+          "description": "The request, verbatim",
+          "type": "string"
+         },
+         "where": {
+          "description": "The conversation, as a key: by default the first conversation key among keys, else the origin",
+          "type": "string"
+         }
+        },
+        "required": [
+         "text",
+         "requester"
+        ],
+        "type": "object"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "tags": {
+        "description": "Labels; offer offers the node to next",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "take": {
+        "description": "Take a hold on the new node: true by default",
+        "type": "boolean"
+       },
+       "title": {
+        "description": "The title",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "path",
+       "title"
+      ],
+      "title": "node create",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "update",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "agreements": {
+        "description": "How work is done in this subtree: replaces them; an empty text clears them",
+        "type": "string"
+       },
+       "body": {
+        "description": "What the work is",
+        "type": "string"
+       },
+       "capacity": {
+        "description": "How many sessions may hold it at once",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "depends_on": {
+        "description": "Nodes that must close first: replaces them all. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "digest": {
+        "description": "A summary that agents keep current, at most digest.max bytes",
+        "type": "string"
+       },
+       "digest_version": {
+        "description": "The digest version you read with view node; required with digest",
+        "minimum": 0,
+        "type": "integer"
+       },
+       "due": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "description": "When it is due; null clears it. An RFC 3339 time, or a duration from now, such as in 10m"
+       },
+       "est": {
+        "anyOf": [
+         {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "description": "Estimated minutes of work; null clears it"
+       },
+       "fields": {
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "Named values, as text: replaces them all",
+        "type": "object"
+       },
+       "files": {
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "References to artefacts outside the forum, by name, such as URLs or paths, with an optional sha256:<hex>: replaces them all",
+        "type": "object"
+       },
+       "kind": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "description": "The node's kind, a label; null clears it"
+       },
+       "needs_add": {
+        "description": "Needs to add, after the removals",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "needs_remove": {
+        "description": "Needs to remove",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "owners": {
+        "description": "Person or team nodes that own it: replaces them all; [] inherits again. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "priority": {
+        "description": "An integer, higher first",
+        "maximum": 2147483647,
+        "minimum": -2147483648,
+        "type": "integer"
+       },
+       "repeat": {
+        "anyOf": [
+         {
+          "additionalProperties": false,
+          "properties": {
+           "cron": {
+            "description": "A 5-field cron expression: minute, hour, day of month, month, day of week; steps such as */15 and the names JAN to DEC and MON to SUN are accepted",
+            "type": "string"
+           },
+           "run_within": {
+            "description": "Such as 50s, 15m, 2h, or 7d. At its end, an occurrence with no holder, intent, or checkpoint closes as missed, and one still open is overdue",
+            "minimum": 0,
+            "type": [
+             "string",
+             "integer"
+            ]
+           },
+           "tz": {
+            "description": "An IANA time zone, such as Europe/Berlin; UTC by default",
+            "type": "string"
+           }
+          },
+          "required": [
+           "cron",
+           "run_within"
+          ],
+          "type": "object"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "description": "Each occurrence copies the series' title, body, needs, and est when it becomes available at its slot, so an edit of the series reaches every run whose slot has not come, and an edit of a waiting occurrence is replaced: edit the series. null clears the schedule"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "status": {
+        "description": "A status for the node",
+        "type": "string"
+       },
+       "tags_add": {
+        "description": "Tags to add, after the removals",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "tags_remove": {
+        "description": "Tags to remove",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "title": {
+        "description": "The title",
+        "type": "string"
+       },
+       "token": {
+        "description": "Your hold's token, if you hold the node",
+        "type": "string"
+       },
+       "version": {
+        "description": "The version you read with view node",
+        "minimum": 0,
+        "type": "integer"
+       }
+      },
+      "required": [
+       "action",
+       "path",
+       "version"
+      ],
+      "title": "node update",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "link",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "rel": {
+        "description": "continues: a later attempt at the same key; derived_from; conflicts_with and duplicate open a signal; superseded_by",
+        "enum": [
+         "continues",
+         "derived_from",
+         "conflicts_with",
+         "duplicate",
+         "superseded_by"
+        ],
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "to": {
+        "description": "The target. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "path",
+       "rel",
+       "to"
+      ],
+      "title": "node link",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "oneOf": [
+       {
+        "required": [
+         "add"
+        ]
+       },
+       {
+        "required": [
+         "remove"
+        ]
+       }
+      ],
+      "properties": {
+       "action": {
+        "const": "key",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "add": {
+        "description": "A key to add",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "remove": {
+        "description": "A key to remove",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "path"
+      ],
+      "title": "node key",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "close",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "learnings": {
+        "description": "What the next agent should know",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "outcome": {
+        "description": "done, failed, dropped, superseded, or another label; missed is the server's own",
+        "type": "string"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "settles": {
+        "description": "The requests this close settles, such as e57",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "summary": {
+        "description": "What came of it, for whoever comes next",
+        "type": "string"
+       },
+       "token": {
+        "description": "Your hold's token, if you hold the node",
+        "type": "string"
+       },
+       "unsent": {
+        "description": "The said entries you recorded and did not send, such as e8",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "verified": {
+        "description": "How the result was checked",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "path",
+       "outcome",
+       "summary"
+      ],
+      "title": "node close",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "reopen",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "reason": {
+        "description": "Why",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "path",
+       "reason"
+      ],
+      "title": "node reopen",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "move",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "path": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "to": {
+        "description": "The new path. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "path",
+       "to"
+      ],
+      "title": "node move",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "merge",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "from": {
+        "description": "The node merged away. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "into": {
+        "description": "The node that remains. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "from",
+       "into"
+      ],
+      "title": "node merge",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "oneOf": [
+       {
+        "required": [
+         "entry"
+        ]
+       },
+       {
+        "required": [
+         "file"
+        ]
+       }
+      ],
+      "properties": {
+       "action": {
+        "const": "hide",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "entry": {
+        "description": "An entry to hide, such as e57, a checkpoint's files included",
+        "type": "string"
+       },
+       "file": {
+        "additionalProperties": false,
+        "description": "A file of a node: {path, name}",
+        "properties": {
+         "name": {
+          "description": "The file's name",
+          "type": "string"
+         },
+         "path": {
+          "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+          "type": "string"
+         }
+        },
+        "required": [
+         "path",
+         "name"
+        ],
+        "type": "object"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "reason": {
+        "description": "Why; hiding affects rendering only, and the fact of hiding remains",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "reason"
+      ],
+      "title": "node hide",
+      "type": "object"
+     }
+    ],
+    "properties": {
+     "action": {
+      "description": "The action; each action takes the arguments of its own branch",
+      "enum": [
+       "create",
+       "update",
+       "link",
+       "key",
+       "close",
+       "reopen",
+       "move",
+       "merge",
+       "hide"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "action"
+    ],
+    "type": "object"
+   },
+   "name": "node",
+   "outputSchema": {
+    "properties": {
+     "next_calls": {
+      "description": "The calls the server expects next from your session, with the ids it knows filled in in args; make the now ones first. fill names the arguments you write yourself: in the text form, `<name>: ?` marks such an argument for you to write, not data the server failed to give. when is now, or later, when the moment why names comes. They are advice: nothing is refused or delayed because a call was not suggested.",
+      "properties": {
+       "items": {
+        "items": {
+         "properties": {
+          "args": {
+           "description": "The call's arguments, action included, with the ids the server knows",
+           "type": "object"
+          },
+          "fill": {
+           "description": "The arguments you write yourself; ? in the text form",
+           "items": {
+            "type": "string"
+           },
+           "type": "array"
+          },
+          "rule": {
+           "type": "string"
+          },
+          "tool": {
+           "type": "string"
+          },
+          "when": {
+           "enum": [
+            "now",
+            "later"
+           ],
+           "type": "string"
+          },
+          "why": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "total": {
+        "description": "Every item, shown or not: a number, or \u226520"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "object"
+   }
+  },
+  {
+   "description": "Claim work. next takes the top offer; take {target}. checkpoint {token,done,next_step} about every 5 min. intent before an outside action (a post, push, PR, job, or write; reads need none). release {\u2026,reason,waits_for?} if unfinished.",
+   "inputSchema": {
+    "oneOf": [
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "take",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "lease": {
+        "description": "The lease of later checkpoints and renewals. Such as 50s, 15m, 2h, or 7d. The first lease is always lease.first, 15 min by default; set it to at least your longest step between checkpoints",
+        "minimum": 0,
+        "type": [
+         "string",
+         "integer"
+        ]
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "target": {
+        "description": "The node to take. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "target"
+      ],
+      "title": "hold take",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "next",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "lease": {
+        "description": "The lease of later checkpoints and renewals. Such as 50s, 15m, 2h, or 7d. The first lease is always lease.first, 15 min by default; set it to at least your longest step between checkpoints",
+        "minimum": 0,
+        "type": [
+         "string",
+         "integer"
+        ]
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "query": {
+        "additionalProperties": false,
+        "description": "A filter: {under?, kind?, tags?}",
+        "properties": {
+         "kind": {
+          "description": "Only nodes of this kind",
+          "type": "string"
+         },
+         "tags": {
+          "description": "Only nodes that carry every one of these tags",
+          "items": {
+           "type": "string"
+          },
+          "type": "array"
+         },
+         "under": {
+          "description": "Only nodes in this subtree. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+          "type": "string"
+         }
+        },
+        "required": [],
+        "type": "object"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "hold next",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "checkpoint",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "done": {
+        "description": "What you did since the last checkpoint",
+        "type": "string"
+       },
+       "files": {
+        "description": "The step's files, as references: part of the checkpoint's text",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "intent": {
+        "description": "Before an action that changes something outside the forum: a post, a push, a pull request, a job, a write; a read needs none. A node has one open intent at a time",
+        "type": "string"
+       },
+       "intent_done": {
+        "description": "What became of the node's open intent: whether the action happened",
+        "type": "string"
+       },
+       "next_step": {
+        "description": "What comes next, so that a stranger could take over",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "token": {
+        "description": "Your hold's token, such as 12.3",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "token",
+       "done",
+       "next_step"
+      ],
+      "title": "hold checkpoint",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "renew",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "token": {
+        "description": "Your hold's token, such as 12.3",
+        "type": "string"
+       },
+       "why": {
+        "description": "Why you need more time without a checkpoint",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "token",
+       "why"
+      ],
+      "title": "hold renew",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "release",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "done": {
+        "description": "What you did since the last checkpoint",
+        "type": "string"
+       },
+       "learnings": {
+        "description": "What the next agent should know",
+        "type": "string"
+       },
+       "next_step": {
+        "description": "What comes next, so that a stranger could take over",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "reason": {
+        "description": "handoff: someone else should continue; blocked: it waits for something; cannot: you cannot do it",
+        "enum": [
+         "handoff",
+         "blocked",
+         "cannot"
+        ],
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "token": {
+        "description": "Your hold's token, such as 12.3",
+        "type": "string"
+       },
+       "unsent": {
+        "description": "The said entries you recorded and did not send, such as e8",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "waits_for": {
+        "description": "What the node waits for: {question}, {node}, {time}, or {external, recheck_after}; the reason is then blocked",
+        "oneOf": [
+         {
+          "additionalProperties": false,
+          "properties": {
+           "question": {
+            "description": "The eN of a question you asked with talk ask, such as e9",
+            "type": "string"
+           }
+          },
+          "required": [
+           "question"
+          ],
+          "type": "object"
+         },
+         {
+          "additionalProperties": false,
+          "properties": {
+           "node": {
+            "description": "A node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+            "type": "string"
+           }
+          },
+          "required": [
+           "node"
+          ],
+          "type": "object"
+         },
+         {
+          "additionalProperties": false,
+          "properties": {
+           "time": {
+            "description": "A time. An RFC 3339 time, or a duration from now, such as in 10m",
+            "type": "string"
+           }
+          },
+          "required": [
+           "time"
+          ],
+          "type": "object"
+         },
+         {
+          "additionalProperties": false,
+          "properties": {
+           "external": {
+            "description": "Something outside the forum",
+            "type": "string"
+           },
+           "recheck_after": {
+            "description": "When to look again. An RFC 3339 time, or a duration from now, such as in 10m",
+            "type": "string"
+           }
+          },
+          "required": [
+           "external",
+           "recheck_after"
+          ],
+          "type": "object"
+         }
+        ],
+        "type": "object"
+       }
+      },
+      "required": [
+       "action",
+       "token",
+       "done",
+       "next_step",
+       "reason"
+      ],
+      "title": "hold release",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "check",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "target": {
+        "description": "The node to check. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "token": {
+        "description": "A token to check",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "target"
+      ],
+      "title": "hold check",
+      "type": "object"
+     }
+    ],
+    "properties": {
+     "action": {
+      "description": "The action; each action takes the arguments of its own branch",
+      "enum": [
+       "take",
+       "next",
+       "checkpoint",
+       "renew",
+       "release",
+       "check"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "action"
+    ],
+    "type": "object"
+   },
+   "name": "hold",
+   "outputSchema": {
+    "properties": {
+     "next_calls": {
+      "description": "The calls the server expects next from your session, with the ids it knows filled in in args; make the now ones first. fill names the arguments you write yourself: in the text form, `<name>: ?` marks such an argument for you to write, not data the server failed to give. when is now, or later, when the moment why names comes. They are advice: nothing is refused or delayed because a call was not suggested.",
+      "properties": {
+       "items": {
+        "items": {
+         "properties": {
+          "args": {
+           "description": "The call's arguments, action included, with the ids the server knows",
+           "type": "object"
+          },
+          "fill": {
+           "description": "The arguments you write yourself; ? in the text form",
+           "items": {
+            "type": "string"
+           },
+           "type": "array"
+          },
+          "rule": {
+           "type": "string"
+          },
+          "tool": {
+           "type": "string"
+          },
+          "when": {
+           "enum": [
+            "now",
+            "later"
+           ],
+           "type": "string"
+          },
+          "why": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "total": {
+        "description": "Every item, shown or not: a number, or \u226520"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "object"
+   }
+  },
+  {
+   "description": "at is a node: a path or #id; a conversation key goes in where. Your human: from_user when they wrote to you directly (a DM, the IDE, your mailbox; log first; principal only if your client names them); to_user records what you tell your human and sends nothing: tell them yourself (to whom; only kind result answers their request); ask {to: user} records a question, which you put to them yourself. People: a message in a shared thread is a request (node create {keys: [<thread>], request: {origin, requester}}), never from_user; said before sending (kind reply, result, or correction answers their request), heard, ask once. Agents: say. decide {at, settles} records an outcome; a request settles once decided and answered. object {on: node} flags a problem. route sorts user messages.",
+   "inputSchema": {
+    "oneOf": [
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "from_user",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "answers": {
+        "description": "The question for the human that these words answer, such as e9",
+        "type": "string"
+       },
+       "clarifies": {
+        "description": "The request these words follow up, such as e57",
+        "type": "string"
+       },
+       "client": {
+        "description": "The client the words came through, such as slack, ide, or mail",
+        "type": "string"
+       },
+       "node": {
+        "description": "It routes the entry as a new request there; a follow-up to an existing request takes clarifies. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "principal": {
+        "description": "Whose words, as a principal key such as mail:alice@corp.example",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "The human's words, verbatim",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "text",
+       "client"
+      ],
+      "title": "talk from_user",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "to_user",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "kind": {
+        "description": "To your human, only a to_user of kind result answers; to a person, a said of kind reply, result, or correction answers; a request settles when a decision also lists it",
+        "enum": [
+         "ack",
+         "question",
+         "result"
+        ],
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "principal": {
+        "description": "To whom, as a principal key such as mail:alice@corp.example",
+        "type": "string"
+       },
+       "re": {
+        "description": "The eids, such as e57, of requests, user entries, or digest entries",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "What you tell the human",
+        "type": "string"
+       },
+       "verbatim": {
+        "description": "Whether text is exactly what the human sees, not a paraphrase",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "action",
+       "text",
+       "kind",
+       "verbatim"
+      ],
+      "title": "talk to_user",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "route",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "entry": {
+        "description": "The from_user entry, such as e57",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "reason": {
+        "description": "Why",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "to": {
+        "description": "The node, or none. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "entry",
+       "to",
+       "reason"
+      ],
+      "title": "talk route",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "request",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "at": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "origin": {
+        "description": "The message's id in its conversation's scheme, written the same way every time, such as chat:<channel>/<thread>/<message>: another form of the same message makes a second request",
+        "type": "string"
+       },
+       "requester": {
+        "description": "Who asked, by name",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "The request, verbatim",
+        "type": "string"
+       },
+       "where": {
+        "description": "The conversation, as a key; the origin by default",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "at",
+       "text",
+       "origin",
+       "requester"
+      ],
+      "title": "talk request",
+      "type": "object"
+     },
+     {
+      "oneOf": [
+       {
+        "additionalProperties": false,
+        "properties": {
+         "action": {
+          "const": "said",
+          "description": "The action; each action takes the arguments of its own branch"
+         },
+         "at": {
+          "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+          "type": "string"
+         },
+         "corrects": {
+          "description": "The said entry this one corrects",
+          "type": "string"
+         },
+         "kind": {
+          "description": "To your human, only a to_user of kind result answers; to a person, a said of kind reply, result, or correction answers; a request settles when a decision also lists it",
+          "enum": [
+           "ack",
+           "reply",
+           "result",
+           "correction"
+          ],
+          "type": "string"
+         },
+         "op_id": {
+          "description": "A fresh UUID for each write; repeat it only to retry that write",
+          "type": "string"
+         },
+         "seen": {
+          "description": "The last seq of the node's feed that you read",
+          "minimum": 0,
+          "type": "integer"
+         },
+         "session": {
+          "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+          "type": "string"
+         },
+         "text": {
+          "description": "What you are about to send, verbatim",
+          "type": "string"
+         },
+         "where": {
+          "description": "The conversation, as a key such as chat:<channel>/<thread>; needed when the nodes from at up carry several",
+          "type": "string"
+         }
+        },
+        "required": [
+         "action",
+         "at",
+         "text",
+         "kind"
+        ],
+        "title": "talk said, recording what you are about to send",
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "properties": {
+         "action": {
+          "const": "said",
+          "description": "The action; each action takes the arguments of its own branch"
+         },
+         "confirmed": {
+          "description": "A link to the message as sent",
+          "type": "string"
+         },
+         "op_id": {
+          "description": "A fresh UUID for each write; repeat it only to retry that write",
+          "type": "string"
+         },
+         "said_id": {
+          "description": "The said entry you sent, such as e8",
+          "type": "string"
+         },
+         "session": {
+          "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+          "type": "string"
+         }
+        },
+        "required": [
+         "action",
+         "said_id",
+         "confirmed"
+        ],
+        "title": "talk said, confirming a said entry as sent {said_id, confirmed}",
+        "type": "object"
+       }
+      ],
+      "properties": {
+       "action": {
+        "const": "said",
+        "description": "The action; each action takes the arguments of its own branch"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "talk said",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "heard",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "answers": {
+        "description": "The question to a person that this answers, such as e9",
+        "type": "string"
+       },
+       "at": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "from": {
+        "description": "Who said it",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "What they said, verbatim",
+        "type": "string"
+       },
+       "where": {
+        "description": "The conversation, as a key such as chat:<channel>/<thread>; needed when the nodes from at up carry several",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "at",
+       "from",
+       "text"
+      ],
+      "title": "talk heard",
+      "type": "object"
+     },
+     {
+      "oneOf": [
+       {
+        "additionalProperties": false,
+        "properties": {
+         "action": {
+          "const": "ask",
+          "description": "The action; each action takes the arguments of its own branch"
+         },
+         "again": {
+          "description": "Ask again although the same question is pending",
+          "type": "boolean"
+         },
+         "at": {
+          "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+          "type": "string"
+         },
+         "default": {
+          "description": "What will be assumed if nobody answers in time: a reversible choice",
+          "type": "string"
+         },
+         "due": {
+          "description": "When the answer is needed. An RFC 3339 time, or a duration from now, such as in 10m",
+          "type": "string"
+         },
+         "op_id": {
+          "description": "A fresh UUID for each write; repeat it only to retry that write",
+          "type": "string"
+         },
+         "options": {
+          "description": "Only for a question to a human: to: user or to: principal:<key>; empty for an open question, answered in the human's own words",
+          "items": {
+           "type": "string"
+          },
+          "type": "array"
+         },
+         "recommendation": {
+          "description": "The option you recommend",
+          "type": "string"
+         },
+         "session": {
+          "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+          "type": "string"
+         },
+         "text": {
+          "description": "The question",
+          "type": "string"
+         },
+         "to": {
+          "description": "user: the first human of at's chain; principal:<key>: that human",
+          "pattern": "^(user|principal:.+)$",
+          "type": "string"
+         }
+        },
+        "required": [
+         "action",
+         "at",
+         "text",
+         "to",
+         "options"
+        ],
+        "title": "talk ask for a human (to: user or principal:<key>)",
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "properties": {
+         "action": {
+          "const": "ask",
+          "description": "The action; each action takes the arguments of its own branch"
+         },
+         "again": {
+          "description": "Ask again although a question is open",
+          "type": "boolean"
+         },
+         "at": {
+          "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+          "type": "string"
+         },
+         "blocking": {
+          "description": "Whether the work cannot go on without the answer",
+          "type": "boolean"
+         },
+         "op_id": {
+          "description": "A fresh UUID for each write; repeat it only to retry that write",
+          "type": "string"
+         },
+         "session": {
+          "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+          "type": "string"
+         },
+         "text": {
+          "description": "The question",
+          "type": "string"
+         },
+         "where": {
+          "description": "The conversation, as a key such as chat:<channel>/<thread>; needed when the nodes from at up carry several",
+          "type": "string"
+         }
+        },
+        "required": [
+         "action",
+         "at",
+         "text"
+        ],
+        "title": "talk ask for a person outside the swarm (no to)",
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "properties": {
+         "action": {
+          "const": "ask",
+          "description": "The action; each action takes the arguments of its own branch"
+         },
+         "again": {
+          "description": "Ask again although a question is open",
+          "type": "boolean"
+         },
+         "at": {
+          "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+          "type": "string"
+         },
+         "blocking": {
+          "description": "Whether the work cannot go on without the answer",
+          "type": "boolean"
+         },
+         "op_id": {
+          "description": "A fresh UUID for each write; repeat it only to retry that write",
+          "type": "string"
+         },
+         "session": {
+          "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+          "type": "string"
+         },
+         "text": {
+          "description": "The question",
+          "type": "string"
+         },
+         "to": {
+          "description": "session:<id>, holder:<node>, or holders:<node>/**",
+          "pattern": "^(session|holder|holders):",
+          "type": "string"
+         }
+        },
+        "required": [
+         "action",
+         "at",
+         "text",
+         "to"
+        ],
+        "title": "talk ask for agents (to: session:, holder:, or holders:)",
+        "type": "object"
+       }
+      ],
+      "properties": {
+       "action": {
+        "const": "ask",
+        "description": "The action; each action takes the arguments of its own branch"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "talk ask",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "answer",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "question": {
+        "description": "The agent question, such as e9",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "The answer",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "question",
+       "text"
+      ],
+      "title": "talk answer",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "say",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "at": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "expects": {
+        "description": "A later release: only none is meaningful; to get an answer, use talk ask",
+        "enum": [
+         "none",
+         "ack",
+         "reply"
+        ],
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "reply_to": {
+        "description": "The entry this replies to",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "The message",
+        "type": "string"
+       },
+       "to": {
+        "description": "session:<id>, holder:<node>, holders:<node>/**, principal:<key>, or user; without to, a plain note",
+        "type": "string"
+       },
+       "until": {
+        "description": "Delivered until then: deliver.window by default. An RFC 3339 time, or a duration from now, such as in 10m",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "at",
+       "text"
+      ],
+      "title": "talk say",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "decide",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "at": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "basis": {
+        "description": "What it rests on: #12@4 or a path with @4, a node at a version; #12, a node; e57 or entry:e57, an entry; {external, checked_at, recheck?}, something outside the forum",
+        "items": {
+         "oneOf": [
+          {
+           "type": "string"
+          },
+          {
+           "additionalProperties": false,
+           "properties": {
+            "checked_at": {
+             "description": "When it was checked. An RFC 3339 time, or a duration from now, such as in 10m",
+             "type": "string"
+            },
+            "external": {
+             "description": "Something outside the forum, such as an artefact",
+             "type": "string"
+            },
+            "recheck": {
+             "description": "When to check it again. An RFC 3339 time, or a duration from now, such as in 10m",
+             "type": "string"
+            }
+           },
+           "required": [
+            "external",
+            "checked_at"
+           ],
+           "type": "object"
+          }
+         ]
+        },
+        "type": "array"
+       },
+       "evidence": {
+        "description": "attempt, you tried it\nobservation, you saw it\ninference, you reasoned to it\nreported, someone told you",
+        "enum": [
+         "attempt",
+         "observation",
+         "inference",
+         "reported"
+        ],
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "settles": {
+        "description": "The requests it settles, such as e57",
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       "supersedes": {
+        "description": "The decision it replaces",
+        "type": "string"
+       },
+       "text": {
+        "description": "Records an outcome; findings and open questions go in a checkpoint",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "at",
+       "text"
+      ],
+      "title": "talk decide",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "approve",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "checked": {
+        "description": "What you checked",
+        "type": "string"
+       },
+       "on": {
+        "description": "The node at the version you checked, such as #12@4. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "on",
+       "checked"
+      ],
+      "title": "talk approve",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "object",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "note": {
+        "description": "The problem",
+        "type": "string"
+       },
+       "on": {
+        "description": "The node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "on",
+       "note"
+      ],
+      "title": "talk object",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "resolve",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "note": {
+        "description": "How it was resolved",
+        "type": "string"
+       },
+       "objection": {
+        "description": "The objection, such as e12",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "objection",
+       "note"
+      ],
+      "title": "talk resolve",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "oneOf": [
+       {
+        "required": [
+         "entry"
+        ]
+       },
+       {
+        "required": [
+         "path"
+        ]
+       }
+      ],
+      "properties": {
+       "action": {
+        "const": "retract",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "entry": {
+        "description": "An entry to strike out, such as e57",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "path": {
+        "description": "A node to strike out. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "reason": {
+        "description": "Why",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "text": {
+        "description": "The statement retracted",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "text",
+       "reason"
+      ],
+      "title": "talk retract",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "wait",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "for": {
+        "description": "Also wake on new entries of this node. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       },
+       "timeout": {
+        "description": "How long to wait, at most talk.wait_max. Such as 50s, 15m, 2h, or 7d",
+        "minimum": 0,
+        "type": [
+         "string",
+         "integer"
+        ]
+       }
+      },
+      "required": [
+       "action",
+       "timeout"
+      ],
+      "title": "talk wait",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "who",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "at": {
+        "description": "Only sessions at work in this subtree. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "talk who",
+      "type": "object"
+     }
+    ],
+    "properties": {
+     "action": {
+      "description": "The action; each action takes the arguments of its own branch",
+      "enum": [
+       "from_user",
+       "to_user",
+       "route",
+       "request",
+       "said",
+       "heard",
+       "ask",
+       "answer",
+       "say",
+       "decide",
+       "approve",
+       "object",
+       "resolve",
+       "retract",
+       "wait",
+       "who"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "action"
+    ],
+    "type": "object"
+   },
+   "name": "talk",
+   "outputSchema": {
+    "properties": {
+     "next_calls": {
+      "description": "The calls the server expects next from your session, with the ids it knows filled in in args; make the now ones first. fill names the arguments you write yourself: in the text form, `<name>: ?` marks such an argument for you to write, not data the server failed to give. when is now, or later, when the moment why names comes. They are advice: nothing is refused or delayed because a call was not suggested.",
+      "properties": {
+       "items": {
+        "items": {
+         "properties": {
+          "args": {
+           "description": "The call's arguments, action included, with the ids the server knows",
+           "type": "object"
+          },
+          "fill": {
+           "description": "The arguments you write yourself; ? in the text form",
+           "items": {
+            "type": "string"
+           },
+           "type": "array"
+          },
+          "rule": {
+           "type": "string"
+          },
+          "tool": {
+           "type": "string"
+          },
+          "when": {
+           "enum": [
+            "now",
+            "later"
+           ],
+           "type": "string"
+          },
+          "why": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "total": {
+        "description": "Every item, shown or not: a number, or \u226520"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "object"
+   }
+  },
+  {
+   "description": "Swarm-wide. pause {scope,reason} stops new work (anyone; expires in 2 h); unpause; health: if the status line shows red, fix its first reason; export; constitution. For one node, prefer talk object.",
+   "inputSchema": {
+    "oneOf": [
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "pause",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "reason": {
+        "description": "Why: every agent reads it",
+        "type": "string"
+       },
+       "scope": {
+        "description": "The subtree to pause. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "scope",
+       "reason"
+      ],
+      "title": "control pause",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "unpause",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "scope": {
+        "description": "The paused subtree. A path or #<id>, not a key: a conversation key goes in where. approve {on} adds @<version>. The path of create and the to of move name a place, and are paths only",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action",
+       "scope"
+      ],
+      "title": "control unpause",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "health",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "control health",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "constitution",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "control constitution",
+      "type": "object"
+     },
+     {
+      "additionalProperties": false,
+      "properties": {
+       "action": {
+        "const": "export",
+        "description": "The action; each action takes the arguments of its own branch"
+       },
+       "after": {
+        "description": "Events after this seq",
+        "minimum": 0,
+        "type": "integer"
+       },
+       "limit": {
+        "description": "Events per page: 1,000 by default",
+        "maximum": 4294967295,
+        "minimum": 0,
+        "type": "integer"
+       },
+       "op_id": {
+        "description": "A fresh UUID for each write; repeat it only to retry that write",
+        "type": "string"
+       },
+       "session": {
+        "description": "Your session, such as s-4, from the status line of a response; pass it on every call after the first",
+        "type": "string"
+       }
+      },
+      "required": [
+       "action"
+      ],
+      "title": "control export",
+      "type": "object"
+     }
+    ],
+    "properties": {
+     "action": {
+      "description": "The action; each action takes the arguments of its own branch",
+      "enum": [
+       "pause",
+       "unpause",
+       "health",
+       "constitution",
+       "export"
+      ],
+      "type": "string"
+     }
+    },
+    "required": [
+     "action"
+    ],
+    "type": "object"
+   },
+   "name": "control",
+   "outputSchema": {
+    "properties": {
+     "next_calls": {
+      "description": "The calls the server expects next from your session, with the ids it knows filled in in args; make the now ones first. fill names the arguments you write yourself: in the text form, `<name>: ?` marks such an argument for you to write, not data the server failed to give. when is now, or later, when the moment why names comes. They are advice: nothing is refused or delayed because a call was not suggested.",
+      "properties": {
+       "items": {
+        "items": {
+         "properties": {
+          "args": {
+           "description": "The call's arguments, action included, with the ids the server knows",
+           "type": "object"
+          },
+          "fill": {
+           "description": "The arguments you write yourself; ? in the text form",
+           "items": {
+            "type": "string"
+           },
+           "type": "array"
+          },
+          "rule": {
+           "type": "string"
+          },
+          "tool": {
+           "type": "string"
+          },
+          "when": {
+           "enum": [
+            "now",
+            "later"
+           ],
+           "type": "string"
+          },
+          "why": {
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "total": {
+        "description": "Every item, shown or not: a number, or \u226520"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "object"
+   }
+  }
+ ]
+}

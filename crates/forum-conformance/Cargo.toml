@@ -1,0 +1,15 @@
+[package]
+name = "forum-conformance"
+description = "Test-only: replays Quint traces against the Swarm Forum core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+forum-core = { path = "../forum-core", features = ["conformance"] }
+serde_json = "1"
+
+[lints]
+workspace = true

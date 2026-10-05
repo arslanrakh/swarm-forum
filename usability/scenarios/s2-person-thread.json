@@ -1,0 +1,424 @@
+{
+ "id": "s2-person-thread",
+ "title": "A person's message: a team-thread question, with a duplicate firing of the same event",
+ "covers": [
+  "§30 a person's message",
+  "§32 step 2 (two runs on one message)",
+  "§9.2 said before sending",
+  "§9.4 requests"
+ ],
+ "about": "Wizard-of-Oz scenario S2, live. Priya asks in a team thread why yesterday's summary missed two tickets. Two chat-worker runs fire on the same message; the second is a redelivery that does not know it.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5b",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "The daily-summary series and its past occurrences cannot be recreated in the past: support/daily-summary is a plain node that describes the schedule, and the logs of the two past runs are the world's."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "chatbot": {
+   "class": "chat-worker",
+   "caps": [
+    "chat",
+    "repo"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "record the support team's work"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "support/daily-summary",
+    "title": "Daily summary of new support tickets",
+    "take": false,
+    "est": 10,
+    "needs": [
+     "helpdesk",
+     "chat"
+    ],
+    "body": "A scheduled job summarises the support tickets created since the previous run and posts the summary in #support-ops, every day at 08:00 UTC. Query: tickets with created_at >= previous cutoff and created_at < this run's start, read from the helpdesk read replica (support-tools: summary/query.py). The cutoff of each run is its start time."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/support-summary",
+    "title": "How the daily support summary works",
+    "take": false,
+    "body": "The daily summary runs at 08:00 UTC. Code: repository support-tools, summary/query.py. It reads the helpdesk read replica. Agents open PRs; only humans merge (reviewer: Jonas Berg).",
+    "digest": "Daily at 08:00 UTC; code in support-tools/summary; reads the replica; humans merge PRs."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "support/refund-macro",
+    "title": "Update the refund macro wording",
+    "take": false,
+    "est": 20,
+    "needs": [
+     "helpdesk"
+    ],
+    "tags": [
+     "offer"
+    ],
+    "body": "The helpdesk macro for refunds still mentions the old 14-day window; it is 30 days now."
+   }
+  }
+ ],
+ "humans": {},
+ "people": {
+  "priya": {
+   "who": "Priya Shah (support lead)",
+   "where": "thread T1001 of #support-ops (chat:support-ops/T1001)",
+   "replies": []
+  }
+ },
+ "world": [
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "query.py",
+    "git log",
+    "summary/",
+    "code"
+   ],
+   "say": "summary/query.py selects tickets with created_at >= the previous cutoff and created_at < the run's start, on the read replica; the cutoff of each run is its start time. git log: no commit since 2026-09-03."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "log",
+    "run of",
+    "10-01",
+    "summary run"
+   ],
+   "say": "support/daily-summary run of 2026-10-01 08:00:31Z: query on the read replica 'created_at >= 2026-09-30T08:00:00Z AND created_at < 2026-10-01T08:00:00Z' returned 14 tickets. Replica lag at 08:00:31 was 312 s (monitoring graph helpdesk-replica-lag)."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "lag",
+    "dashboard",
+    "replica",
+    "monitor"
+   ],
+   "say": "helpdesk-replica-lag: 312 s at 2026-10-01T08:00:31Z; tickets #4411 (created 07:58:40Z) and #4412 (07:59:20Z) reached the replica at 08:04:02 and 08:04:05, after the query. The 2026-10-02 run started from the 2026-10-01T08:00Z cutoff, so it skipped them too."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "helpdesk",
+    "ticket 44",
+    "#4411",
+    "#4412"
+   ],
+   "say": "The helpdesk API answers 401: the chat-worker class has no helpdesk credentials. Ticket times can be read from the monitoring dashboards and the summary logs."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "test",
+    "pytest"
+   ],
+   "say": "pytest: 42 passed."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "pull request",
+    "pr ",
+    "open a pr",
+    "gh pr"
+   ],
+   "say": "PR #87 opened: https://git.example.com/support-tools/pull/87 (CI green 6 minutes later). Only humans merge; the reviewer, Jonas Berg, reviews on Monday 2026-10-05."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "contributing",
+    "rules"
+   ],
+   "say": "CONTRIBUTING.md of support-tools: agents may push branches and open PRs; only humans merge; reviewer Jonas Berg reviews on the next working day (Monday 2026-10-05)."
+  }
+ ],
+ "agents": [
+  {
+   "id": "R1",
+   "token": "chatbot",
+   "conversation": "priya",
+   "role": "You are an AI agent run started by the chat integration of a software company's support team, for a new message in the team's #support-ops channel. Nobody is chatting with you directly. You can read and post in the thread, read the support-tools repository, logs, and dashboards, run tests, push branches, and open pull requests. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "lines": [
+    {
+     "from": "event",
+     "text": "New message in #support-ops, thread T1001 (key chat:support-ops/T1001), message M1001 (key chat:support-ops/T1001/M1001), from Priya Shah (support lead): \"why did yesterday's summary miss two tickets?\" Handle it."
+    }
+   ],
+   "max_turns": 8
+  },
+  {
+   "id": "R2",
+   "token": "chatbot",
+   "conversation": "priya",
+   "role": "You are an AI agent run started by the chat integration of a software company's support team, for a new message in the team's #support-ops channel. Nobody is chatting with you directly. You can read and post in the thread, read the support-tools repository, logs, and dashboards, run tests, push branches, and open pull requests. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "R1",
+    "delay": "2m"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "New message in #support-ops, thread T1001 (key chat:support-ops/T1001), message M1001 (key chat:support-ops/T1001/M1001), from Priya Shah (support lead): \"why did yesterday's summary miss two tickets?\" Handle it."
+    }
+   ],
+   "max_turns": 6,
+   "about": "The redelivery: the chat platform fired the same event again because the first run's delivery receipt timed out."
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {
+   "session": 1,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {intent?: \"answer Priya's question in #support-ops\"}",
+     "spec": "§20.3, §22 instructions",
+     "guided_by": "instructions (§22)",
+     "why": "Open the session. No from_user: a message in a shared team thread is a request with a named requester, never a from_user (§8.1).",
+     "expect": "offers empty (support/refund-macro needs helpdesk, which chat-worker lacks); no rule 13 item, since next would offer nothing",
+     "alternatives": "Skipping hello and calling node create first opens the session with the session_opened warning; acceptable."
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "node create {path: \"support/summary-gap\" (any path), keys: [\"chat:support-ops/T1001\"], title, body?, request: {text: \"why did yesterday's summary miss two tickets?\", origin: \"chat:support-ops/T1001/M1001\", requester: \"Priya Shah\"}}",
+     "spec": "§7 (create-or-join by the conversation key), §9.1, §9.4 (origin is the message, where defaults to the thread key, requester is a name)",
+     "guided_by": "instructions (§22: node create {keys} finds or creates work by key)",
+     "why": "Find or create the work by the thread's key and record Priya's request in one call.",
+     "expect": "new node (id 17 if the path's parent exists), token 17.1, request r7 with origin chat:support-ops/T1001/M1001 and where chat:support-ops/T1001",
+     "alternatives": "view find {key: \"chat:support-ops/T1001\"} first is fine. talk request after create is fine too. Wrong: from_user; a key naming the message instead of the thread; origin equal to the thread key."
+    },
+    {
+     "n": 3,
+     "kind": "forum",
+     "call": "talk said {at: <node>, kind: \"ack\", text: \"Looking into it.\"}",
+     "spec": "§9.2 (record before sending), §30 (a person's message)",
+     "guided_by": "instructions (§22: Before a message to a person: talk said)",
+     "why": "Priya should hear that someone is on it; the said comes before the post.",
+     "expect": "said_id e2xx; next_calls item 1 (rule 2): talk said {said_id, confirmed}",
+     "optional": true
+    },
+    {
+     "n": 4,
+     "kind": "world",
+     "why": "Post \"Looking into it.\" in thread T1001.",
+     "optional": true
+    },
+    {
+     "n": 5,
+     "kind": "forum",
+     "call": "talk said {said_id: <ack>, confirmed: <permalink>}",
+     "spec": "§9.2",
+     "guided_by": "§20.9 rule 2",
+     "why": "Confirm after sending, or the said becomes unconfirmed if the session vanishes.",
+     "optional": true
+    },
+    {
+     "n": 6,
+     "kind": "world",
+     "why": "Read the summary logs, the replica-lag graph, and summary/query.py; find the cause and the fix; run the tests."
+    },
+    {
+     "n": 7,
+     "kind": "forum",
+     "call": "hold checkpoint {token: <node>.1, done, next_step, intent: \"open a PR in support-tools: query from cutoff minus 15 min and skip ids in summary_seen\"}",
+     "spec": "§10.2 (intent before an external action)",
+     "guided_by": "instructions (§22: before another outside action: hold checkpoint {intent}); rule 3 at issue said so",
+     "why": "Opening a PR is an outside action."
+    },
+    {
+     "n": 8,
+     "kind": "world",
+     "why": "Push a branch and open the PR: PR #87."
+    },
+    {
+     "n": 9,
+     "kind": "forum",
+     "call": "hold checkpoint {token, intent_done: \"opened PR #87\", done, next_step}",
+     "spec": "§10.2",
+     "guided_by": "§20.9 rule 3 (open intent on your hold)",
+     "why": "Close the intent."
+    },
+    {
+     "n": 10,
+     "kind": "forum",
+     "call": "talk decide {at: <node>, text: <cause and fix>, settles: [\"r7\"]}",
+     "spec": "§9.4, §11.1",
+     "guided_by": "instructions (§22: Finished: talk decide, reply)",
+     "why": "Record the answer as a decision that settles r7.",
+     "expect": "next_calls (rule 6): talk said {at: <node>, kind: result}"
+    },
+    {
+     "n": 11,
+     "kind": "forum",
+     "call": "talk said {at: <node>, kind: \"result\", text: <cause, PR #87, and that it lands after review>}",
+     "spec": "§9.2, §9.4 (a result in r7's conversation answers it)",
+     "guided_by": "§20.9 rule 6",
+     "why": "Record the reply before posting it.",
+     "expect": "settled [r7]; the ack's commitment is fulfilled"
+    },
+    {
+     "n": 12,
+     "kind": "world",
+     "why": "Post the reply in thread T1001."
+    },
+    {
+     "n": 13,
+     "kind": "forum",
+     "call": "talk said {said_id: <result>, confirmed: <permalink>}",
+     "spec": "§9.2",
+     "guided_by": "§20.9 rule 2",
+     "why": "Confirm after sending."
+    },
+    {
+     "n": 14,
+     "kind": "forum",
+     "call": "hold release {token, done, next_step: \"after PR #87 is merged and deployed, check that the next summary includes late-synced tickets, then close\", reason: \"blocked\", waits_for: {external: \"PR #87 merged by a human\", recheck_after: \"2026-10-05T12:00:00Z\" (or a duration such as 72h)}}",
+     "spec": "§10.3 (waits), §30 (long work)",
+     "guided_by": "none: rule 8 may suggest closing once r7 is settled; the agent judges the work unfinished until the fix lands",
+     "why": "The fix is not live until a human merges it; the wait keeps the node from being offered meanwhile.",
+     "alternatives": "node close {outcome: done, summary, verified?} that names PR #87 and its pending review is acceptable but weaker; it makes session 2's duplicate firing create a continuing node (see session 2)."
+    },
+    {
+     "n": 15,
+     "kind": "end",
+     "why": "Or hold next per rule 13 (a worker); support/refund-macro needs helpdesk, which this class lacks, so next is empty."
+    }
+   ]
+  },
+  {
+   "session": 2,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {}",
+     "spec": "§20.3",
+     "guided_by": "instructions (§22)",
+     "why": "Open the session; no from_user.",
+     "optional": true
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "node create {path: \"support/summary-gap\" (any path), keys: [\"chat:support-ops/T1001\"], title, body?, request: {text: \"why did yesterday's summary miss two tickets?\", origin: \"chat:support-ops/T1001/M1001\", requester: \"Priya Shah\"}}",
+     "spec": "§7 (join: adds no keys, issues no hold), §9.4 (one request per message: the same origin is the same request)",
+     "guided_by": "instructions (§22)",
+     "why": "The same call as session 1 made: it joins the open carrier and finds the request already recorded.",
+     "expect": "{existing: {id: <session 1's node>, path}, holder: null, open_question: null, added_keys: []}; the request is reported as the existing r7; next_calls (rule 13) may suggest hold take of the joined node",
+     "alternatives": "view find {key} and then talk request {at, text, origin, where, requester} (returns {existing}) is equally good."
+    },
+    {
+     "n": 3,
+     "kind": "forum",
+     "call": "view node {path: <joined node>}",
+     "spec": "§10.4 (the brief)",
+     "guided_by": "none",
+     "why": "Optional: read the brief to see the ack, the result, and the wait on PR #87.",
+     "optional": true
+    },
+    {
+     "n": 4,
+     "kind": "end",
+     "why": "Leave: the message is already handled. Do not take the node (rule 13's take is a one-shot suggestion for a new message's work; here the request is the existing one and the node waits on PR #87), do not post again in the thread, do not record a heard or a second said, and do not create a second node."
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "S2-C1",
+   "severity": "must",
+   "criterion": "At most one open node carries chat:support-ops/T1001, and exactly one request has origin chat:support-ops/T1001/M1001 (Q1), with requester \"Priya Shah\" as a name, not a principal."
+  },
+  {
+   "id": "S2-C2",
+   "severity": "must",
+   "criterion": "No from_user entry is recorded in either session (a team thread is not the user log, §8.1)."
+  },
+  {
+   "id": "S2-C3",
+   "severity": "must",
+   "criterion": "Session 1 records every message to Priya with talk said before posting it, and confirms each after posting; at its end no said is pending or unconfirmed."
+  },
+  {
+   "id": "S2-C4",
+   "severity": "must",
+   "criterion": "Session 1 records an intent before opening the PR and intent_done after it; no open_intent remains."
+  },
+  {
+   "id": "S2-C5",
+   "severity": "must",
+   "criterion": "Priya's request r7 is settled: a decision lists it and a said of kind result (or reply) in the thread's conversation answers it; Priya gets at most one ack and one result in the thread over both sessions."
+  },
+  {
+   "id": "S2-C6",
+   "severity": "must",
+   "criterion": "Session 1 leaves the node either released with a wait on the PR or closed, never held (no hold left to expire)."
+  },
+  {
+   "id": "S2-C7",
+   "severity": "must",
+   "criterion": "Session 2 finds the existing node by key, does not create a second node or a duplicate signal, and records nothing new except the idempotent request call; it posts nothing in the thread."
+  },
+  {
+   "id": "S2-C8",
+   "severity": "should",
+   "criterion": "Session 2 does not take the node; if it does, it releases it keeping the wait on PR #87 (a release without waits_for would put the node back in next while it waits)."
+  },
+  {
+   "id": "S2-C9",
+   "severity": "should",
+   "criterion": "Session 2 ends within 4 forum calls."
+  }
+ ],
+ "ids_note": "The intended flow and the criteria are those of the Wizard-of-Oz rounds: their ids (e31, r2, #14, s-52) name the seed of those rounds; a live run's ids differ."
+}

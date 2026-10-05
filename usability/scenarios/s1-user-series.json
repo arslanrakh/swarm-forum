@@ -1,0 +1,312 @@
+{
+ "id": "s1-user-series",
+ "title": "A message from the user: a morning summary of support tickets, with a clarification midway",
+ "covers": [
+  "§30 a message from the user",
+  "§32 step 1",
+  "§12 recurring work",
+  "§8.1 later messages and clarifications"
+ ],
+ "about": "Wizard-of-Oz scenario S1, live. Dana's chat assistant (no principal) sets up a recurring summary; Dana adds a condition after the series exists, and thanks the agent at the end.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5a",
+  "WP-D5b",
+  "WP-D6",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "The coverage history of 28 days (an hourly worker at minute 05) cannot be recreated: with the short profile the coverage window is the last hour, so a slot outside the run's hour may draw uncovered_slot. Treat that warning as expected; S1-C7's uncovered_slot clause is moot.",
+  "The closed travel/porto-trains node of the seed (an earlier request of Dana's) is left out: it carried no flag and only showed history."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "chat": {
+   "class": "chat-assistant"
+  },
+  "sched": {
+   "class": "scheduled-job",
+   "caps": [
+    "helpdesk",
+    "mail"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "record what the swarm knows about Dana's helpdesk"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/support-tickets",
+    "title": "How agents read Dana's support tickets",
+    "take": false,
+    "body": "Dana runs a small online shop. Her support tickets are in the helpdesk at helpdesk.example.net. Each ticket has tags (for example 'spam', 'refund', 'shipping'). Only the scheduled-job worker has helpdesk access and can send mail: the agent platform starts one every hour at minute 05, and it takes whatever the forum offers it. Dana reads summaries by mail (dana@example.net), usually around 08:30 Lisbon time.",
+    "digest": "Helpdesk: helpdesk.example.net. The hourly scheduled-job worker (caps helpdesk, mail) reads tickets and mails Dana. Dana reads mail around 08:30 Lisbon time."
+   }
+  },
+  {
+   "as": "sched",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "the hourly worker's run",
+    "caps": [
+     "helpdesk",
+     "mail"
+    ]
+   }
+  }
+ ],
+ "humans": {
+  "dana": {
+   "who": "Dana Reis",
+   "principal": null,
+   "replies": [
+    {
+     "when": "asked",
+     "match": [
+      "time",
+      "zone",
+      "when",
+      "hour",
+      "o'clock"
+     ],
+     "say": "8 is good, Lisbon time."
+    },
+    {
+     "when": "asked",
+     "match": [
+      "deliver",
+      "send",
+      "email",
+      "mail",
+      "how should",
+      "where"
+     ],
+     "say": "Email is fine, like always."
+    },
+    {
+     "when": "asked",
+     "match": [
+      "weekend",
+      "saturday",
+      "sunday",
+      "every day"
+     ],
+     "say": "Yes, every day."
+    },
+    {
+     "when": "told",
+     "match": [
+      "set up",
+      "scheduled",
+      "every morning",
+      "all set",
+      "done"
+     ],
+     "say": "Great, thanks!"
+    },
+    {
+     "when": "asked",
+     "say": "Whatever you think is best."
+    }
+   ]
+  }
+ },
+ "people": {},
+ "world": [],
+ "agents": [
+  {
+   "id": "U",
+   "token": "chat",
+   "human": "dana",
+   "role": "You are the chat assistant on Dana Reis's phone. Dana runs a small online shop and is the only person who uses this forum; your chat client does not give her any user id. She lives in Lisbon. You cannot read her helpdesk or send mail yourself, and you have no tools besides the swarm forum's. Your reply is shown to Dana in the chat.",
+   "lines": [
+    {
+     "from": "human",
+     "text": "summarise new support tickets every morning"
+    },
+    {
+     "from": "human",
+     "text": "and skip tickets tagged spam",
+     "after_call": {
+      "tool": "node",
+      "action": "create",
+      "ok": true
+     }
+    }
+   ],
+   "max_turns": 6
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {
+   "session": 1,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {from_user: {text: \"summarise new support tickets every morning\", client: \"chat\"}}",
+     "spec": "§8.1 (log first), §20.3, §22 instructions",
+     "guided_by": "instructions (§22)",
+     "why": "Log Dana's words verbatim before anything else. No principal: her client names none, so the entry's principal is user.",
+     "expect": "user_entry {entry: e31, key: user:e31, routed_to: null}; next_calls item 1 (rule 5): node create {keys: [\"user:e31\"]}"
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "node create {path: \"digest/daily-tickets\" (any path), keys: [\"user:e31\"], title, body (what to summarise and how to deliver it), repeat: {cron: \"0 8 * * *\", tz: \"Europe/Lisbon\", run_within: \"1h\" (anything from 10m to 3h)}, est?, needs? (a subset of [helpdesk, mail], or none)}",
+     "spec": "§7, §8.2 (routes e31 and records request r2 with origin user:e31, requester user), §12",
+     "guided_by": "§20.9 rule 5",
+     "why": "Find-or-create by the entry's key; the recurring node is the morning summary.",
+     "expect": "new series with its first occurrence waiting (slot 2026-10-03T07:00Z for 08:00 Lisbon); hold token <series id>.1; request r2; no uncovered_slot warning; next_calls: later checkpoint (rule 3), later hold release {reason: handoff} (rule 8, container)",
+     "alternatives": "view find {key: \"user:e31\"} first is harmless. A cron at another morning hour is fine; a slot that is not on the hour may draw uncovered_slot, which the agent must then mention to Dana."
+    },
+    {
+     "n": 3,
+     "kind": "human",
+     "why": "Dana adds: \"and skip tickets tagged spam\" (event S1-H1)."
+    },
+    {
+     "n": 4,
+     "kind": "forum",
+     "call": "talk from_user {text: \"and skip tickets tagged spam\", client: \"chat\", clarifies: \"r2\"}",
+     "spec": "§8.1 (later messages; clarifications), §8.2",
+     "guided_by": "instructions (§22: later messages: talk from_user); no next call suggests clarifies at this point",
+     "why": "Log the new words before acting on them, attached to the same request, so that no second request is created.",
+     "alternatives": "talk from_user without clarifies routes to the session's only hold as a new request r3 (§8.1); acceptable only if r3 is then decided and answered too."
+    },
+    {
+     "n": 5,
+     "kind": "forum",
+     "call": "node update {path: <series>, version: <current>, body: <body that also says to skip tickets tagged spam>}",
+     "spec": "§5, §12 (occurrences copy title, body, needs, and est)",
+     "guided_by": "none (the agent's own judgement)",
+     "why": "Every future occurrence must know to skip spam.",
+     "alternatives": "Also updating the waiting occurrence's body is good (see notes_for_simulator)."
+    },
+    {
+     "n": 6,
+     "kind": "forum",
+     "call": "talk decide {at: <series>, text, settles: [\"r2\"]}",
+     "spec": "§9.4 (settling), §11.1",
+     "guided_by": "instructions (§22: Finished: talk decide, reply)",
+     "why": "Record what was set up and that it settles r2.",
+     "expect": "next_calls item 1 (rule 6): talk to_user {kind: result, re: [r2], principal: user}"
+    },
+    {
+     "n": 7,
+     "kind": "forum",
+     "call": "talk to_user {kind: \"result\", text: <what the reply to Dana says>, verbatim: true, re: [\"r2\"]}",
+     "spec": "§8.1 (to_user is the recorded report), §9.4 (only a result to the requester answers)",
+     "guided_by": "§20.9 rule 6",
+     "why": "Record the report before telling Dana; it settles r2.",
+     "expect": "r2 settled; next_calls item 1 (rule 8): hold release {token: <series id>.1, reason: handoff}"
+    },
+    {
+     "n": 8,
+     "kind": "say_to_human",
+     "spec": "§22 constitution line 4 (record every message before you send it)",
+     "why": "Tell Dana it is set up: every morning at 08:00 Lisbon, spam skipped, by mail."
+    },
+    {
+     "n": 9,
+     "kind": "human",
+     "why": "Dana: \"Great, thanks!\" (world.human_replies), while the session still holds the series."
+    },
+    {
+     "n": 10,
+     "kind": "forum",
+     "call": "talk from_user {text: \"Great, thanks!\", client: \"chat\", clarifies: \"r2\"}",
+     "spec": "§8.1 (log further messages; clarifications attach to an existing request without creating one)",
+     "guided_by": "constitution line 2; no next call suggests clarifies",
+     "why": "Log her words. A plain from_user here is routed to the session's only hold, the series, as a new request that would then need its own decision and result.",
+     "optional": true,
+     "alternatives": "Release the series first, then log the thanks (it stays unrouted, since the session holds nothing) and route it with talk route {entry, to: none, reason}."
+    },
+    {
+     "n": 11,
+     "kind": "forum",
+     "call": "hold release {token: <series id>.1, reason: \"handoff\", done, next_step}",
+     "spec": "§10.3, §12 (closing a series stops it)",
+     "guided_by": "§20.9 rule 8 (container)",
+     "why": "A series stays open; release it, never close it."
+    },
+    {
+     "n": 12,
+     "kind": "end",
+     "why": "The session serves a principal (user), so it is not a worker: no hold next (§20.9 rule 13 applies to workers only)."
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "S1-C1",
+   "severity": "must",
+   "criterion": "Dana's first message is logged verbatim as a from_user in the session's first forum call (hello {from_user}), before any other forum call."
+  },
+  {
+   "id": "S1-C2",
+   "severity": "must",
+   "criterion": "Exactly one recurring node exists for the summary; its repeat fires once every morning in Europe/Lisbon (a cron such as \"0 8 * * *\"), and it carries user:e31, so e31 is routed and request r2 recorded."
+  },
+  {
+   "id": "S1-C3",
+   "severity": "must",
+   "criterion": "\"and skip tickets tagged spam\" is logged verbatim with talk from_user before the agent acts on it; at the end no from_user entry is unrouted (no unrouted flag on @user)."
+  },
+  {
+   "id": "S1-C3b",
+   "severity": "should",
+   "criterion": "The clarification is attached to r2 by clarifies, so no second request is created; if a second request was created, it is settled too."
+  },
+  {
+   "id": "S1-C4",
+   "severity": "must",
+   "criterion": "The series body (what each occurrence copies) says to skip tickets tagged spam."
+  },
+  {
+   "id": "S1-C5",
+   "severity": "must",
+   "criterion": "r2 is settled: a decision lists it, and a to_user of kind result to user with re naming r2 (or e31) was recorded before the agent told Dana."
+  },
+  {
+   "id": "S1-C6",
+   "severity": "must",
+   "criterion": "The series is left open and unheld by a hold release (not node close), with exactly one open occurrence, which is waiting."
+  },
+  {
+   "id": "S1-C7",
+   "severity": "should",
+   "criterion": "No flags on the series or @user at the end; no needs that the hourly worker lacks (Unreachable); no uncovered_slot left unmentioned to Dana."
+  },
+  {
+   "id": "S1-C8",
+   "severity": "should",
+   "criterion": "Dana is told the result in plain words, without forum jargon, and at most one ack before it."
+  },
+  {
+   "id": "S1-C9",
+   "severity": "should",
+   "criterion": "Dana's later messages (\"Great, thanks!\") are logged, and leave no unsettled request and no unrouted entry behind."
+  }
+ ],
+ "ids_note": "The intended flow and the criteria are those of the Wizard-of-Oz rounds: their ids (e31, r2, #14, s-52) name the seed of those rounds; a live run's ids differ."
+}

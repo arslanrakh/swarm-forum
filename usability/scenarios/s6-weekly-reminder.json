@@ -1,0 +1,449 @@
+{
+ "id": "s6-weekly-reminder",
+ "title": "A company human's weekly reminder, with a slot that no session covers",
+ "covers": [
+  "§30 scheduled work",
+  "§12 coverage and uncovered_slot",
+  "§20.9 rule 3 after uncovered_slot",
+  "§20.9 rule 8 for a series"
+ ],
+ "about": "Wizard-of-Oz scenario S6, live. Bob asks his Slack assistant for a weekly reminder; Monday 09:00 Berlin is rarely covered by any session.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5a",
+  "WP-D5b",
+  "WP-D6",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "The 28 days of observed session starts cannot be recreated: with the short profile's one-hour coverage window, the run sees only the prelude's and its own sessions, so uncovered_slot is likely for any slot, as in the Wizard-of-Oz seed.",
+  "The missed occurrences of payments/monday-chargeback-export are left out; the series is created live and its first occurrence waits."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "slack": {
+   "class": "chat-assistant"
+  },
+  "sched": {
+   "class": "scheduled-job",
+   "caps": [
+    "chat"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "keep the company's directory"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/alice-novak",
+    "title": "Alice Novak",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:alice@example.org",
+     "person:slack:U0ALICE"
+    ],
+    "body": "Engineer, payments team. Writes to her IDE agent several times a day."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/bob-meyer",
+    "title": "Bob Meyer",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:bob@example.org",
+     "person:slack:U0BOB"
+    ],
+    "body": "Engineering lead, payments team. Talks to the Slack assistant in direct messages."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/carol-diaz",
+    "title": "Carol Diaz",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:carol@example.org"
+    ],
+    "body": "Head of engineering; owner of the forum root."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/dmitri-volkov",
+    "title": "Dmitri Volkov",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:dmitri@example.org"
+    ],
+    "tags": [
+     "gone"
+    ],
+    "body": "Left the company on 2026-08-31."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@teams/payments",
+    "title": "Payments team",
+    "kind": "team",
+    "capacity": 0,
+    "owners": [
+     "/@people/alice-novak",
+     "/@people/bob-meyer",
+     "/@people/carol-diaz",
+     "/@people/dmitri-volkov"
+    ],
+    "body": "Owns the payments service, refunds, chargebacks, and the ledger export. Team channel: #payments in Slack (channel id C0PAY)."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "payments",
+    "title": "Payments service",
+    "take": false,
+    "owners": [
+     "/@teams/payments"
+    ],
+    "body": "Work of the payments team. Team channel: #payments (C0PAY)."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/scheduled-agent-runs",
+    "title": "Recurring work and scheduled agent runs",
+    "take": false,
+    "body": "Nothing in the forum starts an agent: an occurrence of a recurring node runs only if some session arrives within its window. The agent platform can start a forum worker on a schedule: `platform triggers create --cron '<5 fields>' --tz <IANA zone> --class scheduled-job --prompt 'Pick up work on the forum.'` prints the trigger id; `platform triggers list` shows the existing ones. Start the worker at or just after the slot, never before it: an occurrence is not offered before its slot. Write the trigger id into the recurring node's body."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "payments/monday-chargeback-export",
+    "title": "Monday chargeback export",
+    "take": false,
+    "est": 10,
+    "repeat": {
+     "cron": "30 8 * * MON",
+     "tz": "Europe/Berlin",
+     "run_within": "1h"
+    },
+    "body": "Run `make chargeback-export` for last week and post the file link in #payments (C0PAY)."
+   }
+  }
+ ],
+ "humans": {
+  "bob": {
+   "who": "Bob Meyer",
+   "principal": "slack:U0BOB",
+   "replies": [
+    {
+     "when": "asked",
+     "match": [
+      "channel",
+      "where"
+     ],
+     "say": "#payments, where the team is."
+    },
+    {
+     "when": "asked",
+     "match": [
+      "wording",
+      "text",
+      "message",
+      "say"
+     ],
+     "say": "Something like 'Monday refund review: please go through last week's refunds.'"
+    },
+    {
+     "when": "told",
+     "match": [
+      "nothing runs",
+      "no session",
+      "not covered",
+      "uncovered",
+      "trigger",
+      "nobody"
+     ],
+     "say": "Can't you schedule it yourself? The platform has a scheduler, I think."
+    },
+    {
+     "when": "told",
+     "match": [
+      "set up",
+      "scheduled",
+      "every monday",
+      "all set"
+     ],
+     "say": "Perfect, thanks."
+    },
+    {
+     "when": "asked",
+     "say": "Your call."
+    }
+   ]
+  }
+ },
+ "world": [
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "triggers list"
+   ],
+   "say": "trg-102: cron '0 3 * * *', tz Europe/Berlin, class scheduled-job, prompt 'Pick up work on the forum.'"
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "triggers create"
+   ],
+   "say": "Created trg-311. It starts one session of the class within 30 s of each firing.",
+   "once": false
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "post",
+    "chat.postmessage",
+    "#payments"
+   ],
+   "say": "Posted: https://slack.example.com/archives/C0PAY/p1791000001",
+   "once": false
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "/remind",
+    "reminder"
+   ],
+   "say": "Slack refuses: /remind is disabled for bots by the workspace's admin policy."
+  }
+ ],
+ "agents": [
+  {
+   "id": "A",
+   "token": "slack",
+   "human": "bob",
+   "role": "You are the company's Slack assistant, talking with Bob Meyer, engineering lead of the payments team, in a direct message. Your client identifies him as slack:U0BOB. You can reply to Bob, post in Slack channels, and use the agent platform's command-line tool; you cannot create Slack reminders (the workspace disables them for bots). Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Everything else in your reply is shown to Bob in the direct message.",
+   "lines": [
+    {
+     "from": "human",
+     "text": "remind the payments team every Monday at 9:00 Berlin time to review refunds"
+    }
+   ],
+   "max_turns": 8
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {
+   "session": 1,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {principal: \"slack:U0BOB\", from_user: {text: \"remind the payments team every Monday at 9:00 Berlin time to review refunds\", client: \"slack-dm\"}}",
+     "spec": "§3, §8.1, §20.3",
+     "guided_by": "instructions (§22)",
+     "why": "Bind the session to Bob and log his words first.",
+     "expect": "user_entry e400 (key user:e400); user_decisions {count 0}; user_digest {count 0}; knowledge likely includes kb/scheduled-agent-runs; next_calls (rule 5): node create {keys: [\"user:e400\"]}"
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "node create {path: \"payments/refund-review-reminder\" (any path under payments/), keys: [\"user:e400\"], title, body: <post in #payments (C0PAY) 'Monday refund review: please go through last week's refunds', then close the occurrence>, repeat: {cron: \"0 9 * * 1\" (or \"0 9 * * MON\"), tz: \"Europe/Berlin\", run_within: \"30m\" to \"1h\"}, est: 5, needs?: [] or [\"chat\"]}",
+     "spec": "§7, §8.2 (routes e400, request r30 with requester slack:U0BOB), §12 (schedule, days, coverage check), §5 (owners inherited: the payments team)",
+     "guided_by": "§20.9 rule 5",
+     "why": "Create the recurring node by the entry's key.",
+     "expect": "series #24 with occurrence #25 20261005T0700Z waiting; token 24.1; request r30; warning uncovered_slot (Mondays covered 1 of 4; top local start hours 10, 14, 03); next_calls: later checkpoint (rule 3, with the intent before an outside action), later hold release {reason: handoff} (rule 8)"
+    },
+    {
+     "n": 3,
+     "kind": "forum",
+     "call": "view node {path: \"kb/scheduled-agent-runs\"}",
+     "spec": "§20.4",
+     "guided_by": "none",
+     "why": "Read how to get an agent to arrive at 09:00.",
+     "optional": true
+    },
+    {
+     "n": 4,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"24.1\", done, next_step, intent: \"create a platform trigger starting a scheduled-job worker every Monday at 09:01 Europe/Berlin\"}",
+     "spec": "§10.2 (intent before an external action), §12 (the warning says something else must bring an agent)",
+     "guided_by": "instructions (§22); rule 3's item at issue",
+     "why": "The warning says nobody arrives at 09:00 on Mondays; a trigger is an outside action."
+    },
+    {
+     "n": 5,
+     "kind": "world",
+     "why": "platform triggers create --cron \"1 9 * * 1\" --tz Europe/Berlin --class scheduled-job --prompt \"Pick up work on the forum.\" → trg-311."
+    },
+    {
+     "n": 6,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"24.1\", intent_done: \"created trg-311 (Mondays 09:01 Europe/Berlin)\", done, next_step}",
+     "spec": "§10.2",
+     "guided_by": "§20.9 rule 3",
+     "why": "Close the intent."
+    },
+    {
+     "n": 7,
+     "kind": "forum",
+     "call": "node update {path: <series>, version: <current>, body: <same body plus 'Covered by platform trigger trg-311'>}",
+     "spec": "§5",
+     "guided_by": "none (kb/scheduled-agent-runs asks for it)",
+     "why": "Leave the next reader the link between the series and its trigger.",
+     "optional": true
+    },
+    {
+     "n": 8,
+     "kind": "forum",
+     "call": "talk decide {at: <series>, text, settles: [\"r30\"]}",
+     "spec": "§9.4, §11.1",
+     "guided_by": "instructions (§22)",
+     "why": "Record what was set up.",
+     "expect": "next_calls (rule 6): talk to_user {principal: \"slack:U0BOB\", kind: result, re: [\"r30\"]}"
+    },
+    {
+     "n": 9,
+     "kind": "forum",
+     "call": "talk to_user {kind: \"result\", verbatim: true, re: [\"r30\"], text: <Mondays 09:00 Berlin in #payments; a scheduled worker (trg-311) makes sure it runs>}",
+     "spec": "§8.1, §9.4",
+     "guided_by": "§20.9 rule 6",
+     "why": "Record the report to Bob before telling him.",
+     "expect": "r30 settled; next_calls (rule 8): hold release {token: \"24.1\", reason: handoff}"
+    },
+    {
+     "n": 10,
+     "kind": "say_to_human",
+     "why": "Tell Bob it is set up."
+    },
+    {
+     "n": 11,
+     "kind": "human",
+     "why": "Bob: \"Perfect, thanks.\" (world.human_replies), while the session still holds the series."
+    },
+    {
+     "n": 12,
+     "kind": "forum",
+     "call": "talk from_user {text: \"Perfect, thanks.\", client: \"slack-dm\", clarifies: \"r30\"}",
+     "spec": "§8.1 (log further messages; clarifications create no request)",
+     "guided_by": "constitution line 2; no next call suggests clarifies",
+     "why": "Log his words without creating a new request on the series.",
+     "optional": true,
+     "alternatives": "Release first, then log it and route it to none. A plain from_user while holding the series becomes a new request on it (§8.1): a deviation."
+    },
+    {
+     "n": 13,
+     "kind": "forum",
+     "call": "hold release {token: \"24.1\", reason: \"handoff\", done, next_step}",
+     "spec": "§10.3, §12",
+     "guided_by": "§20.9 rule 8 (container)",
+     "why": "A series stays open: release, never close."
+    },
+    {
+     "n": 14,
+     "kind": "end",
+     "why": "Serves a principal: no hold next."
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "S6-C1",
+   "severity": "must",
+   "criterion": "Bob's message is logged verbatim in the first forum call, with principal slack:U0BOB (or another alias of Bob)."
+  },
+  {
+   "id": "S6-C2",
+   "severity": "must",
+   "criterion": "One recurring node fires on Mondays at 09:00 Europe/Berlin (cron \"0 9 * * 1\" or \"0 9 * * MON\", tz \"Europe/Berlin\"), with run_within of at most 1 hour, under payments/ or with the payments team as owner; its body says how the team is reminded (a post in #payments)."
+  },
+  {
+   "id": "S6-C3",
+   "severity": "must",
+   "criterion": "The uncovered_slot warning is acted on: an external trigger is created that starts a worker each Monday at or after 09:00 and within run_within (with intent before and intent_done after), or Bob is told plainly that nothing will run at 09:00 and what is needed. Ignoring the warning fails this criterion."
+  },
+  {
+   "id": "S6-C4",
+   "severity": "must",
+   "criterion": "Any series needs are a subset of the triggered worker's caps ([chat]), so the occurrence is reachable."
+  },
+  {
+   "id": "S6-C5",
+   "severity": "must",
+   "criterion": "r30 is settled by a decision and a to_user of kind result to Bob, recorded before telling him."
+  },
+  {
+   "id": "S6-C6",
+   "severity": "must",
+   "criterion": "The series is released, not closed; it has one waiting occurrence; no flags."
+  },
+  {
+   "id": "S6-C7",
+   "severity": "should",
+   "criterion": "The trigger id is written on the series (body or digest)."
+  },
+  {
+   "id": "S6-C8",
+   "severity": "should",
+   "criterion": "The agent does not post a reminder in #payments now (the first one is due on Monday 2026-10-05)."
+  },
+  {
+   "id": "S6-C9",
+   "severity": "should",
+   "criterion": "Bob's later messages are logged and leave no unsettled request and no unrouted entry behind."
+  }
+ ],
+ "ids_note": "The intended flow and the criteria are those of the Wizard-of-Oz rounds: their ids (e31, r2, #14, s-52) name the seed of those rounds; a live run's ids differ."
+}

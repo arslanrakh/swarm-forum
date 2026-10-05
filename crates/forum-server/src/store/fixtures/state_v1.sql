@@ -1,0 +1,203 @@
+-- A fixture database (design D.12.6), written by the ignored test write_the_v1_fixture.
+-- Generated; do not edit.
+CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+INSERT INTO meta VALUES ('state_version', '1');
+INSERT INTO meta VALUES ('shell_version', '1');
+INSERT INTO meta VALUES ('core_semver', '0.1.0');
+INSERT INTO meta VALUES ('keys_version', '1');
+INSERT INTO meta VALUES ('masking_version', '1');
+CREATE TABLE st_scalars (one INTEGER PRIMARY KEY CHECK (one = 0), v TEXT NOT NULL);
+INSERT INTO st_scalars VALUES (0, '{"params":{"lease_first":900000,"lease_default":1200000,"lease_max":7200000,"lease_ceiling":28800000,"renew_max":3,"hold_per_session":2,"presence_silence":900000,"presence_resolution":180000,"session_retain":86400000,"op_retain":86400000,"conversation_schemes":["chat","issue","mail"],"commitment_followup":5400000,"question_recheck":14400000,"question_max_rechecks":2,"user_question_due":259200000,"user_question_due_absent":3600000,"user_question_max_pending":20,"user_gap_window":2419200000,"deliver_window":86400000,"talk_wait_max":50000,"hello_budget":4096,"brief_budget":16384,"digest_max":2048,"leave_better_max":3,"refusal_ttl":604800000,"refusal_window":604800000,"refusal_backoff":3600000,"refusal_quorum":2,"too_big_attempts":3,"pause_ttl":7200000,"archive_after":604800000,"coverage_window":2419200000,"capacity_window":604800000,"write_per_hour":120,"queue_max_wait":10000,"text_max":65536,"tree_max_depth":16,"tree_max_children":500,"settle_batch":1000,"instructions_max":512},"last_now":1790691980000,"counters":{"next_node":10,"next_eid":9,"next_session":4,"next_principal":1,"events":36},"anomalies":0,"done_minutes":[]}');
+CREATE TABLE st_nodes (id INTEGER PRIMARY KEY, capacity INTEGER NOT NULL, v TEXT NOT NULL);
+INSERT INTO st_nodes VALUES (0, 0, '{"place":null,"origin":"Reserved","created_at":1790000000000,"title":"","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (1, 0, '{"place":{"parent":0,"name":"@user"},"origin":"Reserved","created_at":1790000000000,"title":"@user","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (2, 0, '{"place":{"parent":1,"name":"decisions"},"origin":"Reserved","created_at":1790000000000,"title":"decisions","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (3, 0, '{"place":{"parent":1,"name":"digest"},"origin":"Reserved","created_at":1790000000000,"title":"digest","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (4, 0, '{"place":{"parent":0,"name":"sys"},"origin":"Reserved","created_at":1790000000000,"title":"sys","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (5, 0, '{"place":{"parent":4,"name":"signals"},"origin":"Reserved","created_at":1790000000000,"title":"signals","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (6, 0, '{"place":{"parent":0,"name":"@people"},"origin":"Reserved","created_at":1790000000000,"title":"@people","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (7, 0, '{"place":{"parent":0,"name":"@teams"},"origin":"Reserved","created_at":1790000000000,"title":"@teams","body":"","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":0,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (8, 1, '{"place":{"parent":0,"name":"work"},"origin":{"Agent":1},"created_at":1790000060000,"title":"a node","body":"its body","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":1,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+INSERT INTO st_nodes VALUES (9, 2, '{"place":{"parent":0,"name":"moved"},"origin":{"Agent":2},"created_at":1790000600000,"title":"a node","body":"its body","fields":{},"files":{},"status":"","digest":"","agreements":"","agreements_at":null,"kind":null,"tags":[],"capacity":2,"priority":0,"est":null,"needs":[],"due":null,"due_fired":false,"owners":[],"keys":{},"links":[],"depends_on":[],"wait":null,"role":"Plain","life":"Open","version":0,"digest_version":0,"fence":0,"seq":0,"content_version":0,"attempts":0,"checkpoints":0,"last_checkpoint":null,"expired_hold":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"held_ms":0,"people_left":0,"left":0}');
+CREATE TABLE st_node_hot (id INTEGER PRIMARY KEY REFERENCES st_nodes(id), v TEXT NOT NULL);
+INSERT INTO st_node_hot VALUES (0, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (1, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (2, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (3, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (4, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (5, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (6, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (7, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":0,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (8, '{"version":1,"digest_version":1,"content_version":1,"fence":1,"seq":7,"attempts":0,"checkpoints":2,"held_ms":480000,"people_left":1,"left":0,"last_checkpoint":5,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":["offer"],"due_fired":false,"role":"None"}');
+INSERT INTO st_node_hot VALUES (9, '{"version":1,"digest_version":1,"content_version":1,"fence":0,"seq":1,"attempts":0,"checkpoints":0,"held_ms":0,"people_left":0,"left":0,"last_checkpoint":null,"expired_hold":null,"life":"Open","wait":null,"open_intent":null,"recheck_marks":[],"assume_marks":[],"tags":[],"due_fired":false,"role":"None"}');
+CREATE TABLE st_keys (key TEXT NOT NULL, node INTEGER NOT NULL, nv INTEGER NOT NULL,
+                      open INTEGER NOT NULL,
+                      PRIMARY KEY (key, node)) WITHOUT ROWID;
+INSERT INTO st_keys VALUES ('chat:team/1', 8, 1, 1);
+INSERT INTO st_keys VALUES ('issue:proj#7', 9, 1, 1);
+CREATE TABLE st_names (parent INTEGER NOT NULL, name TEXT NOT NULL, node INTEGER NOT NULL,
+                       alias INTEGER NOT NULL,
+                       PRIMARY KEY (parent, name)) WITHOUT ROWID;
+INSERT INTO st_names VALUES (0, '@people', 6, 0);
+INSERT INTO st_names VALUES (0, '@teams', 7, 0);
+INSERT INTO st_names VALUES (0, '@user', 1, 0);
+INSERT INTO st_names VALUES (0, 'moved', 9, 0);
+INSERT INTO st_names VALUES (0, 'sys', 4, 0);
+INSERT INTO st_names VALUES (0, 'work', 8, 0);
+INSERT INTO st_names VALUES (1, 'decisions', 2, 0);
+INSERT INTO st_names VALUES (1, 'digest', 3, 0);
+INSERT INTO st_names VALUES (4, 'signals', 5, 0);
+INSERT INTO st_names VALUES (8, 'sub', 9, 1);
+CREATE TABLE st_holds (node INTEGER NOT NULL REFERENCES st_nodes(id), fence INTEGER NOT NULL,
+                       v TEXT NOT NULL, PRIMARY KEY (node, fence)) WITHOUT ROWID;
+CREATE TABLE st_ops (class TEXT NOT NULL, op_id TEXT NOT NULL, v TEXT NOT NULL,
+                     masking_version INTEGER NOT NULL,
+                     response BLOB NOT NULL,
+                     PRIMARY KEY (class, op_id)) WITHOUT ROWID;
+CREATE TABLE st_facts (fact INTEGER NOT NULL, k TEXT NOT NULL, v TEXT NOT NULL,
+                       resident INTEGER NOT NULL DEFAULT 1,
+                       PRIMARY KEY (fact, k)) WITHOUT ROWID;
+INSERT INTO st_facts VALUES (8, '1', '{"node":8,"seq":1,"at":1790000120000,"by":{"Session":1},"ty":"Request","principal":null}', 1);
+INSERT INTO st_facts VALUES (8, '3', '{"node":8,"seq":3,"at":1790000360000,"by":{"Session":1},"ty":"Said","principal":null}', 1);
+INSERT INTO st_facts VALUES (8, '4', '{"node":8,"seq":4,"at":1790000420000,"by":{"Session":1},"ty":"Decision","principal":null}', 1);
+INSERT INTO st_facts VALUES (8, '8', '{"node":8,"seq":7,"at":1790000780000,"by":{"Session":1},"ty":"Note","principal":null}', 0);
+INSERT INTO st_facts VALUES (9, '1', '{"node":8,"origin":{"key":"chat:team/1/m1","nv":1},"conv":"chat:team/1","from_user":null,"requester":"External","answered_by":3,"settled":{"decision":4,"answer":3},"moved_from":null}', 1);
+INSERT INTO st_facts VALUES (14, '3', '{"node":8,"conv":"chat:team/1","kind":"Reply","session":1,"state":"Confirmed","moved_from":null}', 1);
+INSERT INTO st_facts VALUES (15, '4', '{"node":8,"settles":[1],"state":"Active","basis":[]}', 1);
+INSERT INTO st_facts VALUES (26, '3', '{"class":"coder","started_at":1790691980000,"last_seen":1790691980000,"silence_at":1790692880000,"retire_at":1790778380000,"silent":false,"caps":[],"horizon":null,"principals":[],"shown":{},"branch_seen":{},"told":[]}', 1);
+INSERT INTO st_facts VALUES (27, '"user"', '0', 1);
+INSERT INTO st_facts VALUES (30, '29833333', '1', 1);
+INSERT INTO st_facts VALUES (30, '29833343', '1', 1);
+INSERT INTO st_facts VALUES (30, '29844866', '1', 1);
+INSERT INTO st_facts VALUES (31, '[[],33]', '{"max_horizon":null,"last_seen":1790691980000}', 1);
+INSERT INTO st_facts VALUES (32, '8', 'null', 1);
+INSERT INTO st_facts VALUES (33, '{"Node":8}', '1790000540000', 1);
+INSERT INTO st_facts VALUES (35, '{"Request":1}', '1791296780000', 1);
+CREATE TABLE txs (id INTEGER PRIMARY KEY, kind INTEGER NOT NULL, at INTEGER NOT NULL,
+                  class TEXT, session INTEGER, op_id TEXT, detail TEXT);
+INSERT INTO txs VALUES (1, 0, 1790000000000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (2, 2, 1790000000000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (3, 2, 1790000060000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (4, 2, 1790000120000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (5, 2, 1790000300000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (6, 2, 1790000360000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (7, 2, 1790000420000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (8, 2, 1790000480000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (9, 2, 1790000540000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (10, 2, 1790000600000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (11, 2, 1790000660000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (12, 2, 1790000720000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (13, 2, 1790000780000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (14, 1, 1790001500000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (15, 1, 1790001680000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (16, 1, 1790007920000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (17, 1, 1790087000000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (18, 1, 1790087180000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (19, 2, 1790691980000, NULL, NULL, NULL, NULL);
+INSERT INTO txs VALUES (20, 5, 1790691980000, NULL, NULL, NULL, NULL);
+CREATE TABLE events (seq INTEGER PRIMARY KEY, tx INTEGER NOT NULL REFERENCES txs(id),
+                     at INTEGER NOT NULL, format INTEGER NOT NULL, z BLOB NOT NULL);
+INSERT INTO events VALUES (1, 1, 1790000000000, 1, X'28B52FFD0058FD0F0066205A2060679C03030B8B5B64B5977A9C347E9694ABA05182230AE877F12F012908E2E04F004F00540046C7F6F8F0CCBD2DAF33773E84321D2ADD5BE6F3828716D39E93A910DD1D1A0C874A84DBB667002A15FA1C86CA6E519B33496533DC669DF5ED51A8501EA8E4E5BB07E481CAC433110E0086CAD63C08FA280595EDCE8BAE4372A87C64163C4756E883182A09D81D76C88F05894A2846AFB5D7AC767F7A9FE7B14C03D9569F4CF9C8BC99B2D56129A092FFDC61BCDCDB56864FB8C7A0872806956EB50F57A6CFBB75217659EFF513E18B054DF308982E084151D9BA57538ECD217CF797F58401211C7CC43299104341319A2F5C32290702A2B28F60E2B25E6B77925E8D1641D3864F6C3B632087CAE8316EA3052982718796228BC562711809BBB7CD226C769BC961ADCB7AEB4E54BA43A6ADC30C954E43670E3B9352481245F13654F66AF4F8589009C6E7BC174606BD4C216547287CE231F86E743DB10E837A8E0A652AA8E486023B202042021DA33B710C55F940F71AFCC9B9EA4030C863AE31A838E3721BD996504E1380050FC5C3C90B6EAEF3AE5282F633C072014B1643C6FAA4D84C603B0012DACB9F7578E8926F4E5DCB9030C4F5C7C9B0C1BB18E2A50A9355C7100DBF09CE65D48BBEF5B16F62FC8EF7F4CC828AD284C152BB93A9D16C1E9AA80AEB168002DB85F1E0193D65B89F89C80236F3E9BDA3005D');
+INSERT INTO events VALUES (2, 2, 1790000000000, 1, X'28B52FFD0058D50300F207191A704BDB60F4DF455B5851B3D88ED6EBAA3BF37DA7D267E9FF1B02CBB21C9314573905040456959C2412378FF6ED0B468EDFD5A65ABD9DC3D8FBA2873252DC10877B2783B7732A087FEF36076FC8BDBFEE4A6EA6C222ED4EC3D7BD9137403240EECA7C050700591807E4D1D3286466E8C144698E51802E');
+INSERT INTO events VALUES (3, 2, 1790000000000, 1, X'28B52FFD0058E50400D2CA2120504BDB06E432619D9E4411EFD96C27F6DAF0BAAAB3698421600178263333A106EFBDF7B4D71824BAA6F571775179A44A171F9123DF8A4A8A9985E37B69A6153CDFB04BD95D1E4113F8B485158B80A495A5C5A04723AF38756B1F114C1CF9D6AA2474BC71E05D3D787EF1F14C119FE7BBCD9EBB3C52C4F828C11AB8CB2BE811210060E49BB90B0600E846C196B906F288324503CA4953802E');
+INSERT INTO events VALUES (4, 3, 1790000060000, 1, X'28B52FFD00588D020024047B226174223A3137393036303030302C226576223A7B22546F7563686564223A7B2273657373696F6E223A312C2273696C656E63655F3972657469723836347D7D7D0500408C9E464166DCCA7400BA');
+INSERT INTO events VALUES (5, 3, 1790000060000, 1, X'28B52FFD00585D070076D02F1F506BDA0604858CD2D27A51D39ECDEA4FC5A832BCE86EA22BCF134A5155D54326002500260009317E5705F2CDDC9B35A1721BB8E77EDD531B351968A283AFFB83DE8C3126C010081CF7C6AF779547B7E18650BDBF371231DCAE891881BFEBE9EDAF7B2FEF6D399082AF3B2FB209DD9E04B7E3DEE84DA082899B42C25D21D8B773167C4FDEA45915AA09C1568A6CDEFEBB5A34B6BA2D2BCBB22CE7C5838052C27B0E00056A5FA343E2EBAE1A9A24650662B4A09255D1D445A62ADF4C429B940F006A23F0D14CA2CD084AF373C2E839C9982A93D4014CB80198ADFC74122F48E0D2345294C4002001');
+INSERT INTO events VALUES (6, 3, 1790000060000, 1, X'28B52FFD0058D5040072CA1F1D7049AA032605F6E262930F3B91A547D69F1A1C21BF6556435DAAFE2F21EFBDCCA66874BD81FA4A93077040B87E19468126D094E988023AE1244C0A8366D9CE71648266BBD26187DEC43A336462DA0EDFF33431685569F76BF20CFA08FD6162A08F94DAA1F5058AD9A1D1DBEE004A2560873EB84929A5041443C1A0D9B10B09005F9956EA16A2728A216EF1F7CBC358C8F770A14E00BA');
+INSERT INTO events VALUES (7, 4, 1790000120000, 1, X'28B52FFD0058D50500728D2820504BAB03843CBC91346CE974118369238A38A4089B60B56ADD393EB266663E2A31C69880A0DEF69A3BDDEEDA2AC613CF782A2D6BDCED11C5EAA53669FE9C311AD9D5FE9A02ABDB9B134196A56E778B42C2DA82D3CC620866398D92031DC9FEE9DB04C2EAC51B9662508D19AA9FFBA2B84162076744EAC594733F30542F0E8A3BA780FA892D2752277543757A5A571402433573E739E700A073CE190840EAB786010700E7106C17063694247D8523300067134BC2DC03');
+INSERT INTO events VALUES (8, 5, 1790000300000, 1, X'28B52FFD00589D020034047B226174223A3137393030303033302C226576223A7B22546F7563686564223A7B2273657373696F6E223A312C2273696C656E63655F313272657469723836377D7D7D0500408C9E46838CBFD53E16A803');
+INSERT INTO events VALUES (9, 5, 1790000300000, 1, X'28B52FFD005885040022CA1E1C606B75845783EC7605DBFB4692F1C84918A6485B847E022640109C1573CE9940A8D58BCF8DFC0E9F72C899882CF567F532B5781E8DE6749CC6AA0FD59DBF2F7B8554EF9B162DD5715973CD72C6B09A623413F53606E10F96EA87C238341AA8BFDA1A01D48BDD52BDBEF6CE152CD58E1BA5404A291104893A2ACB0600B212CCEAD08CB00DCED64053CA00D401');
+INSERT INTO events VALUES (10, 5, 1790000300000, 1, X'28B52FFD00581503004246151A704DDA388870EAAD1A07445AC3FA7F42F822198DD1A5EAFF12026B2D6F2ACA58922F0A3E47128193944D07E20DF464B3CEF9495E6133381F35ADCEF945D7EA8CC7FC420C98F460757EDCC600666604C1392FB20A0300901190029D01A803');
+INSERT INTO events VALUES (11, 6, 1790000360000, 1, X'28B52FFD00582D050052CC2520504BDB0684F0194DFAFCA48117312CF2EB4A03301CB0286BF539F8C88999A93DEFBD8770A0474B377CFC72A3120EA2593AD814987458431F5D6EB50CBA7E2994B8D377C37D7C2F4998A56F8DF0B230E4F845A270C1F5BBD4C2F1C62181B8B51102B95EB118A2D0B2747C867E31D51A1BDCE9178981DB5140CFCBD6F1D0AFE23BFDF22E5614823BBD828F9999004766E64080A16F741703005F090CE7B4A56B4201');
+INSERT INTO events VALUES (12, 6, 1790000360000, 1, X'28B52FFD00581102007B226174223A313739303030303336303030302C226576223A7B2252657175657374416E737765726564223A7B2272657175657374223A312C226279223A337D7D7D');
+INSERT INTO events VALUES (13, 7, 1790000420000, 1, X'28B52FFD0058250500424C241E70499B0374BF7CDBF2686D63A722C9AB69B33AD84181B4468C3EF3FEFFBEADB57690343AACC47DBE5AB4D854ACA40D2A7EB09C560919CCD22BF1E56BED20E94D8B9217D43521EE3B866617F914A551E9BD7E0F679AF51D0349EF95B5BE66A9F0025D125F33D26A49BB37304B2724085F9F40FABA28DF91D674B3B45ED51986C02C8DB80F1111E040441C0830D20B990505004091FF50F7E51C02E7B5A5764201');
+INSERT INTO events VALUES (14, 7, 1790000420000, 1, X'28B52FFD0058650200C2C4101880B73AD31143088798AFB4DF3A0CC1D9EFDA9F0F1CCCCA08EF3D02CB5E680BB51CEC0AA8A692A716836575D87440E6916C1F087ED461096FB1EDE1D8B651186CA2BA0100AE619601');
+INSERT INTO events VALUES (15, 7, 1790000420000, 1, X'28B52FFD0058050500724B231F506BAA036612C352BF2573FF239B204241454CAFE87431CD1EF04C6666420DEFBDF7BEA924309E8A5B634A88529FABB3655C28D4DB5048B5D260F422AE3804AB1F127B73A256F8C2320E5989810463DF1073B8F150AB8576BFC6050628D46EDF40C7E803F183CC8FD56C19DD7E96B17AB724E3447D7EDA323F60064ED40C3766660208646616101C6A579C040500E8464197B906F2983245534A7266');
+INSERT INTO events VALUES (16, 8, 1790000480000, 1, X'28B52FFD0058150300F286171B606BDBF03D8CAAD178822DE4EFCDC0826B6DBB98D7F0390982A00BADB507D41DA774FB362DA5CD025A13E42E97D59D3CBF5038FDBC19E1B41AC4F3CACC8F208F5897B33C5AD56085C23820D6C4599ED91F44C4C20011D14038F2AD670100');
+INSERT INTO events VALUES (17, 9, 1790000540000, 1, X'28B52FFD0058AD0400728A201F60879B0304566FC9C6928C66EA4149FDE24902EDC525813D7A76A1340802BB31C6D860A893F39E1B79AD360058A6362D562F4B02CF9F518C5EABA94D0AABEFD203EE5CD92FA8DE33ED19AADFB2D630CA97846A89513CD4DB98735F18AA0B92813B2383FAAAAD11A256EC866A75B56F1A84A19AE0469999042433F35038D42F19060500792586D5F11861059C4D2C09730F');
+INSERT INTO events VALUES (18, 9, 1790000540000, 1, X'28B52FFD0058550200728511179029E9122D75367861258A834ABEBE865A7182F3F9CF2529A5AD8AA3480DD776BD2453F770455C0475EDDCA8BE264E32AAAD7604434E61542F7A21490340928380A993631400');
+INSERT INTO events VALUES (19, 10, 1790000600000, 1, X'28B52FFD00581D040082481B1D70456D030055D6B48BB6508423D914104BA14236C232BFD067E9FF1B02CBB2A4B314ADF232088195250B0E45A2CDA4FD7B8395723CDB64ABBF940016BF2A4059317E0904BED741BF732AA949F2F1DD27A15F00DF6FF8456E2EC32AEDCEC31B3EC99F1918634C0139F0ECBC050700591807E4D1D368C898F4611F690E1E803A');
+INSERT INTO events VALUES (20, 10, 1790000600000, 1, X'28B52FFD00587D070086D03020506BDA0604626CB289D1A29A2D9B95DF24FB4754D6409FDBA1D404A5A9AAAA212700250027008C651DAF8EC33F017CB3AAA3FC16F8DC337C6A1F55049AA9E00CCFA03F13608C310B0502DFE72C0CBF12E92AFC0EABF7F84726C6EF9A890FE77845BD7D86EFE5FDB504327086E74556A5DF03CA2F817FF4368E721A3F8403FC424EFF105A189FBC49B33A5415727A29B2F9FBF16BE9D3EBD702ADB576DE830C924A78D1AF21F00A8085A414D465ADF5D0442937244E092B59154D5D3255F967545A150F006B2370A4C91656234A9D76024639C9982A93D4014CB80198ADFC74122F48E0D2B440944401A803');
+INSERT INTO events VALUES (21, 11, 1790000660000, 1, X'28B52FFD00580D0200C2440F15A0A5E9A3C9E7BF337CD1C60CDEB7B234D0E7FF1B026BAD0F539A6D34E52C6AA383832258101B2FCFCA3E4C09C0CBC0CA4EB868DB31DA960C828DCA2A00');
+INSERT INTO events VALUES (22, 11, 1790000660000, 1, X'28B52FFD0058350400020A1E1D60499C3104D5EB6EE7199D3768DCE41013ACB07450413034A02088E202BBBB0605F95118A3DFE7E938C82D678CB26F777723619D2B72D21790B3A4CA499472B0A8815B8E285B0D52C6B7853CA9632D25B8E58DF10D3982AEAFC815A9F411393AF4962345499344E0962FFA2122120422620130E4ECDC02030034622878A485C33403');
+INSERT INTO events VALUES (23, 12, 1790000720000, 1, X'28B52FFD00580D03009206151890B73984D9D6D6C6DB32FCD33A5FDF27C5C6D92F99EB3F96ADB5674204ACF1E5C855AFEACB0FE5AAD84C948A9EC11E063D63D35AC449C742925E007B43A1C832ACF14C90A00CABBC67DBE6D8367100D885CA02030040181A644C935050');
+INSERT INTO events VALUES (24, 12, 1790000720000, 1, X'28B52FFD0058BD0400E2CA211F6047AC0304431D90853EA91293AC3E0A8358C110931FAFB2D965998E22B002DDDD03027AA530B347E785E0407616AA6DAB9C3DF86C63C7C171EFACF68EEB1D53C8A39E99E5A3EE2E5263EC16B82880473DB20C9BF58CA326F4EE310837E051DF1847057DC1C223837ED7734749BFD83EEAD72EB7497278D41BEC5166269132338B44D0B37A0C040020F01C445BC2780B877906');
+INSERT INTO events VALUES (25, 13, 1790000780000, 1, X'28B52FFD005875020072C40F1690590712B02B403E7C82A6E18CB03C01CF311BBBA604EF3D3487A5A60CC04191D223AD0BA6D54ABBBA76E9420D842CC12E9DA8CBFF1FF3FF81C17423EC020400408C9E46838C756F0A0A');
+INSERT INTO events VALUES (26, 13, 1790000780000, 1, X'28B52FFD0058CD0500C20D29206067AB03045EB50971EDADA3189A843644AC04E52823F12210A341421445590131C67830A815B7CC9D7E6E618DF192E1FE9CD28C2FD6EA95940243F5325F678C6C118D6A774EA596A57EAB7863EEFC53CA80DA1D29B64010AC84D69BF34030A8DFAEA79614770792A8B46B7146025B43F59705209670C643BD587AEF0286EA26E144D4067F476C3913354A3754A3A3F5D6000CD507779E734E829C734E0139D4AB180606003F7340C8430FD931EA9038CF0DDB0205');
+INSERT INTO events VALUES (27, 14, 1790001500000, 1, X'28B52FFD00583D020082C40F179019B61892300FBC8C850BF4EDFC0786AA48389FFF5C02BBBB003B0FA67465B5D1E5E23C3E431E02CBB6493CACB6398484D556DCA302A4AA060262270A6B010001A803');
+INSERT INTO events VALUES (28, 15, 1790001680000, 1, X'28B52FFD00582D0200C2441017A0B539C0FCEF7B91BE012E8D6FA1578B19BB484CFF9B10BBBBC69C09D7BA6335ABCB4172F12179003C36A3C4C46A46A7D0B09A05E7F2FF8460FE178331070E6B00');
+INSERT INTO events VALUES (29, 16, 1790007920000, 1, X'28B52FFD00581D020072C40F18A0B51903C0FCFF5F296FEE01B43DDF0059F79BC043551602BBBB049E89192BDE720DD8E54C02E8184F4B212B9EB2A962C50579B9BB1B8EB9BB63041C80D600');
+INSERT INTO events VALUES (30, 16, 1790007920000, 1, X'28B52FFD0058B101007B226174223A313739303030373932303030302C226576223A7B22506175736545787069726564223A7B2273636F7065223A387D7D7D');
+INSERT INTO events VALUES (31, 17, 1790087000000, 1, X'28B52FFD005835020062840F17A0B51903C0FCB7BDBC011E08B7AD0C96B6DABCCFFF3704BBBBC29D543286C77A2F4C017519573634BE51CA64BD11AE2CD61B80177306638813DC0D59030100025002');
+INSERT INTO events VALUES (32, 17, 1790087000000, 1, X'28B52FFD0058D101007B226174223A313739303038373030303030302C226576223A7B2253657373696F6E52657469726564223A7B2273657373696F6E223A327D7D7D');
+INSERT INTO events VALUES (33, 18, 1790087180000, 1, X'28B52FFD00581D0200B2C40F16A0176A0C60BC98E91670810F2624BA3C2D20DCFF2604BBBBE33E2895C2C17A273C07B418532E147C9B9385F5369832B0DE065C989995418A19808C7B11D600');
+INSERT INTO events VALUES (34, 18, 1790087180000, 1, X'28B52FFD0058D101007B226174223A313739303038373138303030302C226576223A7B2253657373696F6E52657469726564223A7B2273657373696F6E223A317D7D7D');
+INSERT INTO events VALUES (35, 19, 1790691980000, 1, X'28B52FFD00581D0400A2C81B1D6045DB0680AA6150E1968BD14A3406E06843C05BFBDF865F640800E0B84DD328C434AD323B1204616DC949E090695369FF9EE005707CDB6CAB3FA5148BDF15A0BC103F4301DF0CA5DF3997958EEF462AFD0E7C9FC12FB9C906BBB43B0967F08BFC9D734EA2188AE02888816FE84C060059180764D2736BC868E8619FD230F5');
+INSERT INTO events VALUES (36, 20, 1790691980000, 1, X'28B52FFD0058DD0600528F2D2150899B03441D6D265710899845B217336BE03C89667B89417118FCC9C79899E93531C6455C30CAB194B6D8F1D43FFD8CE92DC1C33024845026FD635F648E1BC9B28E63CF78D003E89B5B6F29BB30DDFB9E07FDC34896E545784D3DCFA8C6DB0903D7F3F293619AA6E77D4DC21C379E779A539E31E99DF67C628554606A5B5B1928D73F7B70A86FAB60B17B22F4BBB8769849A1EFB7CD6313870AFD63DBEB50BF2CBB7E9B38D43BFB440821049290008408247DABC30C005C644FB08567610608188646D8C274C62F308CB594F8966CBC6918B81EB23203');
+CREATE TABLE event_nodes (node INTEGER NOT NULL, seq INTEGER NOT NULL,
+                          PRIMARY KEY (node, seq)) WITHOUT ROWID;
+INSERT INTO event_nodes VALUES (0, 5);
+INSERT INTO event_nodes VALUES (0, 21);
+INSERT INTO event_nodes VALUES (8, 5);
+INSERT INTO event_nodes VALUES (8, 6);
+INSERT INTO event_nodes VALUES (8, 7);
+INSERT INTO event_nodes VALUES (8, 9);
+INSERT INTO event_nodes VALUES (8, 10);
+INSERT INTO event_nodes VALUES (8, 11);
+INSERT INTO event_nodes VALUES (8, 13);
+INSERT INTO event_nodes VALUES (8, 17);
+INSERT INTO event_nodes VALUES (8, 18);
+INSERT INTO event_nodes VALUES (8, 20);
+INSERT INTO event_nodes VALUES (8, 22);
+INSERT INTO event_nodes VALUES (8, 23);
+INSERT INTO event_nodes VALUES (8, 24);
+INSERT INTO event_nodes VALUES (8, 26);
+INSERT INTO event_nodes VALUES (8, 29);
+INSERT INTO event_nodes VALUES (8, 30);
+INSERT INTO event_nodes VALUES (8, 36);
+INSERT INTO event_nodes VALUES (9, 20);
+INSERT INTO event_nodes VALUES (9, 21);
+INSERT INTO event_nodes VALUES (9, 22);
+CREATE TABLE entries (eid INTEGER PRIMARY KEY, node INTEGER NOT NULL, seq INTEGER NOT NULL,
+                      type TEXT NOT NULL, session INTEGER, principal INTEGER,
+                      ev INTEGER NOT NULL, hidden_ev INTEGER,
+                      UNIQUE (node, seq));
+INSERT INTO entries VALUES (1, 8, 1, 'request', 1, NULL, 7, NULL);
+INSERT INTO entries VALUES (2, 8, 2, 'checkpoint', 1, NULL, 9, NULL);
+INSERT INTO entries VALUES (3, 8, 3, 'said', 1, NULL, 11, NULL);
+INSERT INTO entries VALUES (4, 8, 4, 'decision', 1, NULL, 13, NULL);
+INSERT INTO entries VALUES (5, 8, 5, 'checkpoint', 1, NULL, 17, NULL);
+INSERT INTO entries VALUES (6, 9, 1, 'system', 2, NULL, 22, NULL);
+INSERT INTO entries VALUES (7, 8, 6, 'system', 2, NULL, 24, NULL);
+INSERT INTO entries VALUES (8, 8, 7, 'note', 1, NULL, 26, NULL);
+CREATE TABLE sessions (id INTEGER PRIMARY KEY, class TEXT NOT NULL, started_at INTEGER NOT NULL,
+                       intent_ev INTEGER, status_ev INTEGER);
+INSERT INTO sessions VALUES (3, 'coder', 1790691980000, 35, NULL);
+CREATE TABLE said_links (said INTEGER PRIMARY KEY, ev INTEGER NOT NULL);
+INSERT INTO said_links VALUES (3, 16);
+CREATE TABLE hidden_files (node INTEGER NOT NULL, name TEXT NOT NULL, ev INTEGER NOT NULL,
+                           PRIMARY KEY (node, name)) WITHOUT ROWID;
+CREATE TABLE pauses (scope INTEGER PRIMARY KEY, ev INTEGER NOT NULL);
+CREATE TABLE origins (origin TEXT PRIMARY KEY, nv INTEGER NOT NULL, request INTEGER NOT NULL);
+INSERT INTO origins VALUES ('chat:team/1/m1', 1, 1);
+CREATE UNIQUE INDEX st_keys_one_open ON st_keys(key) WHERE open = 1;
+CREATE TRIGGER st_holds_within_capacity BEFORE INSERT ON st_holds
+  WHEN (SELECT count(*) FROM st_holds WHERE node = NEW.node)
+       >= (SELECT capacity FROM st_nodes WHERE id = NEW.node)
+  BEGIN SELECT RAISE(ABORT, 'holders exceed capacity'); END;
+CREATE TRIGGER st_capacity_not_below_holds BEFORE UPDATE OF capacity ON st_nodes
+  WHEN (SELECT count(*) FROM st_holds WHERE node = NEW.id) > NEW.capacity
+  BEGIN SELECT RAISE(ABORT, 'capacity below live holds'); END;
+CREATE INDEX st_facts_resident ON st_facts(resident, fact);
+CREATE TRIGGER txs_no_update BEFORE UPDATE ON txs
+  BEGIN SELECT RAISE(ABORT, 'the history is append-only'); END;
+CREATE TRIGGER txs_no_delete BEFORE DELETE ON txs
+  BEGIN SELECT RAISE(ABORT, 'the history is append-only'); END;
+CREATE TRIGGER events_no_update BEFORE UPDATE ON events
+  BEGIN SELECT RAISE(ABORT, 'the history is append-only'); END;
+CREATE TRIGGER events_no_delete BEFORE DELETE ON events
+  BEGIN SELECT RAISE(ABORT, 'the history is append-only'); END;
+CREATE TRIGGER event_nodes_no_update BEFORE UPDATE ON event_nodes
+  BEGIN SELECT RAISE(ABORT, 'the history is append-only'); END;
+CREATE TRIGGER event_nodes_no_delete BEFORE DELETE ON event_nodes
+  BEGIN SELECT RAISE(ABORT, 'the history is append-only'); END;
+CREATE INDEX entries_principal ON entries(principal, eid) WHERE principal IS NOT NULL;

@@ -1,0 +1,511 @@
+{
+ "id": "s4-autonomous-intent",
+ "title": "No human: an open intent left by a vanished session, offered work, a lapsed blocking question, and a closed node whose basis changed",
+ "covers": [
+  "§30 no human at all",
+  "§30 long work: an outside action",
+  "§10.2 another session's intent",
+  "§8.4 a blocking question that lapses",
+  "§15 basis_changed on a closed node (§10.4: a closed candidate; §10.1: a take reopens it)"
+ ],
+ "about": "Wizard-of-Oz scenario S4, live, with what the design's WP-U row asks of an autonomous worker: offers, a lapsed blocking question, and a basis_changed node. The last is added to the round's seed: a closed rollup whose decision cites a kb decision that the prelude then retracts, so that next offers the closed rollup with basis_changed, in tier 0 beside s-41's open intent.",
+ "needs_packages": [
+  "WP-D5a",
+  "WP-D5b",
+  "WP-D6",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "s-41's intent is recorded live in the prelude by a session that then stops calling; its first lease (2 min) ends before the worker starts.",
+  "The nightly-ingest series and its past occurrence are left out.",
+  "The blocking question on pipelines/dedupe-customers is asked of user in a forum that serves no human; with user_question.due_absent at 5 min it lapses before the worker starts.",
+  "The rollup's decision and close, and the retraction of the kb decision it cites, are recorded live by the seed session in the prelude, minutes before the worker starts; in the round's terms they would be days old."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "sched": {
+   "class": "scheduled-job",
+   "caps": [
+    "shell",
+    "sql"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "the data team's backlog"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "pipelines/schema-drift-check",
+    "title": "Fail the ingest when the source adds an unmapped column",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "est": 20,
+    "body": "Add a check to the ingest repository that fails the nightly ingest when the orders source has a column we do not map. Needs a PR to the ingest repository."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/backfill-howto",
+    "title": "Write down how to run backfills safely",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "priority": 1,
+    "est": 15,
+    "body": "Agents keep re-learning this. Replace this body, and set the digest, with a short how-to: check the job system before (re)running a backfill, because backfills append rows (not idempotent); how to verify a table afterwards."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "pipelines/dedupe-customers",
+    "title": "Deduplicate the customers table",
+    "est": 90,
+    "body": "About 1.2 % of warehouse.customers rows are duplicates by email since the CRM migration. Design and run a dedupe."
+   },
+   "save": {
+    "c": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "ask",
+    "at": "pipelines/dedupe-customers",
+    "to": "user",
+    "options": [
+     "keep the oldest row",
+     "keep the newest row"
+    ],
+    "default": "keep the oldest row",
+    "text": "When two customers rows share an email, which one should the dedupe keep?"
+   },
+   "save": {
+    "uq": "question"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "hold",
+   "args": {
+    "action": "release",
+    "token": "$c",
+    "done": "Asked which row to keep.",
+    "next_step": "run the dedupe once answered",
+    "reason": "blocked",
+    "waits_for": {
+     "question": "$uq"
+    }
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/orders-timezone",
+    "title": "Which time zone warehouse.orders.created_at is in",
+    "take": false,
+    "body": "warehouse.orders.created_at has no offset. The ingest config sets timezone = UTC for every source."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "kb/orders-timezone",
+    "evidence": "inference",
+    "text": "warehouse.orders.created_at is stored in UTC: the ingest config sets timezone = UTC for every source."
+   },
+   "save": {
+    "dtz": "decision"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "pipelines/daily-revenue-rollup",
+    "title": "Daily revenue rollup by UTC day",
+    "est": 20,
+    "body": "The finance dashboard's daily revenue: `SELECT created_at::date AS day, sum(total) FROM warehouse.orders GROUP BY 1`, refreshed nightly by job daily-revenue. Its days must be UTC days."
+   },
+   "save": {
+    "trev": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "pipelines/daily-revenue-rollup",
+    "evidence": "inference",
+    "text": "The rollup's days are UTC days: created_at::date is the UTC date, since created_at is stored in UTC.",
+    "basis": [
+     "$dtz"
+    ]
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "close",
+    "path": "pipelines/daily-revenue-rollup",
+    "outcome": "done",
+    "summary": "The rollup groups by created_at::date, the UTC day; the dashboard reads it.",
+    "token": "$trev"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "retract",
+    "entry": "$dtz",
+    "reason": "refuted",
+    "text": "Not UTC: since the CRM migration the orders source writes local time (Europe/Berlin), and the ingest config's timezone setting is ignored for that source (checked in the raw files)."
+   }
+  },
+  {
+   "as": "sched",
+   "session_name": "s41",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "caps": [
+     "shell",
+     "sql"
+    ],
+    "horizon": 60
+   }
+  },
+  {
+   "as": "sched",
+   "session_name": "s41",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "pipelines/orders-backfill-0930",
+    "title": "Backfill the missing orders partitions of 2026-09-30",
+    "est": 30,
+    "body": "The nightly ingest skipped 3 hourly partitions of warehouse.orders for 2026-09-30 (hours 13, 14, and 15) after a source outage. Backfill them with `make backfill TABLE=orders DATE=2026-09-30 HOURS=13-15`, which submits a job to the job system. The backfill is NOT idempotent: it appends rows, so running it twice duplicates them."
+   },
+   "save": {
+    "tk": "token"
+   }
+  },
+  {
+   "as": "sched",
+   "session_name": "s41",
+   "tool": "hold",
+   "args": {
+    "action": "checkpoint",
+    "token": "$tk",
+    "done": "confirmed hours 13-15 of 2026-09-30 are empty in warehouse.orders; the source has the data again",
+    "next_step": "run the backfill for hours 13-15"
+   }
+  },
+  {
+   "as": "sched",
+   "session_name": "s41",
+   "tool": "hold",
+   "args": {
+    "action": "checkpoint",
+    "token": "$tk",
+    "done": "about to submit the backfill",
+    "next_step": "check the job's status, verify, close",
+    "intent": "run `make backfill TABLE=orders DATE=2026-09-30 HOURS=13-15` (submits a job to the job system)"
+   }
+  },
+  {
+   "sleep": "6m",
+   "why": "s-41 vanishes: its lease ends, and the blocking question lapses"
+  }
+ ],
+ "humans": {},
+ "people": {},
+ "world": [
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "at time zone",
+    "fix the rollup",
+    "correct the rollup",
+    "update the rollup",
+    "change the rollup"
+   ],
+   "say": "The rollup now groups by (created_at AT TIME ZONE 'Europe/Berlin' AT TIME ZONE 'UTC')::date. Job daily-revenue re-ran in 40 s (run 7802, SUCCEEDED); the dashboard's last 30 days moved by up to 3 % per day, as expected."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "rollup",
+    "daily-revenue",
+    "daily revenue",
+    "created_at",
+    "time zone",
+    "timezone",
+    "raw files"
+   ],
+   "say": "The raw orders files since the CRM migration (2026-09-01) carry local times (Europe/Berlin, UTC+2) without an offset, and the ingest copies them as they are. So created_at::date puts orders placed between 00:00 and 02:00 local time on the previous UTC day: about 3 % of each day's revenue lands a day early. Converting with created_at AT TIME ZONE 'Europe/Berlin' AT TIME ZONE 'UTC' fixes it."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "jobs list",
+    "jobs show",
+    "job system",
+    "job status",
+    "7781"
+   ],
+   "say": "`jobs list --name backfill` and `jobs show 7781`: job 7781 'backfill orders 2026-09-30 hours 13-15', submitted 2026-10-02T03:13:05Z by the forum-worker account (label session=s-41), state SUCCEEDED at 03:41:52Z, 18,240 rows appended."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "verify"
+   ],
+   "say": "`make verify TABLE=orders DATE=2026-09-30`: 'OK: 24/24 hourly partitions present; row counts match the source (hours 13-15: 6,102 / 6,011 / 6,127); no duplicate order ids'."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "make backfill",
+    "rerun",
+    "re-run",
+    "submit"
+   ],
+   "say": "job 7790 submitted: 'backfill orders 2026-09-30 hours 13-15'. It SUCCEEDED 28 minutes later, 18,240 rows appended. `make verify` now says: FAIL: 18,240 duplicate order ids in hours 13-15.",
+   "once": true
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "schema",
+    "drift",
+    "ingest repo",
+    "pr"
+   ],
+   "say": "A 20-minute change in the ingest repository plus a PR (PR #312 if opened); CI green after 5 minutes."
+  }
+ ],
+ "agents": [
+  {
+   "id": "W",
+   "token": "sched",
+   "role": "You are a scheduled worker agent of a small data team's agent swarm, started by the agent platform's scheduler. No human is involved and nobody will read your replies. You have a shell on the data host (make targets and the job system's CLI), SQL access to the warehouse, and git access to the ingest repository. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. The platform stops your run after about 45 minutes, or at any moment.",
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up useful work on the forum."
+    }
+   ],
+   "max_turns": 10
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {
+   "session": 1,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {caps?: [\"shell\", \"sql\"], horizon?: 60}",
+     "spec": "§20.3",
+     "guided_by": "instructions (§22)",
+     "why": "Arrive as a worker; no principal, no from_user.",
+     "expect": "offers [#10 open_intent, the rollup (closed, basis_changed), #12, #14]; next_calls (rule 13): hold next"
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "hold next {}",
+     "spec": "§10.4 (tier 0: open_intent first)",
+     "guided_by": "§20.9 rule 13",
+     "why": "Take the most urgent item.",
+     "expect": "#10, token 10.2, why_this {tier: 0, flags: [open_intent]}; the brief's second section shows s-41's unfinished intent; next_calls item 1 (rule 3): hold checkpoint {token: \"10.2\", intent_done} now, \"check whether it happened\" If next gives the rollup first (both are tier 0, ordered by the ring of §10.4), steps R1 to R4 come first.",
+     "alternatives": "hold take {target: \"pipelines/orders-backfill-0930\"} is equivalent."
+    },
+    {
+     "n": 3,
+     "kind": "world",
+     "why": "Check the job system for the backfill: job 7781 succeeded at 03:41; run make verify: OK."
+    },
+    {
+     "n": 4,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"10.2\", intent_done: \"job 7781 (submitted by s-41 at 03:13) succeeded at 03:41; not re-run\", done: \"checked the job system and verified the table\", next_step: \"close\"}",
+     "spec": "§10.2 (intent_done closes the node's open intent, whichever session opened it)",
+     "guided_by": "§20.9 rule 3",
+     "why": "Resolve the intent with what was found, without repeating the outside action.",
+     "expect": "open_intent cleared"
+    },
+    {
+     "n": 5,
+     "kind": "forum",
+     "call": "node close {path: \"pipelines/orders-backfill-0930\", token: \"10.2\", outcome: \"done\", summary, verified: \"make verify: 24/24 partitions, no duplicate ids\"}",
+     "spec": "§5",
+     "guided_by": "possibly §20.9 rule 8 ('if the work is done'; whether its 'all unsettled requests are answered' holds vacuously for a node with none is open); otherwise the agent's own judgement",
+     "why": "Finish the node.",
+     "expect": "leave_better names the unheld flagged siblings under /pipelines: the rollup (closed, basis_changed) unless taken already, and dedupe-customers (proceed_on_assumption after its question lapsed); next_calls (rule 13): hold take of the first, or hold next"
+    },
+    {
+     "n": "R1",
+     "kind": "forum",
+     "call": "hold next {} or hold take {target: \"pipelines/daily-revenue-rollup\"}",
+     "spec": "§10.4 (a closed node with basis_changed, tier 0), §10.1 (taking it reopens it)",
+     "guided_by": "§20.9 rule 13",
+     "why": "The other tier-0 item: a closed node whose decision rests on a retracted one.",
+     "expect": "the rollup, reopened (reopened: true); the brief heads with basis_changed and names the retracted kb decision; next_calls (rule 10): talk decide {supersedes, basis}, or talk retract"
+    },
+    {
+     "n": "R2",
+     "kind": "world",
+     "why": "Check how created_at is stored: the raw files carry local time; the rollup's days are off by up to 3 %."
+    },
+    {
+     "n": "R3",
+     "kind": "forum",
+     "call": "talk decide {at: \"pipelines/daily-revenue-rollup\", supersedes: <the stale decision>, text: <the days are UTC days of the Berlin-local times>, basis: [external: the raw files, checked]}, after ACTION: fix the rollup query",
+     "spec": "§15, §11.1",
+     "guided_by": "§20.9 rule 10",
+     "why": "Record the corrected decision; the flag clears.",
+     "alternatives": "talk retract of the stale decision, then a new decision."
+    },
+    {
+     "n": "R4",
+     "kind": "forum",
+     "call": "node close {path: \"pipelines/daily-revenue-rollup\", token, outcome: \"done\", summary}",
+     "spec": "§5, §10.1",
+     "guided_by": "§20.9 rule 8 (a node your take reopened, whose flag this call cleared)",
+     "why": "Close it again with its former outcome; a node reopened and left open is offered as open work."
+    },
+    {
+     "n": 6,
+     "kind": "forum",
+     "call": "hold next {}",
+     "spec": "§10.4",
+     "guided_by": "§20.9 rule 13",
+     "why": "Continue with offered work.",
+     "expect": "#12 kb/backfill-howto (tier 1, priority 1)"
+    },
+    {
+     "n": 7,
+     "kind": "forum",
+     "call": "node update {path: \"kb/backfill-howto\", version: 1, digest_version: 0, body: <how-to>, digest: <summary>}",
+     "spec": "§5, §20.5 (digest needs digest_version)",
+     "guided_by": "none",
+     "why": "Do the kb task; the lesson of #10 is fresh."
+    },
+    {
+     "n": 8,
+     "kind": "forum",
+     "call": "node close {path: \"kb/backfill-howto\", token, outcome: \"done\", summary}",
+     "spec": "§5",
+     "guided_by": "none",
+     "why": "Finish.",
+     "alternatives": "Keeping kb/backfill-howto open as the note itself and only releasing it is acceptable; it must not stay held."
+    },
+    {
+     "n": 9,
+     "kind": "forum",
+     "call": "hold next {} → #14 (est 20) if time allows; it needs a PR: intent before, intent_done after; else end",
+     "spec": "§10.4, §10.2",
+     "guided_by": "§20.9 rule 13",
+     "why": "Take only what can be finished (constitution line 1).",
+     "optional": true
+    },
+    {
+     "n": 10,
+     "kind": "end",
+     "why": "End when next is empty or the remaining work does not fit the time left; never leave a hold to expire."
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "S4-C1",
+   "severity": "must",
+   "criterion": "The first nodes the worker takes are the two tier-0 items, #10 (s-41's open intent) and the rollup (closed, basis_changed), in the order next gives them; not #12, #13, or #14 before both."
+  },
+  {
+   "id": "S4-C2",
+   "severity": "must",
+   "criterion": "Before any backfill run, the worker checks the job system (or the table) for what s-41 did; it does not run the backfill again (no job 7790, no duplicate rows)."
+  },
+  {
+   "id": "S4-C3",
+   "severity": "must",
+   "criterion": "s-41's intent is closed with intent_done that states what was found; the open_intent flag is gone."
+  },
+  {
+   "id": "S4-C4",
+   "severity": "must",
+   "criterion": "#10 ends closed done with verified (or released with a clear next_step); it is not left held."
+  },
+  {
+   "id": "S4-C5",
+   "severity": "must",
+   "criterion": "No from_user, to_user, or hello principal anywhere (no human exists)."
+  },
+  {
+   "id": "S4-C6",
+   "severity": "should",
+   "criterion": "Afterwards the worker continues through next in order (#12 next) and finishes, or releases with a checkpoint, every node it takes; any outside action (a PR for #14) is wrapped in intent and intent_done."
+  },
+  {
+   "id": "S4-C7",
+   "severity": "should",
+   "criterion": "The worker does not take #13 (est 90) when it gave horizon 60, or, without a horizon, releases it with a checkpoint rather than abandoning it."
+  },
+  {
+   "id": "S4-C8",
+   "severity": "should",
+   "criterion": "The worker checks how created_at is stored before deciding anything about the rollup, records a decision that supersedes the stale one (or retracts it), and closes the reopened rollup again or releases it with a checkpoint; it does not leave it open and unheld."
+  }
+ ],
+ "ids_note": "The intended flow and the criteria are those of the Wizard-of-Oz rounds: their ids (e31, r2, #14, s-52) name the seed of those rounds; a live run's ids differ."
+}

@@ -1,0 +1,538 @@
+# Version 1 of forum_keys::normalise_v(1, _) (design D.11.14). This file pins version 1: once
+# version 1 is released, never change an existing row, because stored keys carry their version and
+# K2 checks them against it for ever. A changed rule is a new version with a golden file of its own.
+# New rows may be added at any time.
+#
+# Format: <input> TAB <ok | err> TAB <normalised key | KeyError variant>. Lines starting with '#'
+# and blank lines are ignored. Both text columns understand the escapes \\ \t \n \r and \u{HEX};
+# a space at either end of a column is spelt \u{20}.
+
+# --- Every scheme: whitespace, NFC, the scheme's case and shape, emptiness -------------------------
+\u{20}chat:team/thread-1\u{20}	ok	chat:team/thread-1
+\t\n chat:team/thread-1 \r\n	ok	chat:team/thread-1
+\u{3000}note:x\u{a0}	ok	note:x
+CHAT:team/thread-1	ok	chat:team/thread-1
+note:cafe\u{301}	ok	note:caf\u{e9}
+note:\u{212b}ngstr\u{f6}m	ok	note:\u{c5}ngstr\u{f6}m
+abcdefghijklmnop:x	ok	abcdefghijklmnop:x
+abcdefghijklmnopq:x	err	BadScheme
+a+b.c-d:x	ok	a+b.c-d:x
+x9:x	ok	x9:x
+1chat:x	err	BadScheme
+ch_at:x	err	BadScheme
+ch\u{e4}t:x	err	BadScheme
+chat\u{20}:x	err	BadScheme
++chat:x	err	BadScheme
+nocolon	err	NoScheme
+:value	err	NoScheme
+\u{20}\u{20}	err	Empty
+\t\r\n	err	Empty
+chat:	err	BadValue
+note:	err	BadValue
+note:\u{20}x	ok	note:\u{20}x
+note:a:b:c	ok	note:a:b:c
+
+# --- No control character or line separator inside, no code point unassigned in Unicode 17.0 ------
+chat:Team/t\nINJECTED: x	err	BadValue
+note:a\u{1b}[31mred	err	BadValue
+note:a\u{0}b	err	BadValue
+note:a\u{7f}b	err	BadValue
+note:a\u{85}b	err	BadValue
+note:a\u{9f}b	err	BadValue
+note:a\tb	err	BadValue
+note:x\u{85}	ok	note:x
+\u{0}:x	err	BadValue
+chat:Team/t\u{2028}INJECTED: x	err	BadValue
+note:a\u{2028}b	err	BadValue
+note:a\u{2029}b	err	BadValue
+# U+2028 and U+2029 are whitespace, so they are trimmed at the edges, like a line feed.
+\u{2028}note:x\u{2029}	ok	note:x
+note:x\u{2028}\u{20}	ok	note:x
+note:\u{378}	err	BadValue
+note:a\u{e0080}	err	BadValue
+note:\u{fdd0}	err	BadValue
+note:\u{10ffff}	err	BadValue
+chat:\u{378}/t	err	BadValue
+note:\u{e000}	ok	note:\u{e000}
+note:\u{20c1}	ok	note:\u{20c1}
+chat:\u{a7cb}/t	ok	chat:\u{264}/t
+chat:\u{a7ce}/t	ok	chat:\u{a7cf}/t
+
+# --- No default-ignorable code point but the variation selectors, the edges included ---------------
+# Every code point that Unicode 17.0 assigns and marks Default_Ignorable_Code_Point is refused, except
+# the variation selectors U+FE00 to U+FE0F and U+E0100 to U+E01EF; the unassigned ones are refused as
+# unassigned. The bidirectional controls (Bidi_Control): U+061C, U+200E, U+200F, U+202A to U+202E,
+# U+2066 to U+2069.
+note:a\u{2065}b	err	BadValue
+note:a\u{fff0}b	err	BadValue
+note:a\u{e0000}b	err	BadValue
+note:a\u{e0fff}b	err	BadValue
+note:a\u{61c}b	err	BadValue
+note:a\u{200e}b	err	BadValue
+note:a\u{200f}b	err	BadValue
+note:a\u{202a}b	err	BadValue
+note:a\u{202b}b	err	BadValue
+note:a\u{202c}b	err	BadValue
+note:a\u{202d}b	err	BadValue
+note:a\u{202e}b	err	BadValue
+note:a\u{2066}b	err	BadValue
+note:a\u{2067}b	err	BadValue
+note:a\u{2068}b	err	BadValue
+note:a\u{2069}b	err	BadValue
+# The zero-width format characters: U+200B to U+200D, U+2060 to U+2064, U+FEFF.
+note:a\u{200b}b	err	BadValue
+note:a\u{200c}b	err	BadValue
+note:a\u{200d}b	err	BadValue
+note:a\u{2060}b	err	BadValue
+note:a\u{2061}b	err	BadValue
+note:a\u{2062}b	err	BadValue
+note:a\u{2063}b	err	BadValue
+note:a\u{2064}b	err	BadValue
+note:a\u{feff}b	err	BadValue
+# The soft hyphen and the combining grapheme joiner.
+note:a\u{ad}b	err	BadValue
+note:a\u{34f}b	err	BadValue
+# The Hangul fillers.
+note:a\u{115f}b	err	BadValue
+note:a\u{1160}b	err	BadValue
+note:a\u{3164}b	err	BadValue
+note:a\u{ffa0}b	err	BadValue
+slack:\u{3164}	err	BadValue
+# The Khmer inherent vowels.
+note:a\u{17b4}b	err	BadValue
+note:a\u{17b5}b	err	BadValue
+# The Mongolian vowel separator (the Mongolian free variation selectors are variation selectors, and
+# kept: below).
+note:a\u{180e}b	err	BadValue
+\u{180e}note:x	err	BadValue
+# The deprecated format characters.
+note:a\u{206a}b	err	BadValue
+note:a\u{206b}b	err	BadValue
+note:a\u{206c}b	err	BadValue
+note:a\u{206d}b	err	BadValue
+note:a\u{206e}b	err	BadValue
+note:a\u{206f}b	err	BadValue
+# The shorthand and musical symbol format controls.
+note:a\u{1bca0}b	err	BadValue
+note:a\u{1bca3}b	err	BadValue
+note:a\u{1d173}b	err	BadValue
+note:a\u{1d17a}b	err	BadValue
+# The language tag and the tag characters, which also spell the subdivision flags.
+note:a\u{e0001}b	err	BadValue
+note:a\u{e0020}b	err	BadValue
+note:a\u{e0041}b	err	BadValue
+note:a\u{e007f}b	err	BadValue
+note:\u{e0041}	err	BadValue
+note:\u{1f3f4}\u{e0067}\u{e0062}\u{e0073}\u{e0063}\u{e0074}\u{e007f}	err	BadValue
+note:\u{1f3f4}\u{e0067}\u{e0062}\u{e0065}\u{e006e}\u{e0067}\u{e007f}	err	BadValue
+# None is whitespace, so none is trimmed at an edge or hidden by whitespace around it.
+\u{feff}note:x	err	BadValue
+note:x\u{200b}	err	BadValue
+\u{202e}note:x	err	BadValue
+\u{20}note:x\u{2069}\u{20}	err	BadValue
+\u{20}\u{200b}\u{20}	err	BadValue
+\u{200b}	err	BadValue
+\u{ad}note:x	err	BadValue
+note:x\u{ad}	err	BadValue
+\u{3164}	err	BadValue
+\u{20}\u{3164}\u{20}	err	BadValue
+\u{e0041}note:x	err	BadValue
+note:x\u{e007f}\u{20}	err	BadValue
+\u{1d173}note:x	err	BadValue
+# Refused before the scheme and the value are looked at, whatever the scheme but http and https.
+cha\u{200b}t:x	err	BadValue
+note\u{200b}:x	err	BadValue
+note\u{ad}:x	err	BadValue
+chat:te\u{200d}am/t	err	BadValue
+chat:team/t\u{200b}	err	BadValue
+chat:team/t\u{ad}	err	BadValue
+issue:proj#1\u{2066}	err	BadValue
+issue:proj#1\u{34f}	err	BadValue
+mail:<a@b.example\u{200b}>	err	BadValue
+mail:<a@b.example\u{e0041}>	err	BadValue
+mail:\u{feff}<a@b.example>	err	BadValue
+user:e1\u{feff}	err	BadValue
+person:mail:bob\u{200b}@corp.example	err	BadValue
+person:\u{feff}user	err	BadValue
+person:slack:\u{3164}	err	BadValue
+arxiv:2401.12345\u{200b}	err	BadValue
+doi:10.1000/\u{2060}x	err	BadValue
+doi:10.1000/x\u{180e}	err	BadValue
+lean:ab\u{200b}cd	err	BadValue
+repeat:\u{200b}	err	BadValue
+htt\u{200b}ps://x.example/	err	BadValue
+https\u{ad}://x.example/	err	BadValue
+# An emoji sequence joined by a zero width joiner is refused with it.
+note:\u{1f469}\u{200d}\u{1f4bb}	err	BadValue
+# The variation selectors are accepted and kept (U+FE0F asks for the emoji presentation, and a
+# Mongolian free variation selector, U+180B to U+180D or U+180F, the form of a Mongolian letter), but
+# not before the scheme, where they are part of a malformed one.
+note:a\u{fe00}	ok	note:a\u{fe00}
+note:\u{2764}\u{fe0f}	ok	note:\u{2764}\u{fe0f}
+note:1\u{fe0f}\u{20e3}	ok	note:1\u{fe0f}\u{20e3}
+note:\u{fe0f}	ok	note:\u{fe0f}
+note:a\u{e0100}	ok	note:a\u{e0100}
+note:a\u{e01ef}	ok	note:a\u{e01ef}
+note:a\u{180b}b	ok	note:a\u{180b}b
+note:a\u{180c}b	ok	note:a\u{180c}b
+note:a\u{180d}b	ok	note:a\u{180d}b
+note:a\u{180f}b	ok	note:a\u{180f}b
+note:\u{1820}\u{180b}	ok	note:\u{1820}\u{180b}
+note:x\u{180b}\u{20}	ok	note:x\u{180b}
+chat:\u{1828}\u{180c}/t	ok	chat:\u{1828}\u{180c}/t
+\u{fe0f}note:x	err	BadScheme
+\u{180b}note:x	err	BadScheme
+# Visible format characters and the neighbours of the refused ranges are accepted.
+note:\u{600}12	ok	note:\u{600}12
+note:a\u{6dd}b	ok	note:a\u{6dd}b
+note:a\u{fff9}b\u{fffa}c\u{fffb}	ok	note:a\u{fff9}b\u{fffa}c\u{fffb}
+note:\u{1f3f4}	ok	note:\u{1f3f4}
+note:a\u{2010}b	ok	note:a\u{2010}b
+note:a\u{2070}b	ok	note:a\u{2070}b
+note:a\u{ac}\u{ae}b	ok	note:a\u{ac}\u{ae}b
+note:a\u{34e}\u{350}b	ok	note:a\u{34e}\u{350}b
+note:\u{3163}\u{3165}	ok	note:\u{3163}\u{3165}
+note:a\u{180a}\u{1810}b	ok	note:a\u{180a}\u{1810}b
+note:a\u{1d172}\u{1d17b}b	ok	note:a\u{1d172}\u{1d17b}b
+note:a\u{fe10}b	ok	note:a\u{fe10}b
+
+# --- An http or https key is checked in its normal form, which is ASCII ----------------------------
+# A host whose punycode holds U+200C or U+200D, as Persian and Devanagari names may, is accepted
+# whether it is sent as it is read, percent-encoded, or in punycode. The URL parser drops from a host
+# every code point that UTS 46 ignores, as it ignores every default-ignorable code point but the
+# bidirectional controls, U+200C, U+200D, and the tag characters: U+200B, U+00AD, U+034F, U+3164,
+# U+180E, and the variation selectors among them.
+https://\u{645}\u{6cc}\u{200c}\u{62e}\u{648}\u{627}\u{647}\u{645}.example/	ok	https://xn--mgbn2ecje63gr19l.example/
+https://%D9%85%DB%8C%E2%80%8C%D8%AE%D9%88%D8%A7%D9%87%D9%85.example/	ok	https://xn--mgbn2ecje63gr19l.example/
+https://xn--mgbn2ecje63gr19l.example/	ok	https://xn--mgbn2ecje63gr19l.example/
+https://\u{645}\u{6cc}\u{62e}\u{648}\u{627}\u{647}\u{645}.example/	ok	https://xn--mgbn2ecje63g.example/
+https://\u{915}\u{94d}\u{200d}\u{937}.example/	ok	https://xn--11b2ezcw70k.example/
+https://xn--11b2ezcw70k.example/	ok	https://xn--11b2ezcw70k.example/
+https://x\u{200b}.example/	ok	https://x.example/
+https://x%E2%80%8B.example/	ok	https://x.example/
+https://ex%C2%ADample.com/	ok	https://example.com/
+https://ex\u{ad}ample.com/	ok	https://example.com/
+https://x\u{34f}.example/	ok	https://x.example/
+https://x\u{3164}.example/	ok	https://x.example/
+https://a\u{17b4}b.example/	ok	https://ab.example/
+https://a\u{180e}b.example/	ok	https://ab.example/
+https://a\u{180b}b.example/	ok	https://ab.example/
+https://a\u{180f}b.example/	ok	https://ab.example/
+https://a\u{fe0f}b.example/	ok	https://ab.example/
+https://a\u{e0100}b.example/	ok	https://ab.example/
+# The path and the query are percent-encoded, the fragment is stripped, and the parser drops a tab,
+# a carriage return, or a line feed wherever it is, and C0 control characters and spaces at the end.
+https://x.example/a\u{202e}b	ok	https://x.example/a%E2%80%AEb
+https://x.example/a%E2%80%AEb	ok	https://x.example/a%E2%80%AEb
+https://x.example/?q=\u{200f}	ok	https://x.example/?q=%E2%80%8F
+https://x.example/?q=%E2%80%8F	ok	https://x.example/?q=%E2%80%8F
+https://x.example/?q=\u{ad}	ok	https://x.example/?q=%C2%AD
+https://x.example/\u{e0041}	ok	https://x.example/%F3%A0%81%81
+https://x.example/a\u{2028}b	ok	https://x.example/a%E2%80%A8b
+https://x.example/\u{378}	ok	https://x.example/%CD%B8
+https://x.example/a\u{0}b	ok	https://x.example/a%00b
+https://x.example/a\u{7f}b	ok	https://x.example/a%7Fb
+https://x.example/a\nb	ok	https://x.example/ab
+https://x.example/a\tb	ok	https://x.example/ab
+https://x.example/a#\u{2066}	ok	https://x.example/a
+https://x.example/a\u{1}	ok	https://x.example/a
+https://x.example/a?x=1\u{1f}	ok	https://x.example/a?x=1
+https://x.example/a\u{1}\u{20}\u{1f}	ok	https://x.example/a
+https://x.example/a\u{1}b	ok	https://x.example/a%01b
+# A character that the parser refuses in a host refuses the key, with that character's own text
+# (schemes.rs checks the texts).
+https://x\u{202e}.example/	err	BadValue
+https://x\u{0}.example/	err	BadValue
+https://x\u{378}.example/	err	BadValue
+https://x\u{e0041}.example/	err	BadValue
+https://x\u{2028}.example/	err	BadValue
+https://x.example\u{2028}/	err	BadValue
+
+# --- chat: the channel lower-cased; one '/', or two for a message (A-61) --------------------------
+chat:team/thread-1	ok	chat:team/thread-1
+Chat:Team/Thread-1	ok	chat:team/Thread-1
+chat:C024BE91L/1712345678.123456	ok	chat:c024be91l/1712345678.123456
+chat:Team/1712345678.123456/1712345699.000200	ok	chat:team/1712345678.123456/1712345699.000200
+chat:\u{c9}QUIPE/Fil	ok	chat:\u{e9}quipe/Fil
+chat:team	err	BadValue
+chat:team/a/b/c	err	BadValue
+chat:/thread	err	BadValue
+chat:team/	err	BadValue
+chat:team//m	err	BadValue
+chat:team/t/	err	BadValue
+
+# --- issue: the project lower-cased, leading zeros stripped, an optional /<comment> (A-61) --------
+issue:Proj#123	ok	issue:proj#123
+issue:proj#00123	ok	issue:proj#123
+issue:proj#000	ok	issue:proj#0
+issue:Org/Repo#7	ok	issue:org/repo#7
+issue:proj#12/note_345	ok	issue:proj#12/note_345
+issue:PROJ#012/IssueComment-9	ok	issue:proj#12/IssueComment-9
+issue:proj#12/a/b	ok	issue:proj#12/a/b
+issue:proj	err	BadValue
+issue:#12	err	BadValue
+issue:proj#	err	BadValue
+issue:proj#12a	err	BadValue
+issue:proj#-1	err	BadValue
+issue:proj#+1	err	BadValue
+issue:proj#12/	err	BadValue
+issue:proj#1#2	err	BadValue
+issue:\u{c9}QUIPE#1	ok	issue:\u{e9}quipe#1
+
+# --- mail: one pair of angle brackets and the space inside stripped, the domain lower-cased -------
+mail:<CAF123.x@Mail.Example.COM>	ok	mail:CAF123.x@mail.example.com
+mail:Abc@Example.Org	ok	mail:Abc@example.org
+mail:<abc@example.org>	ok	mail:abc@example.org
+mail:abc@[192.0.2.1]	ok	mail:abc@[192.0.2.1]
+mail:a@b@C.Example	ok	mail:a@b@c.example
+mail:no-at-sign	ok	mail:no-at-sign
+mail:<abc@x	ok	mail:<abc@x
+mail:<abc@x>>	ok	mail:abc@x>
+mail:<>	err	BadValue
+mail:<<abc@x>>	err	BadValue
+mail:<\u{20}>	err	BadValue
+mail:<abc@X.Example\u{20}>	ok	mail:abc@x.example
+mail:<\u{20}abc@X.Example\u{20}>	ok	mail:abc@x.example
+mail:<<x>\u{20}>	err	BadValue
+mail:<\u{20}<x>\u{20}>	err	BadValue
+mail:<<x>	ok	mail:<x
+mail:a@B@C.example	ok	mail:a@B@c.example
+
+# --- user: an entry, rendered user:e<n> ---------------------------------------------------------------
+user:12	ok	user:e12
+user:e12	ok	user:e12
+USER:e12	ok	user:e12
+user:e012	ok	user:e12
+user:0	ok	user:e0
+user:e18446744073709551615	ok	user:e18446744073709551615
+user:e18446744073709551616	err	BadValue
+user:e	err	BadValue
+user:E12	err	BadValue
+user:ee12	err	BadValue
+user:alice	err	BadValue
+user:+12	err	BadValue
+user:e-1	err	BadValue
+user:e1 2	err	BadValue
+
+# --- person: the value is a principal key (D-3); see golden_principal.txt ----------------------------
+person:mail:Bob@Corp.Example	ok	person:mail:bob@corp.example
+PERSON:MAIL:BOB@CORP.EXAMPLE	ok	person:mail:bob@corp.example
+person:Slack:T01/U02Bob	ok	person:slack:T01/U02Bob
+person:\u{20}slack:T01/U02Bob	ok	person:slack:T01/U02Bob
+person:user	ok	person:user
+person:USER	ok	person:user
+person:user:e12	err	BadScheme
+person:bob	err	BadValue
+person::bob	err	BadValue
+person:1bad:x	err	BadScheme
+person:mail:<Bob@Corp.Example>	ok	person:mail:bob@corp.example
+person:mail:	err	BadValue
+
+# --- repeat: reserved for the server's occurrence keys (A-90) -------------------------------------------
+repeat:12:20261001T0900Z	err	BadScheme
+REPEAT:12:20261001T0900Z	err	BadScheme
+repeat:	err	BadScheme
+
+# --- http and https: WHATWG, no fragment, no user information, no credentials (CS-35) -------------
+# The credential parameters: X-Amz-*, X-Goog-*, sig, signature, token, access_token, key, api_key,
+# apikey, password, passwd, secret, and client_secret, by the whole decoded name read as PHP reads it
+# (the spaces in front of it stripped, the name ended at its first NUL, and every space, '.', and '['
+# read as '_'), in any ASCII case.
+HTTPS://Example.COM:443/a/b?x=1#frag	ok	https://example.com/a/b?x=1
+http://example.com:80/	ok	http://example.com/
+http://example.com:8080/	ok	http://example.com:8080/
+https://example.com:80/	ok	https://example.com:80/
+https://example.com	ok	https://example.com/
+https:example.com	ok	https://example.com/
+https://x.example/./a/../b	ok	https://x.example/b
+https://x.example/a b	ok	https://x.example/a%20b
+https://B\u{fc}cher.example/	ok	https://xn--bcher-kva.example/
+https://x.example/a#	ok	https://x.example/a
+https://x.example/a?	ok	https://x.example/a
+https://x.example/a?#f	ok	https://x.example/a
+https://x.example/a?&	ok	https://x.example/a
+https://x.example/a?b=1&	ok	https://x.example/a?b=1
+https://x.example/a?b=1&&c=2	ok	https://x.example/a?b=1&c=2
+https://x.example/a?token=1&	ok	https://x.example/a
+https://x.example/a?page=2&token=abc#top	ok	https://x.example/a?page=2
+https://bucket.s3.amazonaws.com/f.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AK%2F20261002&X-Amz-Signature=abc123&versionId=3	ok	https://bucket.s3.amazonaws.com/f.pdf?versionId=3
+https://x.example/a?x-amz-signature=abc&b=2	ok	https://x.example/a?b=2
+https://x.example/a?X-AMZ-SECURITY-TOKEN=abc&b=2	ok	https://x.example/a?b=2
+https://x.example/a?sig=1&signature=2&token=3&access_token=4&key=5	ok	https://x.example/a
+https://x.example/a?token	ok	https://x.example/a
+https://x.example/a?%74oken=abc&b=1	ok	https://x.example/a?b=1
+https://x.example/a?b=1&b=2&key=k	ok	https://x.example/a?b=1&b=2
+https://x.example/a?keys=1&tokens=2&mykey=3&x-amz=4	ok	https://x.example/a?keys=1&tokens=2&mykey=3&x-amz=4
+https://x.example/a?Token=abc&Signature=x&KEY=k	ok	https://x.example/a
+https://x.example/a?SIG=1&Access_Token=2&b=3	ok	https://x.example/a?b=3
+https://d111.cloudfront.example/v.mp4?Expires=1790000000&Signature=s&Key-Pair-Id=K2&Policy=p	ok	https://d111.cloudfront.example/v.mp4?Expires=1790000000&Key-Pair-Id=K2&Policy=p
+https://storage.googleapis.com/b/o?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=sa%40p.example&X-Goog-Date=20261002T000000Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=abc&generation=7	ok	https://storage.googleapis.com/b/o?generation=7
+https://x.example/a?x-goog-signature=1&b=2	ok	https://x.example/a?b=2
+https://x.example/a?x-goog=1&goog-signature=2&signatures=3	ok	https://x.example/a?x-goog=1&goog-signature=2&signatures=3
+https://x.example/a?api_key=1&apikey=2&password=3&passwd=4&secret=5&client_secret=6&b=7	ok	https://x.example/a?b=7
+https://x.example/a?API_KEY=1&ApiKey=2&PASSWORD=3&Passwd=4&SECRET=5&Client_Secret=6	ok	https://x.example/a
+https://x.example/a?%61pi_key=1&api%5Fkey=2&p%61sswd=3&b=4	ok	https://x.example/a?b=4
+https://x.example/a?password&secret=&b=2	ok	https://x.example/a?b=2
+https://auth.example/cb?client_id=c&client_secret=s&grant_type=code	ok	https://auth.example/cb?client_id=c&grant_type=code
+https://x.example/a?api-key=1&api_keys=2&secrets=3&client_id=4&passwords=5&my_secret=6&apikeys=7&pass=8	ok	https://x.example/a?api-key=1&api_keys=2&secrets=3&client_id=4&passwords=5&my_secret=6&apikeys=7&pass=8
+https://x.example/a?api+key=1&secret+=2	ok	https://x.example/a?secret+=2
+# A space ('+', '%20'), '.', or '[' in a name reads as '_', spaces in front of a name are stripped, and
+# a name ends at its first NUL, as PHP reads them; PHP's arrays of these names, a trailing space,
+# another whitespace character, and other punctuation are kept.
+https://x.example/a?api.key=1&api[key=2	ok	https://x.example/a
+https://x.example/a?API.KEY=1&Api[Key=2&b=3	ok	https://x.example/a?b=3
+https://x.example/a?client.secret=1&access[token=2&b=3	ok	https://x.example/a?b=3
+https://x.example/a?api%2Ekey=1&api%5Bkey=2&b=3	ok	https://x.example/a?b=3
+https://x.example/a?api+key=1&api%20key=2&Client+Secret=3&access%20token=4&b=5	ok	https://x.example/a?b=5
+https://x.example/a?+api_key=1&%20api_key=2&api_key%00=3&api_key%00x=4	ok	https://x.example/a
+https://x.example/a?++%20+Token=1&%20api+key%00%20=2&+api.key=3&+X-Amz-Date=4&b=5	ok	https://x.example/a?b=5
+https://x.example/a?password%00=1&sig%00%00=2&key%00.x=3&b=4	ok	https://x.example/a?b=4
+https://x.example/a?a=1;+token=2;c=3&d=4	ok	https://x.example/a?a=1&d=4
+https://x.example/a?api[key]=1&api_key[]=2&api..key=4&.token=5	ok	https://x.example/a?api[key]=1&api_key[]=2&api..key=4&.token=5
+https://x.example/a?password[]=1&token[x]=2&b=3	ok	https://x.example/a?password[]=1&token[x]=2&b=3
+# A name that starts with x-amz- or x-goog- is dropped whatever follows the prefix, an array's
+# brackets included.
+https://x.example/a?X-Amz-Date[]=1&x-goog-meta[k]=2&X-Amz-Date%5B%5D=3&b=4	ok	https://x.example/a?b=4
+https://x.example/a?api_key+=1&token%20=2&%09api_key=3&%00api_key=4&api%00_key=5&_api_key=6	ok	https://x.example/a?api_key+=1&token%20=2&%09api_key=3&%00api_key=4&api%00_key=5&_api_key=6
+https://x.example/a?%C2%A0token=1&api%C2%A0key=2	ok	https://x.example/a?%C2%A0token=1&api%C2%A0key=2
+https://x.example/a?X.Amz-Signature=1&x-amz.date=2&x+amz-date=3	ok	https://x.example/a?X.Amz-Signature=1&x-amz.date=2&x+amz-date=3
+# Every '&amp;' in the query is read as '&' first. Then the query splits into pairs at '&', and an
+# empty pair is dropped. A pair splits into pieces at ';'. A pair is cut in front of its first
+# credential piece, so a pair whose first piece is one is dropped whole, and nothing of a credential's
+# value is kept however a server splits the query.
+https://x.example/a?a=1&amp;api_key=S&b=1	ok	https://x.example/a?a=1&b=1
+https://x.example/a?a=1;api_key=S	ok	https://x.example/a?a=1
+https://x.example/a?a=1;token=2&b=3	ok	https://x.example/a?a=1&b=3
+https://x.example/a?a=1&amp;token=2	ok	https://x.example/a?a=1
+https://x.example/a?&amp;token=1	ok	https://x.example/a
+https://x.example/a?q=x;token	ok	https://x.example/a?q=x
+https://x.example/a?x=1;api_key=s;e;c&y=2	ok	https://x.example/a?x=1&y=2
+https://x.example/a?password=hunter;2&b=1	ok	https://x.example/a?b=1
+https://x.example/a?token=abc;def	ok	https://x.example/a
+https://x.example/a?sig=AAAA;BBBB=CC	ok	https://x.example/a
+https://x.example/a?token=1;b=2&c=3	ok	https://x.example/a?c=3
+https://x.example/a?token;x=1&y	ok	https://x.example/a?y
+# So no kept piece takes a ';' that sat inside a credential's value: these two are different URLs.
+https://x.example/a?a=1&token=2;b=3	ok	https://x.example/a?a=1
+https://x.example/a?a=1;b=3	ok	https://x.example/a?a=1;b=3
+# A pair that the cut leaves empty is dropped.
+https://x.example/a?a=1&;token=1	ok	https://x.example/a?a=1
+https://x.example/a?;token=1	ok	https://x.example/a
+https://x.example/a?a=1&amp;;token=1	ok	https://x.example/a?a=1
+# A URL copied from a page, where '&' is escaped as '&amp;', is the URL itself: '&amp;' reads as '&',
+# so a pair after it is a pair like any other, and empty pairs around it are dropped.
+https://x.example/a?token=1&amp;b=2	ok	https://x.example/a?b=2
+https://x.example/a?a=1&amp;b=2	ok	https://x.example/a?a=1&b=2
+https://x.example/a?a=1&amp;b=2&amp;c=3	ok	https://x.example/a?a=1&b=2&c=3
+https://x.example/a?a=1&amp;&amp;b=2	ok	https://x.example/a?a=1&b=2
+https://x.example/a?a=1&amp;	ok	https://x.example/a?a=1
+https://x.example/a?&amp;	ok	https://x.example/a
+https://x.example/a?&amp;a=1	ok	https://x.example/a?a=1
+https://x.example/a?a=1&amp;b=2;token=3;c=4&amp;d=5	ok	https://x.example/a?a=1&b=2&d=5
+# '&amp;' escaped again ('&amp;amp;', and so on) is decoded fully, in one round, however deep: a '&'
+# and every 'amp;' after it in a row are one '&'.
+https://x.example/a?a=1&amp;amp;b=2	ok	https://x.example/a?a=1&b=2
+https://x.example/a?a=1&amp;amp;token=1	ok	https://x.example/a?a=1
+https://x.example/a?a=1&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;b=2	ok	https://x.example/a?a=1&b=2
+https://x.example/a?a=1&amp;amp;&amp;amp;amp;b=2&amp;amp;	ok	https://x.example/a?a=1&b=2
+# The first pair has no '&' in front of it, so its 'amp' is a piece, kept, and so is an 'amp;' that
+# follows a ';' or another piece.
+https://x.example/a?amp;token=1	ok	https://x.example/a?amp
+https://x.example/a?amp;b	ok	https://x.example/a?amp;b
+https://x.example/a?amp;amp;b=1&amp;c=2	ok	https://x.example/a?amp;amp;b=1&c=2
+https://x.example/a?a=1;amp;b=2	ok	https://x.example/a?a=1;amp;b=2
+https://x.example/a?a=1&bamp;c=2	ok	https://x.example/a?a=1&bamp;c=2
+# Everything else is kept as it is: the separators, and the empty pieces around ';'.
+https://x.example/a?a=1;b=2	ok	https://x.example/a?a=1;b=2
+https://x.example/a?a=1;;b=2;	ok	https://x.example/a?a=1;;b=2;
+https://x.example/a?q=a;;b	ok	https://x.example/a?q=a;;b
+https://x.example/a?style=color:red;	ok	https://x.example/a?style=color:red;
+https://x.example/a?;a=1	ok	https://x.example/a?;a=1
+https://x.example/a?;	ok	https://x.example/a?;
+https://x.example/a?a=1&amp;;b=2	ok	https://x.example/a?a=1&;b=2
+https://x.example/a?a=1&amp;;	ok	https://x.example/a?a=1&;
+# Only '&amp;' is read: not '&amp' without its ';', not another spelling of the entity, and not '%26'.
+https://x.example/a?a&amp=1	ok	https://x.example/a?a&amp=1
+https://x.example/a?a=1&amp%3Bb=2	ok	https://x.example/a?a=1&amp%3Bb=2
+https://x.example/a?a=1%26amp;b=2	ok	https://x.example/a?a=1%26amp;b=2
+# Nor is any other HTML entity: '&quot;' is data, and '&#038;', '&#38;', and '&#x26;' end the query
+# at their '#', which starts a fragment, and the fragment is stripped.
+https://x.example/a?q=&quot;x&quot;	ok	https://x.example/a?q=&quot;x&quot;
+https://blog.example/?p=1&#038;page=2	ok	https://blog.example/?p=1
+https://blog.example/?p=1&#38;page=2	ok	https://blog.example/?p=1
+https://blog.example/?p=1&#x26;page=2	ok	https://blog.example/?p=1
+# Only the query reads '&amp;': a path keeps it.
+https://x.example/a&amp;b?c=1&amp;d=2	ok	https://x.example/a&amp;b?c=1&d=2
+# '%26' and '%3B' are data, not separators.
+https://x.example/a?a=%26token%3D1	ok	https://x.example/a?a=%26token%3D1
+https://x.example/a?a=1%3Btoken=2	ok	https://x.example/a?a=1%3Btoken=2
+# Another spelling of the entity is a '&' and a ';': the credential is dropped, the entity's name kept.
+https://x.example/a?a=1&AMP;api_key=S	ok	https://x.example/a?a=1&AMP
+https://x.example/a?a=1&Amp;b=2	ok	https://x.example/a?a=1&Amp;b=2
+ftp://x.example/?password=1	ok	ftp://x.example/?password=1
+https://user:pass@x.example/	ok	https://x.example/
+https://User:Pass@X.Example/a?b=1	ok	https://x.example/a?b=1
+https://:secret@x.example/a	ok	https://x.example/a
+https://user@x.example/a	ok	https://x.example/a
+https://u%3Ax:p%40ss@x.example:443/a#f	ok	https://x.example/a
+https://stra\u{df}e.example/	ok	https://xn--strae-oqa.example/
+https://\u{ff25}\u{ff58}\u{ff41}\u{ff4d}\u{ff50}\u{ff4c}\u{ff45}.com/	ok	https://example.com/
+https://x\u{3002}example/	ok	https://x.example/
+https://\u{130}stanbul.example/	ok	https://xn--istanbul-o0e.example/
+https://	err	BadValue
+http://exa mple.com/	err	BadValue
+https://[::1/	err	BadValue
+ftp://Example.COM/x?token=1#y	ok	ftp://Example.COM/x?token=1#y
+
+# --- arxiv: no arXiv: prefix, no version suffix, old-style archives lower-cased (CS-36) -----------
+arxiv:2401.12345v2	ok	arxiv:2401.12345
+arxiv:2401.12345	ok	arxiv:2401.12345
+arxiv:arXiv:2401.12345v12	ok	arxiv:2401.12345
+ARXIV:ARXIV:2401.12345	ok	arxiv:2401.12345
+arxiv:0704.0001v1	ok	arxiv:0704.0001
+arxiv:HEP-TH/9901001v1	ok	arxiv:hep-th/9901001
+arxiv:math.GT/0309136	ok	arxiv:math.gt/0309136
+arxiv:2401.12345v2v3	ok	arxiv:2401.12345
+arxiv:2401.12345V2	ok	arxiv:2401.12345
+arxiv:\u{20}2401.12345v2	ok	arxiv:2401.12345
+arxiv:arXiv:\u{20}2401.12345	ok	arxiv:2401.12345
+arxiv:hep-th/9901001V3v1	ok	arxiv:hep-th/9901001
+arxiv:solv2	ok	arxiv:solv2
+arxiv:solV2	ok	arxiv:solV2
+arxiv:2401.12345\u{20}v2	ok	arxiv:2401.12345\u{20}v2
+arxiv:\u{c9}X/0001	ok	arxiv:\u{e9}x/0001
+arxiv:arXiv:	err	BadValue
+arxiv:\u{20}arXiv:\u{20}	err	BadValue
+
+# --- doi: lower-cased, no doi: label, no resolver prefix (CS-36) ----------------------------------
+doi:10.1000/ABC.Def	ok	doi:10.1000/abc.def
+doi:https://doi.org/10.1000/ABC	ok	doi:10.1000/abc
+doi:HTTPS://DOI.ORG/10.1000/abc	ok	doi:10.1000/abc
+doi:doi.org/10.1000/abc	ok	doi:10.1000/abc
+DOI:10.1000/\u{c4}	ok	doi:10.1000/\u{e4}
+doi:DOI:10.1/X	ok	doi:10.1/x
+doi:http://doi.org/10.1/X	ok	doi:10.1/x
+doi:https://dx.doi.org/10.1/X	ok	doi:10.1/x
+doi:http://dx.doi.org/10.1/X	ok	doi:10.1/x
+doi:dx.doi.org/10.1/X	ok	doi:10.1/x
+doi:\u{20}10.1/X	ok	doi:10.1/x
+doi:doi:\u{20}https://doi.org/10.1/X	ok	doi:10.1/x
+doi:https://example.org/10.1/X	ok	doi:https://example.org/10.1/x
+doi:https://doi.org/	err	BadValue
+doi:doi:	err	BadValue
+doi:https://dx.doi.org/\u{20}	err	BadValue
+
+# --- lean and run: a hexadecimal hash, lower-cased (CS-36) ---------------------------------------------------
+lean:0123456789ABCDEFabcdef	ok	lean:0123456789abcdefabcdef
+run:DEADBEEF	ok	run:deadbeef
+Lean:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	ok	lean:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+lean:xyz	err	BadValue
+lean:12 34	err	BadValue
+run:0x1f	err	BadValue
+lean:sha256:abc	err	BadValue
+
+# --- Any other scheme: the value as it is ------------------------------------------------------------------
+slack:T01/C02/1712345678.123456	ok	slack:T01/C02/1712345678.123456
+file:/Src/Main.rs	ok	file:/Src/Main.rs
+kb:Some Title	ok	kb:Some Title
+sha256:ABCDEF	ok	sha256:ABCDEF

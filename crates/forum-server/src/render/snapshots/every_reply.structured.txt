@@ -1,0 +1,2908 @@
+== hello of a session that serves a human
+{
+  "status": "[swarm] running · now 2026-09-21T14:15:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "session": "s-2",
+  "principals": [
+    "mail:alice@example.org"
+  ],
+  "inbox": {
+    "items": [
+      {
+        "e": "e12",
+        "type": "note",
+        "by": "s-1",
+        "at": "2026-09-21T14:15:00Z",
+        "to": "session:s-2",
+        "until": "2026-09-22T14:15:00Z",
+        "text": "Bob is answered; tell alice when the rerun is done",
+        "node": "/support/summary-gap"
+      },
+      {
+        "e": "e14",
+        "type": "answer",
+        "by": "s-1",
+        "at": "2026-09-21T14:15:00Z",
+        "question": "e13",
+        "text": "yes, at 07:00",
+        "node": "/support/summary-gap"
+      }
+    ]
+  },
+  "offers": [
+    {
+      "route": "e9",
+      "why_this": {
+        "tier": 0,
+        "flags": [],
+        "aged": 0,
+        "reason": "routing"
+      }
+    }
+  ],
+  "present": {
+    "total": 2,
+    "by_class": {
+      "coder": 2
+    },
+    "sessions": [
+      {
+        "session": "s-1",
+        "holds": [
+          "/support/summary-gap"
+        ],
+        "last_seen": "2026-09-21T14:14:00Z"
+      }
+    ]
+  },
+  "user_decisions": {
+    "count": 1,
+    "items": [
+      {
+        "question": "e10",
+        "about": "/support/summary-gap",
+        "due": "2026-09-24T14:15:00Z",
+        "text": "rerun the summary for last week too?",
+        "options": [
+          "yes",
+          "no"
+        ]
+      }
+    ]
+  },
+  "user_digest": {
+    "count": 1,
+    "items": [
+      {
+        "entry": "e11",
+        "what": "assumption",
+        "question": "e5",
+        "text": "which tickets?"
+      }
+    ]
+  }
+}
+
+== session hello {from_user}
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "session": "s-2",
+  "principals": [
+    "mail:alice@example.org"
+  ],
+  "inbox": {
+    "items": [
+      {
+        "e": "e12",
+        "type": "note",
+        "by": "s-1",
+        "at": "2026-09-21T14:15:00Z",
+        "to": "session:s-2",
+        "until": "2026-09-22T14:15:00Z",
+        "text": "Bob is answered; tell alice when the rerun is done",
+        "node": "/support/summary-gap"
+      }
+    ]
+  },
+  "offers": [
+    {
+      "route": "e9",
+      "why_this": {
+        "tier": 0,
+        "flags": [],
+        "aged": 0,
+        "reason": "routing"
+      }
+    }
+  ],
+  "present": {
+    "total": 2,
+    "by_class": {
+      "coder": 2
+    },
+    "sessions": [
+      {
+        "session": "s-1",
+        "holds": [
+          "/support/summary-gap"
+        ],
+        "last_seen": "2026-09-21T14:14:00Z"
+      }
+    ]
+  },
+  "user_entry": {
+    "entry": "e9",
+    "key": "user:e9",
+    "routed": {
+      "unrouted": "no target, and you hold 0 nodes"
+    }
+  },
+  "user_decisions": {
+    "count": 1,
+    "items": [
+      {
+        "question": "e10",
+        "about": "/support/summary-gap",
+        "due": "2026-09-24T14:15:00Z",
+        "text": "rerun the summary for last week too?",
+        "options": [
+          "yes",
+          "no"
+        ]
+      }
+    ]
+  },
+  "user_digest": {
+    "count": 1,
+    "items": [
+      {
+        "entry": "e11",
+        "what": "assumption",
+        "question": "e5",
+        "text": "which tickets?"
+      }
+    ]
+  }
+}
+
+== session status
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "recorded": true
+}
+
+== view node of two nodes
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "nodes": [
+    {
+      "node": {
+        "id": "#9",
+        "path": "/support/summary-gap",
+        "title": "Two tickets missing from the summary",
+        "state": "open",
+        "version": 2,
+        "digest_version": 1,
+        "holders": [
+          {
+            "session": "s-1",
+            "until": "2026-09-21T14:29:00Z"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "name": "flags",
+          "items": [
+            "objection"
+          ]
+        },
+        {
+          "name": "said_and_commitments",
+          "items": [
+            {
+              "e": "e4",
+              "type": "said",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "kind": "question",
+              "state": "sent with its author's last reply, unverified",
+              "text": "which tickets?"
+            },
+            {
+              "e": "e3",
+              "type": "said",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "kind": "reply",
+              "state": "sent with its author's last reply, unverified",
+              "text": "the parser dropped them; fixed"
+            },
+            {
+              "e": "e2",
+              "type": "said",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "kind": "ack",
+              "state": "sent with its author's last reply, unverified",
+              "text": "on it"
+            },
+            {
+              "commitment": "e2",
+              "where": "chat:team/7",
+              "followup": "2026-09-21T15:45:00Z",
+              "state": "open",
+              "text": "on it"
+            }
+          ]
+        },
+        {
+          "name": "decisions_and_agreements",
+          "items": [
+            {
+              "decision": "e8",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "text": "the parser fix answers it",
+              "settles": [
+                "e1"
+              ]
+            },
+            {
+              "user_question": "e10",
+              "state": "pending (mail:alice@example.org)",
+              "text": "rerun the summary for last week too?"
+            }
+          ]
+        },
+        {
+          "name": "unsettled_requests",
+          "items": [
+            {
+              "e": "e16",
+              "type": "request",
+              "by": "s-2",
+              "at": "2026-09-21T14:16:00Z",
+              "origin": "user:e15",
+              "where": "user:e15",
+              "requester": "mail:alice@example.org",
+              "text": "and add the weekly totals"
+            },
+            {
+              "e": "e1",
+              "type": "request",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "origin": "chat:team/7/m1",
+              "where": "chat:team/7",
+              "requester": "Bob",
+              "text": "why did yesterday's summary miss two tickets?"
+            }
+          ]
+        },
+        {
+          "name": "objections",
+          "items": [
+            {
+              "e": "e7",
+              "type": "object",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "text": "the fix skips the last page"
+            }
+          ]
+        },
+        {
+          "name": "everything_else",
+          "items": [
+            {
+              "e": "e14",
+              "type": "answer",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "question": "e13",
+              "text": "yes, at 07:00"
+            },
+            {
+              "e": "e13",
+              "type": "question",
+              "by": "s-2",
+              "at": "2026-09-21T14:15:00Z",
+              "to": "session:s-1",
+              "until": "2026-09-22T14:15:00Z",
+              "text": "is the rerun scheduled?"
+            },
+            {
+              "e": "e12",
+              "type": "note",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "to": "session:s-2",
+              "until": "2026-09-22T14:15:00Z",
+              "text": "Bob is answered; tell alice when the rerun is done"
+            },
+            {
+              "e": "e6",
+              "type": "heard",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "from": "Bob",
+              "text": "PROJ-12 and PROJ-19"
+            },
+            {
+              "e": "e5",
+              "type": "question",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "blocking": true,
+              "text": "which tickets?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": {
+        "id": "#0",
+        "path": "/",
+        "state": "open",
+        "version": 1,
+        "digest_version": 1,
+        "rollup": "children 5 open, 1 flagged; below: 9 open, 1 failed, 2 flagged"
+      }
+    }
+  ]
+}
+
+== view user_log
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entries": [
+    {
+      "e": "e9",
+      "type": "from_user",
+      "by": "s-2",
+      "at": "2026-09-21T14:15:00Z",
+      "principal": "mail:alice@example.org",
+      "client": "ide",
+      "text": "please make the daily summary complete"
+    },
+    {
+      "e": "e15",
+      "type": "from_user",
+      "by": "s-2",
+      "at": "2026-09-21T14:16:00Z",
+      "principal": "mail:alice@example.org",
+      "client": "ide",
+      "text": "and add the weekly totals"
+    },
+    {
+      "e": "e17",
+      "type": "from_user",
+      "by": "s-2",
+      "at": "2026-09-21T14:16:00Z",
+      "principal": "mail:alice@example.org",
+      "client": "ide",
+      "text": "thanks!"
+    }
+  ]
+}
+
+== node create, joined
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "existing": "/support/summary-gap",
+  "holder": [
+    "s-1"
+  ],
+  "open_question": "e5",
+  "added_keys": [
+    "issue:proj#7"
+  ]
+}
+
+== node link
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "existing": false
+}
+
+== node key add
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "already": false
+}
+
+== node key add, carried by another node
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "existing": "/support/summary-gap"
+}
+
+== node key remove
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "removed": true
+}
+
+== node reopen
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "reopened": "/support/summary-gap",
+  "dropped_keys": [
+    "chat:team/9"
+  ],
+  "offered": "tagged offer: next offers /support/summary-gap"
+}
+
+== node move
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "moved": "/support/summary-gap"
+}
+
+== node merge
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "merged": "#42",
+  "into": "/support/summary-gap"
+}
+
+== node hide
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "hidden": true
+}
+
+== talk from_user
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e9",
+  "key": "user:e9",
+  "routed": {
+    "unrouted": "no target, and you hold 0 nodes"
+  },
+  "principal": "mail:alice@example.org",
+  "user_decisions": {
+    "count": 1,
+    "items": [
+      {
+        "question": "e10",
+        "about": "/support/summary-gap",
+        "due": "2026-09-24T14:15:00Z",
+        "text": "rerun the summary for last week too?",
+        "options": [
+          "yes",
+          "no"
+        ]
+      }
+    ]
+  },
+  "user_digest": {
+    "count": 1,
+    "items": [
+      {
+        "entry": "e11",
+        "what": "assumption",
+        "question": "e5",
+        "text": "which tickets?"
+      }
+    ]
+  }
+}
+
+== talk to_user
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e900",
+  "principal": "mail:alice@example.org",
+  "re": [
+    "e1"
+  ],
+  "shown_digest": [
+    "e11"
+  ]
+}
+
+== talk route, existing
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "existing": true,
+  "entry": "e9",
+  "routed": {
+    "unrouted": "no target, and you hold 0 nodes"
+  }
+}
+
+== talk request
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "request": "e1",
+  "node": "/support/summary-gap"
+}
+
+== talk said
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "said_id": "e3",
+  "answered": [],
+  "settled": [],
+  "fulfilled": [],
+  "conversation_node": "/support/summary-gap now carries chat:team/9: the thread's later messages join /support/summary-gap"
+}
+
+== talk said {said_id}
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "said_id": "e3",
+  "confirmed": true
+}
+
+== talk heard
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e6",
+  "node": "/support/summary-gap",
+  "answered": "e5"
+}
+
+== talk ask, existing
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "existing": true,
+  "question": "e5",
+  "node": "/support/summary-gap"
+}
+
+== talk ask agents
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "question": "e13",
+  "node": "/support/summary-gap"
+}
+
+== talk ask {to: principal:<key>}
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "question": "e10",
+  "node": "/support/summary-gap"
+}
+
+== talk answer
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e14"
+}
+
+== talk say
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e12",
+  "to": "session:s-2",
+  "delivered_to": [
+    "s-2"
+  ]
+}
+
+== talk decide
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "decision": "e8",
+  "settled": [
+    "e1"
+  ],
+  "not_settled": []
+}
+
+== talk approve
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e901",
+  "approvals": 2
+}
+
+== talk object
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "objection": "e7"
+}
+
+== talk resolve
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e902"
+}
+
+== talk resolve, upheld on a closed node
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e902",
+  "corrected": {
+    "node": "/support/summary-gap",
+    "was": "done",
+    "outcome": "refuted"
+  }
+}
+
+== talk resolve, already
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "already": true
+}
+
+== talk resolve, already with its verdict
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "already": true,
+  "verdict": "e7",
+  "by": "s-1",
+  "upheld": false
+}
+
+== talk resolve, a second verdict
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e905",
+  "disputed": {
+    "objection": "e905",
+    "node": "/support/summary-gap",
+    "disputes": "e7",
+    "verdict": "e902",
+    "upheld": false,
+    "why": "e7 was resolved as not standing by e902; your opposite verdict is recorded as the objection e905 on /support/summary-gap, offered for review again"
+  }
+}
+
+== talk resolve, a second verdict that withdraws a correction
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e905",
+  "disputed": {
+    "objection": "e905",
+    "node": "/support/summary-gap",
+    "disputes": "e7",
+    "verdict": "e902",
+    "upheld": true,
+    "why": "e7 was upheld by e902; your opposite verdict is recorded as the objection e905 on /support/summary-gap, offered for review again; the correction e902 made is withdrawn until a review decides"
+  },
+  "withdrawn": {
+    "node": "/support/summary-gap",
+    "was": "refuted",
+    "outcome": "done"
+  }
+}
+
+== talk resolve {defer}, on a closed node
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e906",
+  "deferred": {
+    "until": "2026-09-21T15:15:00Z",
+    "why": "recorded: the objection stays open, and its review is not offered to your class until 2026-09-21T15:15:00Z or another verdict"
+  }
+}
+
+== talk resolve {defer}, on an open node
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e906",
+  "deferred": {
+    "why": "recorded: the objection stays open on its open node, whose holder decides it"
+  }
+}
+
+== hold check, intent_done
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "node": "/support/summary-gap",
+  "holders": [
+    {
+      "session": "s-1",
+      "until": "2026-09-21T14:29:00Z"
+    }
+  ],
+  "entry": "e904",
+  "intent_done": "e903"
+}
+
+== talk retract
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e903",
+  "withdrawn": "e5"
+}
+
+== talk wait, timeout
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "timeout": true
+}
+
+== talk wait, delivered
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "delivered": [
+    {
+      "e": "e12",
+      "type": "note",
+      "by": "s-1",
+      "at": "2026-09-21T14:15:00Z",
+      "to": "session:s-2",
+      "until": "2026-09-22T14:15:00Z",
+      "text": "Bob is answered; tell alice when the rerun is done",
+      "node": "/support/summary-gap"
+    },
+    {
+      "e": "e14",
+      "type": "answer",
+      "by": "s-1",
+      "at": "2026-09-21T14:15:00Z",
+      "question": "e13",
+      "text": "yes, at 07:00",
+      "node": "/support/summary-gap"
+    }
+  ],
+  "news": {
+    "node": "/support/summary-gap",
+    "seq": 9
+  }
+}
+
+== talk who
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "sessions": [
+    {
+      "session": "s-2",
+      "class": "coder",
+      "last_seen": "2026-09-21T14:13:00Z"
+    },
+    {
+      "session": "s-1",
+      "class": "coder",
+      "holds": [
+        "/support/summary-gap"
+      ],
+      "last_seen": "2026-09-21T14:14:00Z"
+    }
+  ],
+  "by_class": {
+    "coder": 2
+  }
+}
+
+== talk who {at}
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "sessions": [
+    {
+      "session": "s-1",
+      "class": "coder",
+      "holds": [
+        "/support/summary-gap"
+      ],
+      "last_seen": "2026-09-21T14:14:00Z"
+    }
+  ]
+}
+
+== control export
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "after": 10,
+  "limit": 1000,
+  "events": 29,
+  "next_after": 39,
+  "lines": [
+    {
+      "at": 1790000120000,
+      "class": null,
+      "kind": "cmd",
+      "op_id": null,
+      "session": null,
+      "tx": 5
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "CommitmentOpened": {
+            "c": 2,
+            "conv": "chat:team/7",
+            "followup_at": 1790005520000,
+            "node": 9
+          }
+        }
+      },
+      "seq": 11
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Said": {
+                "conv": "chat:team/7",
+                "corrects": null,
+                "kind": "Reply",
+                "voice": false
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 3,
+            "node": 9,
+            "seq": 3,
+            "text": {
+              "extra": [],
+              "main": "the parser dropped them; fixed"
+            }
+          }
+        }
+      },
+      "seq": 12
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "RequestAnswered": {
+            "by": 3,
+            "request": 1
+          }
+        }
+      },
+      "seq": 13
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Said": {
+                "conv": "chat:team/7",
+                "corrects": null,
+                "kind": "Question",
+                "voice": false
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 4,
+            "node": 9,
+            "seq": 4,
+            "text": {
+              "extra": [],
+              "main": "which tickets?"
+            }
+          }
+        }
+      },
+      "seq": 14
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Question": {
+                "People": {
+                  "blocking": true,
+                  "conv": "chat:team/7",
+                  "recheck_at": 1790014520000,
+                  "said": 4,
+                  "supersedes": null
+                }
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 5,
+            "node": 9,
+            "seq": 5,
+            "text": {
+              "extra": [],
+              "main": "which tickets?"
+            }
+          }
+        }
+      },
+      "seq": 15
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Heard": {
+                "answers": null,
+                "conv": "chat:team/7"
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 6,
+            "node": 9,
+            "seq": 6,
+            "text": {
+              "extra": [
+                [
+                  "From",
+                  "Bob"
+                ]
+              ],
+              "main": "PROJ-12 and PROJ-19"
+            }
+          }
+        }
+      },
+      "seq": 16
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": "Object",
+            "by": {
+              "Session": 1
+            },
+            "eid": 7,
+            "node": 9,
+            "seq": 7,
+            "text": {
+              "extra": [],
+              "main": "the fix skips the last page"
+            }
+          }
+        }
+      },
+      "seq": 17
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Decision": {
+                "assumes": [],
+                "basis": [],
+                "evidence": null,
+                "settles": [
+                  1
+                ],
+                "supersedes": null
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 8,
+            "node": 9,
+            "seq": 8,
+            "text": {
+              "extra": [],
+              "main": "the parser fix answers it"
+            }
+          }
+        }
+      },
+      "seq": 18
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "FromUser": {
+                "principal": 1
+              }
+            },
+            "by": {
+              "Session": 2
+            },
+            "eid": 9,
+            "node": 1,
+            "seq": 1,
+            "text": {
+              "extra": [
+                [
+                  "Client",
+                  "ide"
+                ]
+              ],
+              "main": "please make the daily summary complete"
+            }
+          }
+        }
+      },
+      "seq": 19
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Question": {
+                "User": {
+                  "about": 9,
+                  "due": 1790259320000,
+                  "has_default": true,
+                  "source": {
+                    "Agent": {
+                      "digest": [
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7,
+                        7
+                      ],
+                      "session": 1
+                    }
+                  },
+                  "to": [
+                    1,
+                    0
+                  ]
+                }
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 10,
+            "node": 9,
+            "seq": 9,
+            "text": {
+              "extra": [
+                [
+                  "Option",
+                  "yes"
+                ],
+                [
+                  "Option",
+                  "no"
+                ],
+                [
+                  "Recommendation",
+                  "yes"
+                ],
+                [
+                  "Default",
+                  "no"
+                ]
+              ],
+              "main": "rerun the summary for last week too?"
+            }
+          }
+        }
+      },
+      "seq": 20
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "System": {
+                "Digest": {
+                  "item": {
+                    "Assumption": {
+                      "question": 5
+                    }
+                  },
+                  "to": 1
+                }
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 11,
+            "node": 3,
+            "seq": 1,
+            "text": {
+              "extra": [],
+              "main": ""
+            }
+          }
+        }
+      },
+      "seq": 21
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Note": {
+                "expects": null,
+                "pending_holder": false,
+                "recipients": [
+                  2
+                ],
+                "reply_to": null,
+                "to": {
+                  "Session": 2
+                },
+                "until": 1790086520000
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 12,
+            "node": 9,
+            "seq": 10,
+            "text": {
+              "extra": [],
+              "main": "Bob is answered; tell alice when the rerun is done"
+            }
+          }
+        }
+      },
+      "seq": 22
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Question": {
+                "Agent": {
+                  "pending_holder": false,
+                  "recipients": [
+                    1
+                  ],
+                  "to": {
+                    "Session": 1
+                  },
+                  "until": 1790086520000
+                }
+              }
+            },
+            "by": {
+              "Session": 2
+            },
+            "eid": 13,
+            "node": 9,
+            "seq": 11,
+            "text": {
+              "extra": [],
+              "main": "is the rerun scheduled?"
+            }
+          }
+        }
+      },
+      "seq": 23
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Answer": {
+                "question": 13,
+                "recipient": 2,
+                "until": 1790086520000
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 14,
+            "node": 9,
+            "seq": 12,
+            "text": {
+              "extra": [],
+              "main": "yes, at 07:00"
+            }
+          }
+        }
+      },
+      "seq": 24
+    },
+    {
+      "at": 1790000120000,
+      "class": null,
+      "kind": "cmd",
+      "op_id": null,
+      "session": null,
+      "tx": 6
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "SessionHello": {
+            "caps": null,
+            "horizon": null,
+            "intent": null,
+            "principal": null,
+            "session": 2
+          }
+        }
+      },
+      "seq": 25
+    },
+    {
+      "event": {
+        "at": 1790000120000,
+        "ev": {
+          "InboxRead": {
+            "notes": [
+              12,
+              14
+            ],
+            "session": 2
+          }
+        }
+      },
+      "seq": 26
+    },
+    {
+      "at": 1790000180000,
+      "class": null,
+      "kind": "cmd",
+      "op_id": null,
+      "session": null,
+      "tx": 7
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "FromUser": {
+                "principal": 1
+              }
+            },
+            "by": {
+              "Session": 2
+            },
+            "eid": 15,
+            "node": 1,
+            "seq": 2,
+            "text": {
+              "extra": [
+                [
+                  "Client",
+                  "ide"
+                ]
+              ],
+              "main": "and add the weekly totals"
+            }
+          }
+        }
+      },
+      "seq": 27
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "KeyAdded": {
+            "key": {
+              "key": "user:e15",
+              "nv": 0
+            },
+            "node": 9
+          }
+        }
+      },
+      "seq": 28
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "Request": {
+                "conv": "user:e15",
+                "from_user": 15,
+                "origin": {
+                  "key": "user:e15",
+                  "nv": 0
+                },
+                "requester": {
+                  "User": 1
+                }
+              }
+            },
+            "by": {
+              "Session": 2
+            },
+            "eid": 16,
+            "node": 9,
+            "seq": 13,
+            "text": {
+              "extra": [],
+              "main": "and add the weekly totals"
+            }
+          }
+        }
+      },
+      "seq": 29
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "EntryRouted": {
+            "entry": 15,
+            "reason": null,
+            "routing": {
+              "Request": {
+                "node": 9,
+                "request": 16
+              }
+            }
+          }
+        }
+      },
+      "seq": 30
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "FromUser": {
+                "principal": 1
+              }
+            },
+            "by": {
+              "Session": 2
+            },
+            "eid": 17,
+            "node": 1,
+            "seq": 3,
+            "text": {
+              "extra": [
+                [
+                  "Client",
+                  "ide"
+                ]
+              ],
+              "main": "thanks!"
+            }
+          }
+        }
+      },
+      "seq": 31
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "EntryRouted": {
+            "entry": 17,
+            "reason": "a thank-you: nothing to do",
+            "routing": "NoAction"
+          }
+        }
+      },
+      "seq": 32
+    },
+    {
+      "at": 1790000180000,
+      "class": null,
+      "kind": "cmd",
+      "op_id": null,
+      "session": null,
+      "tx": 8
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "NodeCreated": {
+            "id": 10,
+            "init": {
+              "agreements": "",
+              "body": "",
+              "capacity": 1,
+              "depends_on": [],
+              "digest": "",
+              "due": null,
+              "est": null,
+              "fields": {},
+              "keys": {},
+              "kind": null,
+              "links": [],
+              "needs": [],
+              "owners": [],
+              "priority": 0,
+              "role": "Plain",
+              "status": "",
+              "tags": [],
+              "title": "An earlier attempt"
+            },
+            "name": "old-attempt",
+            "origin": {
+              "Agent": 1
+            },
+            "parent": 8
+          }
+        }
+      },
+      "seq": 33
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "InboxRead": {
+            "notes": [
+              13
+            ],
+            "session": 1
+          }
+        }
+      },
+      "seq": 34
+    },
+    {
+      "at": 1790000180000,
+      "class": null,
+      "kind": "cmd",
+      "op_id": null,
+      "session": null,
+      "tx": 9
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "SaidConfirmed": {
+            "link": null,
+            "said": 2,
+            "via": "Close"
+          }
+        }
+      },
+      "seq": 35
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "SaidConfirmed": {
+            "link": null,
+            "said": 3,
+            "via": "Close"
+          }
+        }
+      },
+      "seq": 36
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "SaidConfirmed": {
+            "link": null,
+            "said": 4,
+            "via": "Close"
+          }
+        }
+      },
+      "seq": 37
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "Appended": {
+            "body": {
+              "System": {
+                "Closed": {
+                  "outcome": "Failed"
+                }
+              }
+            },
+            "by": {
+              "Session": 1
+            },
+            "eid": 18,
+            "node": 10,
+            "seq": 1,
+            "text": {
+              "extra": [],
+              "main": "the parser was not the cause"
+            }
+          }
+        }
+      },
+      "seq": 38
+    },
+    {
+      "event": {
+        "at": 1790000180000,
+        "ev": {
+          "NodeClosed": {
+            "by": 1,
+            "merged_into": null,
+            "node": 10,
+            "outcome": "Failed"
+          }
+        }
+      },
+      "seq": 39
+    }
+  ]
+}
+
+== talk route, to a node
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e15",
+  "routed": {
+    "request": "e16",
+    "node": "/support/summary-gap"
+  }
+}
+
+== talk route, to none
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e17",
+  "routed": {
+    "none": "a thank-you: nothing to do"
+  }
+}
+
+== talk route, to none, existing: the first routing's reason
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "existing": true,
+  "entry": "e17",
+  "routed": {
+    "none": "a thank-you: nothing to do"
+  }
+}
+
+== talk from_user {answers}, a question no longer pending
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e9",
+  "key": "user:e9",
+  "routed": {
+    "unrouted": "the question e10 is no longer pending"
+  },
+  "principal": "mail:alice@example.org",
+  "user_decisions": {
+    "count": 1,
+    "items": [
+      {
+        "question": "e10",
+        "about": "/support/summary-gap",
+        "due": "2026-09-24T14:15:00Z",
+        "text": "rerun the summary for last week too?",
+        "options": [
+          "yes",
+          "no"
+        ]
+      }
+    ]
+  },
+  "user_digest": {
+    "count": 1,
+    "items": [
+      {
+        "entry": "e11",
+        "what": "assumption",
+        "question": "e5",
+        "text": "which tickets?"
+      }
+    ]
+  }
+}
+
+== hold take, reopening a closed node
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "token": "10.1",
+  "lease_until": "2026-09-21T14:31:00Z",
+  "brief": {
+    "node": {
+      "id": "#10",
+      "path": "/support/old-attempt",
+      "title": "An earlier attempt",
+      "state": "closed failed",
+      "version": 2,
+      "digest_version": 1
+    },
+    "sections": [
+      {
+        "name": "everything_else",
+        "items": [
+          {
+            "e": "e18",
+            "type": "system",
+            "by": "s-1",
+            "at": "2026-09-21T14:16:00Z",
+            "system": "closed",
+            "outcome": "failed",
+            "summary": "the parser was not the cause"
+          }
+        ]
+      }
+    ]
+  },
+  "reopened": {
+    "was": "failed"
+  }
+}
+
+== hold next, a hold that reopened a closed node
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "target": "/support/old-attempt",
+  "token": "10.1",
+  "lease_until": "2026-09-21T14:31:00Z",
+  "brief": {
+    "node": {
+      "id": "#10",
+      "path": "/support/old-attempt",
+      "title": "An earlier attempt",
+      "state": "closed failed",
+      "version": 2,
+      "digest_version": 1
+    },
+    "sections": [
+      {
+        "name": "everything_else",
+        "items": [
+          {
+            "e": "e18",
+            "type": "system",
+            "by": "s-1",
+            "at": "2026-09-21T14:16:00Z",
+            "system": "closed",
+            "outcome": "failed",
+            "summary": "the parser was not the cause"
+          }
+        ]
+      }
+    ]
+  },
+  "why_this": {
+    "tier": 0,
+    "flags": [
+      "objection"
+    ],
+    "aged": 2,
+    "reason": "closed_flagged"
+  },
+  "reopened": {
+    "was": "failed"
+  }
+}
+
+== admin set params
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "params": {
+    "lease.first": "15m",
+    "lease.default": "20m",
+    "lease.max": "2h00m",
+    "lease.ceiling": "8h00m",
+    "renew.max": 3,
+    "hold.per_session": 2,
+    "presence.silence": "15m",
+    "presence.resolution": "3m",
+    "session.retain": "24h00m",
+    "op.retain": "24h00m",
+    "conversation.schemes": [
+      "chat",
+      "issue",
+      "mail"
+    ],
+    "commitment.followup": "1h30m",
+    "question.recheck": "4h00m",
+    "question.max_rechecks": 2,
+    "user_question.due": "72h00m",
+    "user_question.due_absent": "1h00m",
+    "user_question.max_pending": 20,
+    "user_gap.window": "672h00m",
+    "deliver.window": "24h00m",
+    "talk.wait_max": "50s",
+    "hello.budget": 4096,
+    "brief.budget": 16384,
+    "digest.max": 2048,
+    "leave_better.max": 3,
+    "offer.stale": "2160h00m",
+    "refusal.ttl": "168h00m",
+    "refusal.window": "168h00m",
+    "refusal.backoff": "1h00m",
+    "refusal.quorum": 2,
+    "too_big.attempts": 3,
+    "pause.ttl": "2h00m",
+    "archive.after": "168h00m",
+    "coverage.window": "672h00m",
+    "capacity.window": "168h00m",
+    "write.per_hour": 120,
+    "queue.max_wait": "10s",
+    "text.max": 65536,
+    "tree.max_depth": 16,
+    "tree.max_children": 500,
+    "settle.batch": 1000,
+    "instructions.max": 512
+  }
+}
+
+== control health, green
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "level": "green",
+  "reasons": [],
+  "capacity": {
+    "demand_min": 0,
+    "supply_min": 0,
+    "lost_min": 0,
+    "next_calls": 0,
+    "next_empty": 0,
+    "next_empty_for_you": 0,
+    "backlog": 0,
+    "flagged_active": 0,
+    "median_done_min": 0
+  },
+  "computed_at": "2026-09-21T14:16:00Z"
+}
+
+== hold next, a routing item
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "route": "e9",
+  "text": "please make the daily summary complete",
+  "why_this": {
+    "tier": 0,
+    "flags": [
+      "unrouted"
+    ],
+    "aged": 1,
+    "reason": "routing"
+  }
+}
+
+== hold next, a status item
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "body": {
+    "status": "/support/summary-gap",
+    "brief": {
+      "node": {
+        "id": "#9",
+        "path": "/support/summary-gap",
+        "title": "Two tickets missing from the summary",
+        "state": "open",
+        "version": 2,
+        "digest_version": 1,
+        "holders": [
+          {
+            "session": "s-1",
+            "until": "2026-09-21T14:29:00Z"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "name": "flags",
+          "items": [
+            "objection"
+          ]
+        },
+        {
+          "name": "said_and_commitments",
+          "items": [
+            {
+              "e": "e4",
+              "type": "said",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "kind": "question",
+              "state": "sent with its author's last reply, unverified",
+              "text": "which tickets?"
+            },
+            {
+              "e": "e3",
+              "type": "said",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "kind": "reply",
+              "state": "sent with its author's last reply, unverified",
+              "text": "the parser dropped them; fixed"
+            },
+            {
+              "e": "e2",
+              "type": "said",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "kind": "ack",
+              "state": "sent with its author's last reply, unverified",
+              "text": "on it"
+            },
+            {
+              "commitment": "e2",
+              "where": "chat:team/7",
+              "followup": "2026-09-21T15:45:00Z",
+              "state": "open",
+              "text": "on it"
+            }
+          ]
+        },
+        {
+          "name": "decisions_and_agreements",
+          "items": [
+            {
+              "decision": "e8",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "text": "the parser fix answers it",
+              "settles": [
+                "e1"
+              ]
+            },
+            {
+              "user_question": "e10",
+              "state": "pending (mail:alice@example.org)",
+              "text": "rerun the summary for last week too?"
+            }
+          ]
+        },
+        {
+          "name": "unsettled_requests",
+          "items": [
+            {
+              "e": "e16",
+              "type": "request",
+              "by": "s-2",
+              "at": "2026-09-21T14:16:00Z",
+              "origin": "user:e15",
+              "where": "user:e15",
+              "requester": "mail:alice@example.org",
+              "text": "and add the weekly totals"
+            },
+            {
+              "e": "e1",
+              "type": "request",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "origin": "chat:team/7/m1",
+              "where": "chat:team/7",
+              "requester": "Bob",
+              "text": "why did yesterday's summary miss two tickets?"
+            }
+          ]
+        },
+        {
+          "name": "objections",
+          "items": [
+            {
+              "e": "e7",
+              "type": "object",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "text": "the fix skips the last page"
+            }
+          ]
+        },
+        {
+          "name": "everything_else",
+          "items": [
+            {
+              "e": "e14",
+              "type": "answer",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "question": "e13",
+              "text": "yes, at 07:00"
+            },
+            {
+              "e": "e13",
+              "type": "question",
+              "by": "s-2",
+              "at": "2026-09-21T14:15:00Z",
+              "to": "session:s-1",
+              "until": "2026-09-22T14:15:00Z",
+              "text": "is the rerun scheduled?"
+            },
+            {
+              "e": "e12",
+              "type": "note",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "to": "session:s-2",
+              "until": "2026-09-22T14:15:00Z",
+              "text": "Bob is answered; tell alice when the rerun is done"
+            },
+            {
+              "e": "e6",
+              "type": "heard",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "from": "Bob",
+              "text": "PROJ-12 and PROJ-19"
+            },
+            {
+              "e": "e5",
+              "type": "question",
+              "by": "s-1",
+              "at": "2026-09-21T14:15:00Z",
+              "where": "chat:team/7",
+              "blocking": true,
+              "text": "which tickets?"
+            }
+          ]
+        }
+      ]
+    },
+    "why_this": {
+      "tier": 0,
+      "flags": [
+        "open_commitment"
+      ],
+      "aged": 3,
+      "reason": "status"
+    }
+  }
+}
+
+== hold next, a review item
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "review": "/support/old-attempt",
+  "objection": "e901",
+  "brief": {
+    "node": {
+      "id": "#10",
+      "path": "/support/old-attempt",
+      "title": "An earlier attempt",
+      "state": "closed failed",
+      "version": 2,
+      "digest_version": 1
+    },
+    "sections": [
+      {
+        "name": "everything_else",
+        "items": [
+          {
+            "e": "e18",
+            "type": "system",
+            "by": "s-1",
+            "at": "2026-09-21T14:16:00Z",
+            "system": "closed",
+            "outcome": "failed",
+            "summary": "the parser was not the cause"
+          }
+        ]
+      }
+    ]
+  },
+  "why_this": {
+    "tier": 1,
+    "flags": [
+      "objection"
+    ],
+    "aged": 2,
+    "reason": "review"
+  }
+}
+
+== hold next, a node without est under a horizon
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "target": "/support/old-attempt",
+  "token": "10.1",
+  "lease_until": "2026-09-21T14:31:00Z",
+  "brief": {
+    "node": {
+      "id": "#10",
+      "path": "/support/old-attempt",
+      "title": "An earlier attempt",
+      "state": "closed failed",
+      "version": 2,
+      "digest_version": 1
+    },
+    "sections": [
+      {
+        "name": "everything_else",
+        "items": [
+          {
+            "e": "e18",
+            "type": "system",
+            "by": "s-1",
+            "at": "2026-09-21T14:16:00Z",
+            "system": "closed",
+            "outcome": "failed",
+            "summary": "the parser was not the cause"
+          }
+        ]
+      }
+    ]
+  },
+  "why_this": {
+    "tier": 2,
+    "flags": [],
+    "aged": 5,
+    "reason": "offered",
+    "est": "no estimate"
+  }
+}
+
+== view agreements
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "items": [
+    {
+      "path": "/support/summary-gap",
+      "text": "",
+      "approvals": 1,
+      "changed": "2026-09-21T14:16:00Z"
+    }
+  ]
+}
+
+== node create, with the request a user key's routing recorded
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "id": "#9",
+  "path": "/support/summary-gap",
+  "brief": {
+    "node": {
+      "id": "#9",
+      "path": "/support/summary-gap",
+      "title": "Two tickets missing from the summary",
+      "state": "open",
+      "version": 2,
+      "digest_version": 1,
+      "holders": [
+        {
+          "session": "s-1",
+          "until": "2026-09-21T14:29:00Z"
+        }
+      ]
+    },
+    "sections": [
+      {
+        "name": "flags",
+        "items": [
+          "objection"
+        ]
+      },
+      {
+        "name": "said_and_commitments",
+        "items": [
+          {
+            "e": "e4",
+            "type": "said",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "where": "chat:team/7",
+            "kind": "question",
+            "state": "sent with its author's last reply, unverified",
+            "text": "which tickets?"
+          },
+          {
+            "e": "e3",
+            "type": "said",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "where": "chat:team/7",
+            "kind": "reply",
+            "state": "sent with its author's last reply, unverified",
+            "text": "the parser dropped them; fixed"
+          },
+          {
+            "e": "e2",
+            "type": "said",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "where": "chat:team/7",
+            "kind": "ack",
+            "state": "sent with its author's last reply, unverified",
+            "text": "on it"
+          },
+          {
+            "commitment": "e2",
+            "where": "chat:team/7",
+            "followup": "2026-09-21T15:45:00Z",
+            "state": "open",
+            "text": "on it"
+          }
+        ]
+      },
+      {
+        "name": "decisions_and_agreements",
+        "items": [
+          {
+            "decision": "e8",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "text": "the parser fix answers it",
+            "settles": [
+              "e1"
+            ]
+          },
+          {
+            "user_question": "e10",
+            "state": "pending (mail:alice@example.org)",
+            "text": "rerun the summary for last week too?"
+          }
+        ]
+      },
+      {
+        "name": "unsettled_requests",
+        "items": [
+          {
+            "e": "e16",
+            "type": "request",
+            "by": "s-2",
+            "at": "2026-09-21T14:16:00Z",
+            "origin": "user:e15",
+            "where": "user:e15",
+            "requester": "mail:alice@example.org",
+            "text": "and add the weekly totals"
+          },
+          {
+            "e": "e1",
+            "type": "request",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "origin": "chat:team/7/m1",
+            "where": "chat:team/7",
+            "requester": "Bob",
+            "text": "why did yesterday's summary miss two tickets?"
+          }
+        ]
+      },
+      {
+        "name": "objections",
+        "items": [
+          {
+            "e": "e7",
+            "type": "object",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "text": "the fix skips the last page"
+          }
+        ]
+      },
+      {
+        "name": "everything_else",
+        "items": [
+          {
+            "e": "e14",
+            "type": "answer",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "question": "e13",
+            "text": "yes, at 07:00"
+          },
+          {
+            "e": "e13",
+            "type": "question",
+            "by": "s-2",
+            "at": "2026-09-21T14:15:00Z",
+            "to": "session:s-1",
+            "until": "2026-09-22T14:15:00Z",
+            "text": "is the rerun scheduled?"
+          },
+          {
+            "e": "e12",
+            "type": "note",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "to": "session:s-2",
+            "until": "2026-09-22T14:15:00Z",
+            "text": "Bob is answered; tell alice when the rerun is done"
+          },
+          {
+            "e": "e6",
+            "type": "heard",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "where": "chat:team/7",
+            "from": "Bob",
+            "text": "PROJ-12 and PROJ-19"
+          },
+          {
+            "e": "e5",
+            "type": "question",
+            "by": "s-1",
+            "at": "2026-09-21T14:15:00Z",
+            "where": "chat:team/7",
+            "blocking": true,
+            "text": "which tickets?"
+          }
+        ]
+      }
+    ]
+  },
+  "user_requests": [
+    "e1"
+  ]
+}
+
+== node key add, routing a user entry
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "already": false,
+  "user_request": "e1"
+}
+
+== node close of a series
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "closed": "/support/summary-gap",
+  "settled": [],
+  "dropped": "/support/old-attempt",
+  "leave_better": []
+}
+
+== hold checkpoint, closing an intent
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "entry": "e12",
+  "lease_until": "2026-09-21T14:31:00Z",
+  "intent_done": "e3"
+}
+
+== hold release, closing an intent
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "intent_done": "e3",
+  "leave_better": []
+}
+
+== hold release, with settles
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "decision": "e905",
+  "settled": [
+    "e1"
+  ],
+  "not_settled": [
+    {
+      "request": "e906",
+      "why": "awaits a to_user of kind result to its requester, mail:alice@example.org"
+    }
+  ],
+  "leave_better": []
+}
+
+== talk decide, with requests it did not settle
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "decision": "e8",
+  "settled": [],
+  "not_settled": [
+    {
+      "request": "e1",
+      "why": "settled before"
+    },
+    {
+      "request": "e1",
+      "why": "awaits a to_user of kind result to its requester, mail:alice@example.org"
+    },
+    {
+      "request": "e1",
+      "why": "awaits a said of kind reply, result, or correction in its conversation chat:team/7 on /support/summary-gap"
+    }
+  ]
+}
+
+== every warning, STALE SESSION, and secret_masked
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0",
+  "stale_session": true,
+  "warnings": [
+    {
+      "code": "moved",
+      "id": "#9",
+      "detail": "others recorded people-related entries here after you last read it (2/2): read them before you send",
+      "entries": [
+        "e6",
+        "e1"
+      ],
+      "total": 2
+    },
+    {
+      "code": "unsettled_requests",
+      "id": "#9",
+      "detail": "closed with unsettled requests (e1): they stay flagged until decided and answered"
+    },
+    {
+      "code": "open_commitments",
+      "id": "#9",
+      "detail": "closed with open commitments (e2): the flag stays until a reply in each conversation"
+    },
+    {
+      "code": "open_objections",
+      "id": "#9",
+      "detail": "closed with open objections (e7): the flag stays until each is resolved"
+    },
+    {
+      "code": "agreement",
+      "id": "#9",
+      "detail": "agreements in force: /support/summary-gap: \"\"; approvals of the current content: 1; the server does not interpret agreements, and the count implies no threshold"
+    },
+    {
+      "code": "conversation_held",
+      "id": "#9",
+      "detail": "s-1 holds the conversation node or work inside it, and you hold neither: what you recorded counts, but by convention the holder speaks, so tell them with talk say"
+    },
+    {
+      "code": "held_by_other",
+      "id": "#9",
+      "detail": "s-1 held the node; that hold ended"
+    },
+    {
+      "code": "no_hold",
+      "id": "#9",
+      "detail": "the node was made, but no hold was issued: you hold hold.per_session (2) nodes"
+    },
+    {
+      "code": "uncovered_slot",
+      "id": "#9",
+      "detail": "this series' window rarely sees an arriving session (3/28 days); usual start hours 09:00, 10:00, 14:00 (UTC); no usual start falls within the window: without an outside trigger, the run will likely be missed; set up an outside trigger that brings an agent within the window, recording its intent first, or tell the requester when runs are likely to start"
+    },
+    {
+      "code": "duplicate_key",
+      "id": "#9",
+      "detail": "the reopen dropped keys that other open nodes carry: chat:team/7 (on /support/summary-gap)"
+    },
+    {
+      "code": "user_saturated",
+      "detail": "mail:alice@example.org has 21 pending questions already: decide on a recorded assumption where you can; the question was recorded"
+    },
+    {
+      "code": "session_opened",
+      "detail": "this call opened session s-1; pass session: s-1 on every call"
+    },
+    {
+      "code": "uncovered_slot",
+      "id": "#9",
+      "detail": "this series' window rarely sees an arriving session (3/28 days); usual start hours 09:00, 10:00, 14:00 (UTC); first likely start in the next window: 2026-10-01 09:00 (UTC); set up an outside trigger that brings an agent within the window, recording its intent first, or tell the requester when runs are likely to start"
+    },
+    {
+      "code": "open_intent",
+      "id": "#9",
+      "detail": "your intent e3 is still open on /support/summary-gap: if the action happened, say so with intent_done; otherwise the next holder must check whether it did"
+    },
+    {
+      "code": "expects_ignored",
+      "id": "#9",
+      "detail": "expects is a later release: nothing waits for the answer; to get one from an agent, use talk ask {to} (expects: reply)"
+    },
+    {
+      "code": "series_stopped",
+      "id": "#9",
+      "detail": "closing the series dropped its occurrence /support/old-attempt: no further occurrence opens until the series is reopened"
+    },
+    {
+      "code": "self_basis_dropped",
+      "id": "#9",
+      "detail": "1 basis reference(s) named this decision's own node and were dropped; the decision was recorded with the others"
+    },
+    {
+      "code": "superseded_basis_dropped",
+      "id": "#9",
+      "detail": "1 basis reference(s) named e8, the decision this one supersedes, and were dropped; the decision was recorded with the others"
+    },
+    {
+      "code": "result_answered_nothing",
+      "detail": "this result named no request in re, so it answered none: name the request in re to report its result"
+    },
+    {
+      "code": "result_answered_nothing",
+      "detail": "this result answered none of e1: a requester outside the swarm is answered by talk said in their conversation"
+    },
+    {
+      "code": "waiting",
+      "id": "#9",
+      "detail": "you hold it, but since 2026-09-21T14:16:00Z it has waited for something outside, until its recheck at 2026-09-21T15:16:00Z: the wait may be an action in flight; read the release that set it, e906, and ask its author before you redo that work; your first checkpoint ends the wait"
+    },
+    {
+      "code": "waiting",
+      "id": "#9",
+      "detail": "you hold it, but since 2026-09-21T14:16:00Z it has waited for an answer to the question e5: the wait may be an action in flight; read the release in the brief's last checkpoint, and ask its author before you redo that work; your first checkpoint ends the wait"
+    },
+    {
+      "code": "unnamed_user",
+      "id": "#1",
+      "detail": "e9 is filed as the words of user, a person your client does not name: if its configuration names them, pass that principal instead"
+    },
+    {
+      "code": "held_by_other",
+      "id": "#9",
+      "detail": "s-1 held the node; that hold ended. Since you did not hold it, your close settled nothing by default; left unsettled for that holder: e1. Name them in settles only if you did their work"
+    },
+    {
+      "code": "ignored_arguments",
+      "id": "#9",
+      "detail": "at: /support/summary-gap has no unsettled user request of the person this report is to, so at was ignored and the report filed as without it; name the requester as principal, or the requests in re"
+    },
+    {
+      "code": "no_human_in_reach",
+      "detail": "nobody will read this: it is filed for user, whom no live session serves, and your session serves no human; pass principal"
+    },
+    {
+      "code": "no_human_in_reach",
+      "detail": "nobody will read this: the question is for user alone, whom no live session serves, and your session serves no human; its default applies at 2026-09-21T15:16:00Z"
+    },
+    {
+      "code": "client_context",
+      "id": "#1",
+      "detail": "e9 looks like your client's instructions, not your human's words: log what they typed with talk from_user, and hide this entry with node hide {entry: e9, reason}"
+    },
+    {
+      "code": "unmet_needs",
+      "id": "#9",
+      "detail": "no session can take /support/summary-gap now: none has exact-statement; the caps in use: none; needs name what a taker must be able to do"
+    },
+    {
+      "code": "unmet_needs",
+      "id": "#9",
+      "detail": "your caps lack lean, swift, which /support/summary-gap needs: take it only if you can do the work; else release it"
+    },
+    {
+      "code": "no_basis",
+      "id": "#9",
+      "detail": "/support/summary-gap reads as done, but its decision e907 is retracted and nothing else decides it: if it is proved, talk decide {at, text, basis}; if not, reopen it (node reopen): it reads unproved, not refuted"
+    },
+    {
+      "code": "paused",
+      "id": "#9",
+      "detail": "recorded; the subtree is paused at /support/summary-gap until 2026-09-21T15:16:00Z; make sure the pause allows this"
+    },
+    {
+      "code": "follow_up",
+      "id": "#9",
+      "detail": "e9 clarifies e1, mail:alice@example.org's open request on /support/summary-gap: new work there takes to: /support/summary-gap; if these words needed no work, pass to: none next time"
+    },
+    {
+      "code": "no_human_in_reach",
+      "detail": "no session serves mail:alice@example.org or user: nobody will put e10 to them; to reach them, ask where they are: talk ask {at, where, text} with no to"
+    },
+    {
+      "code": "no_recipient",
+      "id": "#9",
+      "detail": "nobody holds or will take /support/summary-gap: this note reaches nobody"
+    },
+    {
+      "code": "addressee_gone",
+      "detail": "s-1 has been silent since 2026-09-21T14:16:00Z: it will not read this"
+    },
+    {
+      "code": "answered_nothing",
+      "id": "#9",
+      "detail": "chat:team/7 has no request on /support/summary-gap, so this said answers nothing: record the message you answer first"
+    },
+    {
+      "code": "secret_masked",
+      "detail": "a secret was found and masked in 2 field(s)"
+    }
+  ],
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "recorded": true
+}
+
+== a red health and a session that serves a human
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-2 (coder) · holds 0 · inbox 0 · user_decisions 1 · health red: paused: / by coder/s-1 until 15:16, excludes 4",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "recorded": true
+}
+
+== control health, red, a reason of each kind
+{
+  "status": "[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/support/summary-gap, 13:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0 · health red: paused: / by coder/s-1 until 15:16, excludes 4",
+  "next_calls": {
+    "items": [],
+    "total": 0
+  },
+  "level": "red",
+  "reasons": [
+    {
+      "level": "red",
+      "reason": "paused: / by coder/s-1 until 15:16, excludes 4",
+      "count": 1,
+      "items": [
+        {
+          "scope": "/",
+          "by": "coder/s-1",
+          "until": "2026-09-21T15:16:00Z",
+          "reason": "",
+          "excludes": 4
+        }
+      ]
+    },
+    {
+      "level": "red",
+      "reason": "flags piling up: 95 flagged nodes not waiting, up from 40 in 7d",
+      "count": 95,
+      "start": 40
+    },
+    {
+      "level": "red",
+      "reason": "overloaded: 900 min of work in 7d, 300 min done; oldest waiting /support/summary-gap",
+      "demand_min": 900,
+      "supply_min": 300,
+      "idle_permille": 50,
+      "oldest": "/support/summary-gap"
+    },
+    {
+      "level": "yellow",
+      "reason": "no mover: /support/summary-gap waits for /, which nothing moves, and 1 more",
+      "count": 2,
+      "items": [
+        {
+          "node": "/support/summary-gap",
+          "waits_for": "/"
+        },
+        {
+          "node": "/support/summary-gap",
+          "flags": [
+            "objection"
+          ]
+        }
+      ]
+    },
+    {
+      "level": "yellow",
+      "reason": "unreachable: /support/summary-gap: no session seen in 7d, and 2 more",
+      "count": 3,
+      "by_needs": 2,
+      "by_horizon": 1,
+      "items": [
+        {
+          "node": "/support/summary-gap",
+          "by": "needs",
+          "needs": []
+        }
+      ]
+    },
+    {
+      "level": "yellow",
+      "reason": "write surge: coder made 5000 writes in the last hour, against a mean of 10",
+      "class": "coder",
+      "count": 5000,
+      "baseline": 10
+    },
+    {
+      "level": "yellow",
+      "reason": "underused: 60 % of next calls found nothing, and no work waits",
+      "idle_permille": 600
+    }
+  ],
+  "capacity": {
+    "demand_min": 0,
+    "supply_min": 0,
+    "lost_min": 0,
+    "next_calls": 0,
+    "next_empty": 0,
+    "next_empty_for_you": 0,
+    "backlog": 0,
+    "flagged_active": 0,
+    "median_done_min": 0
+  },
+  "computed_at": "2026-09-21T14:16:00Z"
+}
+

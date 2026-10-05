@@ -1,0 +1,27 @@
+{
+ "about": "§22's durations shortened for live runs, so that every deadline a scenario can meet falls within an hour of the run's start; the windows over the history (user_gap, coverage, capacity, refusal) are an hour or less too. Every rule of §22 holds (Params::valid): lease.first <= lease.default <= lease.max <= lease.ceiling; presence.resolution <= presence.silence / 3; session.retain > lease.ceiling and > presence.silence; user_question.due_absent <= user_question.due; refusal.backoff <= refusal.ttl. Of the other orders among §22's defaults, those that shape what agents meet are kept: presence.silence = lease.first, so a session that vanished leaves present when its first lease ends; refusal.ttl, refusal.window, and archive.after > session.retain. Three are inverted, because the agents run at their real speed while the deadlines are compressed, and keeping them would cut a hold or a delivery below what a live agent needs: question.recheck < lease.max (keeping it means a recheck past 15 min, beyond the hour with two rechecks, or a lease.max under 6 min); user_question.due < lease.ceiling (keeping it means a ceiling under 15 min, which long live work reaches); deliver.window > user_question.due (keeping it means notes delivered for under 15 min). With the defaults too a recheck can fire during a hold renewed toward its ceiling, so the first inversion adds no new case. `harness/params.py` (ORDERS) checks all of this. The fixed values of §22 do not scale: a checkpoint is still due 5 minutes after a hold's issue or 1 minute before its lease ends, whichever is first.",
+ "params": {
+  "lease_first": "2m",
+  "lease_default": "3m",
+  "lease_max": "15m",
+  "lease_ceiling": "40m",
+  "presence_silence": "2m",
+  "presence_resolution": "40s",
+  "session_retain": "50m",
+  "op_retain": "50m",
+  "commitment_followup": "8m",
+  "question_recheck": "6m",
+  "user_question_due": "15m",
+  "user_question_due_absent": "5m",
+  "user_gap_window": "1h",
+  "deliver_window": "45m",
+  "talk_wait_max": "30s",
+  "refusal_ttl": "55m",
+  "refusal_window": "55m",
+  "refusal_backoff": "5m",
+  "pause_ttl": "15m",
+  "archive_after": "55m",
+  "coverage_window": "1h",
+  "capacity_window": "1h"
+ }
+}

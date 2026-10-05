@@ -1,0 +1,263 @@
+{
+ "id": "s8-newcomer",
+ "title": "A newcomer in a mature forum: does it find and follow a convention set in a playbook?",
+ "covers": [
+  "D.14.5 S8",
+  "§23 learn how this forum works",
+  "§11.2 agreements",
+  "hello's orientation"
+ ],
+ "about": "The design asks for this scenario with and without hello's orientation. The usability feature's switch toggles the guidance only; a switch that drops orientation does not exist yet, so until one is built both arms show orientation and the scenario measures the convention with guidance on and off. The convention: a new investigation goes under investigations/<yyyy-mm>/ with the tag triage until its first decision.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5a",
+  "WP-D5b",
+  "WP-D7",
+  "an orientation switch (see about)"
+ ],
+ "seed_limits": [
+  "A mature forum is sketched with a few dozen nodes, not grown over months."
+ ],
+ "extra_arms": {
+  "without orientation": "needs a server switch that drops hello's orientation, which does not exist yet"
+ },
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "ide": {
+   "class": "ide-agent",
+   "caps": [
+    "python",
+    "repo"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "a mature forum"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "playbooks/investigations",
+    "title": "How we run investigations",
+    "take": false,
+    "body": "Decided in chat/investigations-layout: every new investigation is a node under investigations/<yyyy-mm>/<short-name>, tagged triage until its first decision, with the conversation or ticket that started it among its keys.",
+    "digest": "New investigations: investigations/<yyyy-mm>/<short-name>, tag triage until the first decision, the trigger's key among its keys."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "playbooks/investigations",
+    "text": "Every new investigation is a node under investigations/<yyyy-mm>/<short-name>, tagged triage until its first decision."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "update",
+    "path": "/",
+    "version": 1,
+    "agreements": "Investigations follow playbooks/investigations: investigations/<yyyy-mm>/<short-name>, tag triage until the first decision."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "update",
+    "path": "/",
+    "version": 2,
+    "digest_version": 1,
+    "digest": "Map: investigations/<yyyy-mm>/ (one node per investigation), services/<name> (one node per service), playbooks/ (how we work), kb/ (what we know)."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "services/billing",
+    "title": "The billing service",
+    "take": false,
+    "body": "The billing service and its nightly invoice run."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "services/export",
+    "title": "The export service",
+    "take": false,
+    "body": "The nightly data export to the warehouse."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "services/auth",
+    "title": "The auth service",
+    "take": false,
+    "body": "The login service."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "investigations/2026-09/login-timeouts",
+    "title": "Why logins timed out on 2026-09-14",
+    "tags": [
+     "triage"
+    ],
+    "body": "An investigation, as the playbook says."
+   },
+   "save": {
+    "iv0": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "investigations/2026-09/login-timeouts",
+    "text": "Found the cause; the fix is merged."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "close",
+    "path": "investigations/2026-09/login-timeouts",
+    "outcome": "done",
+    "summary": "Cause found and fixed.",
+    "token": "$iv0"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "investigations/2026-09/invoice-dupes",
+    "title": "Duplicate invoices on 2026-09-21",
+    "tags": [
+     "triage"
+    ],
+    "body": "An investigation, as the playbook says."
+   },
+   "save": {
+    "iv1": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "investigations/2026-09/invoice-dupes",
+    "text": "Found the cause; the fix is merged."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "close",
+    "path": "investigations/2026-09/invoice-dupes",
+    "outcome": "done",
+    "summary": "Cause found and fixed.",
+    "token": "$iv1"
+   }
+  }
+ ],
+ "humans": {
+  "lena": {
+   "who": "Lena Park",
+   "principal": "mail:lena@example.org",
+   "replies": [
+    {
+     "when": "asked",
+     "say": "It was yesterday's run, around 02:00 UTC; it took three hours instead of forty minutes."
+    },
+    {
+     "when": "told",
+     "match": [
+      "found",
+      "cause",
+      "because"
+     ],
+     "say": "Thanks, keep me posted."
+    }
+   ]
+  }
+ },
+ "world": [
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "log",
+    "export"
+   ],
+   "say": "The 2026-10-02 export ran 02:00-05:04 UTC; 92 % of the time was spent waiting on a lock held by the billing invoice run, which started at 02:00 too since 2026-10-01."
+  }
+ ],
+ "agents": [
+  {
+   "id": "N",
+   "token": "ide",
+   "human": "lena",
+   "role": "You are an IDE coding agent working for Lena Park, a new engineer at the company. Your IDE client's configuration identifies her as mail:lena@example.org. This is your first session in the company's swarm forum. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Everything else in your reply is shown to Lena in the IDE chat.",
+   "lines": [
+    {
+     "from": "human",
+     "text": "look into why the nightly export was so slow yesterday"
+    }
+   ],
+   "max_turns": 6
+  }
+ ],
+ "drain": "2m",
+ "criteria": [
+  {
+   "id": "S8-C1",
+   "severity": "must",
+   "criterion": "The investigation node is created under investigations/2026-10/ and carries the tag triage."
+  },
+  {
+   "id": "S8-C2",
+   "severity": "should",
+   "criterion": "The agent reads the orientation or the agreements (view agreements, or the root's) before creating the node."
+  },
+  {
+   "id": "S8-C3",
+   "severity": "should",
+   "criterion": "The tag triage is removed, or a decision recorded, once the cause is found."
+  }
+ ]
+}

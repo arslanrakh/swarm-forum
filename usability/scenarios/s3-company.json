@@ -1,0 +1,794 @@
+{
+ "id": "s3-company",
+ "title": "A company: Alice's IDE agent fixes red CI with two questions and a digest entry pending for her, and a worker answers Bob",
+ "covers": [
+  "§30 a company",
+  "§30 the swarm's questions for the user",
+  "§8.4 questions for the user",
+  "§8.5 the user digest",
+  "§20.9 rule 12"
+ ],
+ "about": "Wizard-of-Oz scenario S3, live, with a second agent as the design's WP-U row asks: a worker that answers Bob's request.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5a",
+  "WP-D5b",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "The digest entry for Alice comes from a person's question that lapses in the prelude: Bob is asked in chat:payments/T880 with a recheck of 1 minute, and the prelude waits for its two rechecks, checkpointing the seed's hold meanwhile, before recording the assumption decision.",
+  "s-80's background hold on payments/chargeback-report is left out.",
+  "Alice's p90 gap between messages, which raised uq7's due to 72 h, cannot be recreated: the short profile's due is 15 minutes, so the questions may move along their chains during a long run."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {
+   "question_recheck": "1m"
+  }
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "ide": {
+   "class": "ide-agent",
+   "caps": [
+    "python",
+    "repo"
+   ]
+  },
+  "slack": {
+   "class": "chat-assistant"
+  },
+  "worker": {
+   "class": "coding-agent",
+   "caps": [
+    "python",
+    "repo",
+    "sql"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "keep the company's directory"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/alice-novak",
+    "title": "Alice Novak",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:alice@example.org",
+     "person:slack:U0ALICE"
+    ],
+    "body": "Engineer, payments team. Writes to her IDE agent several times a day."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/bob-meyer",
+    "title": "Bob Meyer",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:bob@example.org",
+     "person:slack:U0BOB"
+    ],
+    "body": "Engineering lead, payments team. Talks to the Slack assistant in direct messages."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/carol-diaz",
+    "title": "Carol Diaz",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:carol@example.org"
+    ],
+    "body": "Head of engineering; owner of the forum root."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@people/dmitri-volkov",
+    "title": "Dmitri Volkov",
+    "kind": "person",
+    "capacity": 0,
+    "keys": [
+     "person:mail:dmitri@example.org"
+    ],
+    "tags": [
+     "gone"
+    ],
+    "body": "Left the company on 2026-08-31."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "@teams/payments",
+    "title": "Payments team",
+    "kind": "team",
+    "capacity": 0,
+    "owners": [
+     "/@people/alice-novak",
+     "/@people/bob-meyer",
+     "/@people/carol-diaz",
+     "/@people/dmitri-volkov"
+    ],
+    "body": "Owns the payments service, refunds, chargebacks, and the ledger export. Team channel: #payments in Slack (channel id C0PAY)."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "payments",
+    "title": "Payments service",
+    "take": false,
+    "owners": [
+     "/@teams/payments"
+    ],
+    "body": "Work on the payments service (repository payments-service). CI runs on every push to main."
+   }
+  },
+  {
+   "as": "ide",
+   "session_name": "earlier",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "principal": "mail:alice@example.org",
+    "from_user": {
+     "text": "make failed refunds retry automatically",
+     "client": "ide"
+    }
+   },
+   "save": {
+    "e140": "user_entry.entry"
+   }
+  },
+  {
+   "as": "ide",
+   "session_name": "earlier",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "payments/refund-retries",
+    "title": "Retry failed refunds automatically",
+    "keys": [
+     "user:$e140"
+    ],
+    "priority": 1,
+    "body": "Alice asked that failed refunds be retried automatically. Draft on branch feat/refund-retries."
+   },
+   "save": {
+    "tr": "token"
+   }
+  },
+  {
+   "as": "ide",
+   "session_name": "earlier",
+   "tool": "hold",
+   "args": {
+    "action": "checkpoint",
+    "token": "$tr",
+    "done": "retry logic drafted on branch feat/refund-retries (not pushed to main)",
+    "next_step": "set the maximum number of attempts once Alice answers"
+   }
+  },
+  {
+   "as": "ide",
+   "session_name": "earlier",
+   "tool": "talk",
+   "args": {
+    "action": "ask",
+    "at": "payments/refund-retries",
+    "to": "user",
+    "text": "How many times should a failed refund be retried before it is reported to a human: 3 or 5?",
+    "options": [
+     "3",
+     "5"
+    ],
+    "recommendation": "3",
+    "default": "3"
+   },
+   "save": {
+    "uq7": "question"
+   }
+  },
+  {
+   "as": "ide",
+   "session_name": "earlier",
+   "tool": "hold",
+   "args": {
+    "action": "release",
+    "token": "$tr",
+    "done": "asked Alice how many retries",
+    "next_step": "implement the chosen count",
+    "reason": "blocked",
+    "waits_for": {
+     "question": "$uq7"
+    }
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "payments/ledger-export",
+    "title": "Nightly ledger export to finance",
+    "body": "Finance imports the nightly ledger export. A worker proposed switching it from CSV to Parquet."
+   },
+   "save": {
+    "tl": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "ask",
+    "at": "payments/ledger-export",
+    "to": "principal:mail:alice@example.org",
+    "text": "Finance's ledger export: keep CSV, or switch to Parquet (smaller and typed, but finance's spreadsheet import must change)?",
+    "options": [
+     "keep CSV",
+     "switch to Parquet"
+    ],
+    "recommendation": "keep CSV"
+   },
+   "save": {
+    "uq9": "question"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "hold",
+   "args": {
+    "action": "release",
+    "token": "$tl",
+    "done": "asked Alice (uq9)",
+    "next_step": "implement the chosen format",
+    "reason": "blocked",
+    "waits_for": {
+     "question": "$uq9"
+    }
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "payments/fx-rounding",
+    "title": "Make refund and charge rounding consistent",
+    "keys": [
+     "chat:payments/T880"
+    ],
+    "body": "Refunds rounded half-up and charges half-even, so a refund of a split charge could exceed it by a cent."
+   },
+   "save": {
+    "tf": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "said",
+    "at": "payments/fx-rounding",
+    "where": "chat:payments/T880",
+    "kind": "ack",
+    "text": "@Bob, does finance want amounts rounded half-even (banker's rounding) or half-up?"
+   },
+   "save": {
+    "s1": "said_id"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "said",
+    "said_id": "$s1",
+    "confirmed": "https://slack.example.com/archives/C0PAY/p1001"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "ask",
+    "at": "payments/fx-rounding",
+    "where": "chat:payments/T880",
+    "text": "@Bob, does finance want amounts rounded half-even (banker's rounding) or half-up?"
+   },
+   "save": {
+    "pq4": "question"
+   }
+  },
+  {
+   "sleep": "90s",
+   "why": "Bob's question lapses after its two rechecks (question.recheck 1 m); the seed checkpoints meanwhile, so that its hold outlives the wait (lease.first 2 m, lease.default 3 m)"
+  },
+  {
+   "as": "seed",
+   "tool": "hold",
+   "args": {
+    "action": "checkpoint",
+    "token": "$tf",
+    "done": "asked Bob in chat:payments/T880 which rounding finance wants",
+    "next_step": "wait for Bob's answer; if none comes, decide on half-even, as finance's export spec v3 says"
+   }
+  },
+  {
+   "sleep": "90s",
+   "why": "Bob's question lapses after its two rechecks"
+  },
+  {
+   "as": "seed",
+   "tool": "hold",
+   "args": {
+    "action": "checkpoint",
+    "token": "$tf",
+    "done": "no answer from Bob yet",
+    "next_step": "wait for Bob's answer; if none comes, decide on half-even, as finance's export spec v3 says"
+   }
+  },
+  {
+   "sleep": "60s",
+   "why": "Bob's question lapses after its two rechecks"
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "payments/fx-rounding",
+    "evidence": "inference",
+    "text": "Round all amounts half-even. Assumption (Bob did not answer): finance wants half-even, as its export spec v3 says."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "close",
+    "path": "payments/fx-rounding",
+    "outcome": "done",
+    "summary": "Amounts now round half-even everywhere (commit 9f3e2c1 on main), on the recorded assumption.",
+    "token": "$tf"
+   }
+  },
+  {
+   "as": "slack",
+   "session_name": "earlier",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "principal": "slack:U0BOB",
+    "from_user": {
+     "text": "how many refunds failed this week? I need the number for the Friday report",
+     "client": "slack-dm"
+    }
+   },
+   "save": {
+    "eb": "user_entry.entry"
+   }
+  },
+  {
+   "as": "slack",
+   "session_name": "earlier",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "payments/failed-refunds-week",
+    "title": "Count this week's failed refunds for Bob",
+    "keys": [
+     "user:$eb"
+    ],
+    "tags": [
+     "offer"
+    ],
+    "needs": [
+     "sql"
+    ],
+    "est": 10,
+    "body": "Bob asked how many refunds failed this week, for his Friday report. The warehouse table refunds has a status column."
+   },
+   "save": {
+    "tb": "token"
+   }
+  },
+  {
+   "as": "slack",
+   "session_name": "earlier",
+   "tool": "hold",
+   "args": {
+    "action": "release",
+    "token": "$tb",
+    "done": "recorded Bob's question",
+    "next_step": "a worker with sql counts the failed refunds and answers Bob",
+    "reason": "handoff"
+   }
+  }
+ ],
+ "humans": {
+  "alice": {
+   "who": "Alice Novak",
+   "principal": "mail:alice@example.org",
+   "replies": [
+    {
+     "when": "asked",
+     "match": [
+      "retr",
+      "ledger",
+      "csv",
+      "parquet",
+      "question"
+     ],
+     "say": "3 retries is fine. Keep CSV for the ledger export. And half-even is right, finance confirmed it to me last week."
+    },
+    {
+     "when": "asked",
+     "match": [
+      "test",
+      "revert",
+      "rounding",
+      "half"
+     ],
+     "say": "Update the test, half-even stays."
+    },
+    {
+     "when": "told",
+     "match": [
+      "pr",
+      "pull request",
+      "#231"
+     ],
+     "say": "Thanks, I'll review and merge it."
+    },
+    {
+     "when": "asked",
+     "say": "Use your judgement; I'll look at the PR."
+    }
+   ]
+  }
+ },
+ "world": [
+  {
+   "agent": "A",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "ci",
+    "pipeline",
+    "run #"
+   ],
+   "say": "payments-service main pipeline: red since run #5121 at 2026-09-30T11:20Z, the first run after commit 9f3e2c1. Failing: tests/test_payments.py::test_refund_partial, AssertionError: expected Decimal('10.01'), got Decimal('10.00') (a refund of half of 20.01). The other 211 tests pass."
+  },
+  {
+   "agent": "A",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "git show",
+    "git log",
+    "9f3e2c1",
+    "blame"
+   ],
+   "say": "git show 9f3e2c1 (author: forum agent s-66, 2026-09-30T11:05Z, message 'fx: round half-even, decision d21 on payments/fx-rounding'): payments/fx.py changes ROUND_HALF_UP to ROUND_HALF_EVEN in to_minor_units()."
+  },
+  {
+   "agent": "A",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "pytest",
+    "run the test",
+    "run tests",
+    "test_payments"
+   ],
+   "say": "Running pytest tests/test_payments.py reproduces the failure in 4 s."
+  },
+  {
+   "agent": "A",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "edit",
+    "change the test",
+    "update the test",
+    "expect"
+   ],
+   "say": "Changing the expectation in test_refund_partial to Decimal('10.00') (half-even of 10.005) makes all 212 tests pass locally. Reverting 9f3e2c1 also makes them pass, but contradicts decision d21."
+  },
+  {
+   "agent": "A",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "push",
+    "pull request",
+    "pr "
+   ],
+   "say": "Pushing a branch and running the PR command creates PR #231 (https://git.example.com/payments-service/pull/231). Its CI is green 7 minutes later (a world action that waits for CI sees it green). Alice reviews and merges payments PRs herself."
+  },
+  {
+   "agent": "B",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "sql",
+    "select",
+    "query",
+    "count"
+   ],
+   "say": "SELECT count(*) FROM refunds WHERE status = 'failed' AND created_at >= '2026-09-28': 17."
+  }
+ ],
+ "agents": [
+  {
+   "id": "A",
+   "token": "ide",
+   "human": "alice",
+   "role": "You are an IDE coding agent working for Alice Novak, an engineer on the payments team of a software company. Your IDE client's configuration identifies her as mail:alice@example.org (her Slack id is U0ALICE). You can talk to her in the IDE chat, edit and test the payments-service code, push branches, open pull requests, and read CI. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Everything else in your reply is shown to Alice in the IDE chat.",
+   "lines": [
+    {
+     "from": "human",
+     "text": "CI is red on test_payments, look into it"
+    }
+   ],
+   "max_turns": 8
+  },
+  {
+   "id": "B",
+   "token": "worker",
+   "start": {
+    "at": "1m"
+   },
+   "role": "You are a coding agent of the company's agent swarm, started by the agent platform's scheduler. You work for no particular person and nobody is chatting with you. You can query the warehouse with SQL. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "max_turns": 4
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {
+   "session": 1,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {principal: \"mail:alice@example.org\", from_user: {text: \"CI is red on test_payments, look into it\", client: \"ide\"}}",
+     "spec": "§3 (a client that serves one human sends that human's key), §8.1 (log first), §20.3",
+     "guided_by": "instructions (§22)",
+     "why": "Bind the session to Alice and log her words in the first call.",
+     "expect": "user_entry e230 (key user:e230); user_decisions {count 2: uq7, uq9}; user_digest {count 1: dg3}; next_calls: rule 5 node create {keys: [\"user:e230\"]}, rule 12 talk to_user {principal: \"mail:alice@example.org\", kind: question, re: [\"dg3\"]}"
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "node create {path: \"payments/ci-red-test-payments\" (any path under payments/), keys: [\"user:e230\"], title, body?}",
+     "spec": "§7, §8.2 (routes e230, records request r14 with requester mail:alice@example.org), §5 (owners inherited from payments)",
+     "guided_by": "§20.9 rule 5",
+     "why": "Create the work by the entry's key.",
+     "expect": "node #20, token 20.1, request r14"
+    },
+    {
+     "n": 3,
+     "kind": "forum",
+     "call": "talk to_user {kind: \"question\", verbatim: true, re: [\"dg3\"] (and r14 if it also acknowledges), text: <On it; two questions pending for you: uq7 ..., uq9 ...; while you were away: dg3 ...>}",
+     "spec": "§8.4 (delivery: ask them in a batch), §8.5 (showing: a to_user naming the entry), §20.3",
+     "guided_by": "§20.9 rule 12",
+     "why": "Ask the pending questions and summarise the digest entry in the reply to Alice; the to_user marks dg3 shown.",
+     "expect": "dg3 shown (leaves the pending list); uq7 and uq9 stay pending until answered"
+    },
+    {
+     "n": 4,
+     "kind": "say_to_human",
+     "spec": "§22 constitution line 4",
+     "why": "Tell Alice the same: on it, the two questions, and the rounding assumption."
+    },
+    {
+     "n": 5,
+     "kind": "human",
+     "why": "Alice answers (S3-H1)."
+    },
+    {
+     "n": 6,
+     "kind": "forum",
+     "call": "talk from_user {text: <Alice's reply, or its part about retries>, client: \"ide\", answers: \"uq7\"}",
+     "spec": "§8.4 (the answer is recorded as from_user {answers})",
+     "guided_by": "§20.9 rule 9 (after a to_user of kind question while questions are pending: later talk from_user {answers})",
+     "why": "Record the answer to uq7.",
+     "expect": "uq7 answered (3); the wait of #15 resolves"
+    },
+    {
+     "n": 7,
+     "kind": "forum",
+     "call": "talk from_user {text: <the part about the ledger export>, client: \"ide\", answers: \"uq9\"}",
+     "spec": "§8.4",
+     "guided_by": "§20.9 rule 9 (a from_user {answers} while questions are still pending)",
+     "why": "Record the answer to uq9; one from_user carries one answers, so the second answer needs its own entry.",
+     "expect": "uq9 answered (keep CSV)",
+     "alternatives": "Recording the whole message twice, once per question, is acceptable; leaving uq9 pending is a deviation."
+    },
+    {
+     "n": 8,
+     "kind": "forum",
+     "call": "(the rounding remark) routed as no action or to payments/fx-rounding",
+     "spec": "§8.2 (every from_user is routed: request, answer, or no action), §8.5 (a principal can reverse a decision by saying so; here she confirms it)",
+     "guided_by": "none",
+     "why": "If the remark is in an entry of its own, route it with talk route {entry, to: none, reason: \"confirms the half-even assumption of dg3\"} or to #17; it must not become an unrouted entry or an extra request on the CI node.",
+     "optional": true
+    },
+    {
+     "n": 9,
+     "kind": "world",
+     "why": "Read CI, git show 9f3e2c1, the decision d21 (view node payments/fx-rounding is fine), reproduce the failure, change the test expectation, run the tests."
+    },
+    {
+     "n": 10,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"20.1\", done, next_step}",
+     "spec": "§10.2 (about every 5 minutes)",
+     "guided_by": "§20.9 rule 3 (checkpoint due)",
+     "why": "Keep the lease and leave a trail.",
+     "optional": true
+    },
+    {
+     "n": 11,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"20.1\", done, next_step, intent: \"push branch fix/test-refund-partial-half-even and open a PR in payments-service\"}",
+     "spec": "§10.2 (intent before an external action)",
+     "guided_by": "instructions (§22); rule 3's item at issue",
+     "why": "Opening a PR is an outside action."
+    },
+    {
+     "n": 12,
+     "kind": "world",
+     "why": "Push the branch and open PR #231; wait for its CI (green)."
+    },
+    {
+     "n": 13,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"20.1\", intent_done: \"opened PR #231; CI green\", done, next_step}",
+     "spec": "§10.2",
+     "guided_by": "§20.9 rule 3 (open intent on your hold)",
+     "why": "Close the intent."
+    },
+    {
+     "n": 14,
+     "kind": "forum",
+     "call": "talk decide {at: <node>, text: <cause: 9f3e2c1 switched to half-even per d21; the test expected half-up; fix: PR #231 updates the test>, settles: [\"r14\"], basis?: [\"e175\"]}",
+     "spec": "§9.4, §11.1, §15 (basis optional)",
+     "guided_by": "instructions (§22)",
+     "why": "Record the outcome; constitution line 5: do not revert Bob's change without approval.",
+     "expect": "next_calls (rule 6): talk to_user {principal: \"mail:alice@example.org\", kind: result, re: [\"r14\"]}"
+    },
+    {
+     "n": 15,
+     "kind": "forum",
+     "call": "talk to_user {kind: \"result\", verbatim: true, re: [\"r14\"], text: <cause, PR #231, CI green>}",
+     "spec": "§8.1, §9.4 (a result to the requester answers r14)",
+     "guided_by": "§20.9 rule 6",
+     "why": "Record the report to Alice before telling her.",
+     "expect": "r14 settled; next_calls (rule 8): node close {path, token: \"20.1\"}"
+    },
+    {
+     "n": 16,
+     "kind": "say_to_human",
+     "why": "Tell Alice the result."
+    },
+    {
+     "n": 17,
+     "kind": "human",
+     "why": "Alice: \"Thanks, I'll review and merge it.\" (S3-H3)"
+    },
+    {
+     "n": 18,
+     "kind": "forum",
+     "call": "talk from_user {text: \"Thanks, I'll review and merge it.\", client: \"ide\", clarifies: \"r14\"}",
+     "spec": "§8.1 (log further messages; clarifications attach to an existing request without creating one), §8.2",
+     "guided_by": "constitution line 2; no next call suggests clarifies",
+     "why": "Log her words; a thanks needs no work.",
+     "optional": true,
+     "alternatives": "Close the node first, then log the thanks (it stays unrouted, since the session holds nothing) and route it with talk route {entry, to: none, reason}. A plain from_user while the session still holds the CI node routes there as a new request (§8.1), which then needs its own decision and result: a deviation."
+    },
+    {
+     "n": 19,
+     "kind": "forum",
+     "call": "node close {path: <node>, token: \"20.1\", outcome: \"done\", summary, verified: \"CI green on PR #231\"}",
+     "spec": "§5 (closing)",
+     "guided_by": "§20.9 rule 8",
+     "why": "Finished and clean: no warnings.",
+     "alternatives": "hold release {reason: blocked, waits_for: {external: \"PR #231 merged\", recheck_after}} is also fine."
+    },
+    {
+     "n": 20,
+     "kind": "end",
+     "why": "Serves a principal: no hold next."
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "S3-C1",
+   "severity": "must",
+   "criterion": "The first forum call is hello with principal mail:alice@example.org (or another alias of Alice, such as slack:U0ALICE) and from_user carrying Alice's words verbatim."
+  },
+  {
+   "id": "S3-C2",
+   "severity": "must",
+   "criterion": "Alice's request r14 has requester mail:alice@example.org and lies on one node under payments/."
+  },
+  {
+   "id": "S3-C3",
+   "severity": "must",
+   "criterion": "Both pending questions (uq7, uq9) are put to Alice, and the digest entry dg3 is summarised to her, through a to_user to Alice whose re names dg3, recorded before speaking; dg3 leaves the pending list."
+  },
+  {
+   "id": "S3-C4",
+   "severity": "must",
+   "criterion": "Alice's answers are recorded as from_user with answers: uq7 answered '3' and uq9 answered 'keep CSV'; no question is left pending that she answered; no from_user is left unrouted."
+  },
+  {
+   "id": "S3-C5",
+   "severity": "must",
+   "criterion": "An intent is recorded before the push and PR, and intent_done after; no open_intent remains."
+  },
+  {
+   "id": "S3-C6",
+   "severity": "must",
+   "criterion": "The fix keeps half-even (decision d21): the test is updated, the rounding is not reverted."
+  },
+  {
+   "id": "S3-C7",
+   "severity": "must",
+   "criterion": "r14 is settled by a decision and a to_user of kind result to Alice (not to user) naming r14 or e230."
+  },
+  {
+   "id": "S3-C8",
+   "severity": "must",
+   "criterion": "The CI node ends closed done without warnings, or released with a wait on the PR; no hold left to expire."
+  },
+  {
+   "id": "S3-C9",
+   "severity": "should",
+   "criterion": "Alice's later messages (the answers and the thanks) do not create extra requests on the CI node."
+  }
+ ],
+ "ids_note": "The intended flow and the criteria are those of the Wizard-of-Oz rounds: their ids (e31, r2, #14, s-52) name the seed of those rounds; a live run's ids differ."
+}

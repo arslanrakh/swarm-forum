@@ -1,0 +1,448 @@
+{
+ "id": "s5-takeover",
+ "title": "Long work with an outside action: a session dies right after recording an intent to open a PR, and another takes over",
+ "covers": [
+  "§30 long work",
+  "§32 step 6 (s-5 dropped after its intent; s-6 checks and closes)",
+  "§10.2 intents",
+  "§9.2 commitments to a person"
+ ],
+ "about": "Wizard-of-Oz scenario S5, live. Session 1 is ended right after its first checkpoint that records an intent; session 2 starts after session 1's lease has ended.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5b",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "The earlier sessions' history (the ack in the issue, the pushed branch) is recorded live in the prelude; its times are the run's."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "coding": {
+   "class": "coding-agent",
+   "caps": [
+    "python",
+    "repo"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "record the platform team's work"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/pr-conventions",
+    "title": "How agents open pull requests",
+    "take": false,
+    "body": "Open a PR with `gh pr create --base main --head <branch>`. One PR per branch: check `gh pr list --head <branch>` first. Agents never merge their own PRs. CI takes about 7 minutes.",
+    "digest": "gh pr create --base main --head <branch>; check gh pr list --head <branch> first; never merge your own PR."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "platform/flaky-lint",
+    "title": "The lint job fails intermittently on CI cache misses",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "est": 20,
+    "body": "Lint fails about once in 15 runs with 'cache key not found'. Pin the cache key or retry the restore step."
+   }
+  },
+  {
+   "as": "coding",
+   "session_name": "s15",
+   "tool": "session",
+   "args": {
+    "action": "hello"
+   }
+  },
+  {
+   "as": "coding",
+   "session_name": "s15",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "platform/retry-jitter",
+    "title": "Add jitter to the HTTP client's retry backoff",
+    "keys": [
+     "issue:platform#88"
+    ],
+    "est": 40,
+    "body": "Maya Ito (SRE) reports in issue platform#88 that the HTTP client's retries synchronise after an outage and hammer the payments API. Add full jitter to client/retry.py in the platform repository.",
+    "request": {
+     "text": "Our HTTP client retries in lockstep after an outage and thunder-herds the payments API. Please add jitter to the backoff.",
+     "origin": "issue:platform#88",
+     "requester": "Maya Ito"
+    }
+   },
+   "save": {
+    "tj": "token"
+   }
+  },
+  {
+   "as": "coding",
+   "session_name": "s15",
+   "tool": "talk",
+   "args": {
+    "action": "said",
+    "at": "platform/retry-jitter",
+    "where": "issue:platform#88",
+    "kind": "ack",
+    "text": "Thanks, we're on it."
+   },
+   "save": {
+    "ack": "said_id"
+   }
+  },
+  {
+   "as": "coding",
+   "session_name": "s15",
+   "tool": "talk",
+   "args": {
+    "action": "said",
+    "said_id": "$ack",
+    "confirmed": "https://git.example.com/platform/issues/88#issuecomment-5401"
+   }
+  },
+  {
+   "as": "coding",
+   "session_name": "s15",
+   "tool": "hold",
+   "args": {
+    "action": "checkpoint",
+    "token": "$tj",
+    "done": "acknowledged in the issue; wrote full jitter in client/retry.py on branch fix/retry-jitter; unit tests pass",
+    "next_step": "push the branch",
+    "intent": "push branch fix/retry-jitter to origin"
+   }
+  },
+  {
+   "as": "coding",
+   "session_name": "s15",
+   "tool": "hold",
+   "args": {
+    "action": "release",
+    "token": "$tj",
+    "done": "pushed fix/retry-jitter (4e5f6a7)",
+    "next_step": "open a PR from fix/retry-jitter against main, then tell Maya in the issue",
+    "reason": "handoff",
+    "intent_done": "pushed: origin/fix/retry-jitter is at 4e5f6a7"
+   }
+  }
+ ],
+ "humans": {},
+ "people": {
+  "maya": {
+   "who": "Maya Ito (SRE)",
+   "where": "issue platform#88 (issue:platform#88)",
+   "replies": []
+  }
+ },
+ "world": [
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "gh pr list",
+    "pr list",
+    "pull requests",
+    "list pr"
+   ],
+   "say": "`gh pr list --head fix/retry-jitter` prints nothing: no PR from that branch yet.",
+   "once": true
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "gh pr create",
+    "open a pr",
+    "open the pr",
+    "create a pr",
+    "pull request"
+   ],
+   "say": "PR #59 opened: https://git.example.com/platform/pull/59. CI is green 7 minutes later.",
+   "once": true
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "gh pr create",
+    "open a pr",
+    "open the pr",
+    "create a pr",
+    "pull request"
+   ],
+   "say": "The git host refuses: 'a pull request already exists for fix/retry-jitter' (PR #59, https://git.example.com/platform/pull/59, CI green).",
+   "once": false
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "gh pr list",
+    "pr list",
+    "pr view",
+    "#59"
+   ],
+   "say": "PR #59 from fix/retry-jitter to main, open, CI green: https://git.example.com/platform/pull/59.",
+   "once": false
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "branch",
+    "git log",
+    "git show",
+    "test"
+   ],
+   "say": "platform repository; branch fix/retry-jitter exists at 4e5f6a7 (pushed 2026-10-01T16:11Z); unit tests pass on it."
+  }
+ ],
+ "agents": [
+  {
+   "id": "S1",
+   "token": "coding",
+   "conversation": "maya",
+   "role": "You are a coding agent of a software company's agent swarm, started by the agent platform's scheduler. You work for no particular person and nobody is chatting with you. You can read and change the platform repository, run tests, push branches, open pull requests with the gh CLI, and comment on issues. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. To comment on an issue, write the comment on its own line as `POST: <text>`. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "end": {
+    "after_call": {
+     "tool": "hold",
+     "action": "checkpoint",
+     "ok": true,
+     "with": "intent"
+    },
+    "nth": 1
+   },
+   "max_turns": 6
+  },
+  {
+   "id": "S2",
+   "token": "coding",
+   "conversation": "maya",
+   "role": "You are a coding agent of a software company's agent swarm, started by the agent platform's scheduler. You work for no particular person and nobody is chatting with you. You can read and change the platform repository, run tests, push branches, open pull requests with the gh CLI, and comment on issues. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. To comment on an issue, write the comment on its own line as `POST: <text>`. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "S1",
+    "delay": "4m"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "max_turns": 8
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {
+   "session": 1,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {}",
+     "spec": "§20.3",
+     "guided_by": "instructions (§22)",
+     "why": "Arrive as a worker.",
+     "expect": "offers [#10 (tier 0: unanswered_request, open_commitment), #11]; next_calls (rule 13): hold next"
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "hold next {}",
+     "spec": "§10.4",
+     "guided_by": "§20.9 rule 13",
+     "why": "Take the top item.",
+     "expect": "#10, token 10.3; brief: flags, the ack and open commitment, r3, last checkpoint (open a PR next); next_calls: later hold checkpoint, with an intent before an outside action (rule 3 at issue)"
+    },
+    {
+     "n": 3,
+     "kind": "world",
+     "why": "Optionally look at the branch and its tests.",
+     "optional": true
+    },
+    {
+     "n": 4,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"10.3\", done, next_step, intent: \"open a PR from fix/retry-jitter against main\"}",
+     "spec": "§10.2 (intent before an external action)",
+     "guided_by": "instructions (§22); rule 3's item at issue",
+     "why": "Record the intent before opening the PR.",
+     "expect": "session 1 is killed right after this response"
+    }
+   ]
+  },
+  {
+   "session": 2,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {}",
+     "spec": "§20.3",
+     "guided_by": "instructions (§22)",
+     "why": "Arrive as a worker.",
+     "expect": "offers [#10 (tier 0: open_intent, unanswered_request, open_commitment), #11]"
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "hold next {}",
+     "spec": "§10.4 (tier 0)",
+     "guided_by": "§20.9 rule 13",
+     "why": "Take the top item.",
+     "expect": "#10, token 10.4, why_this {tier 0, flags [open_intent, unanswered_request, open_commitment]}; the brief's section 2 shows the open intent of session 1; next_calls item 1 (rule 3): hold checkpoint {token: \"10.4\", intent_done} now, \"check whether it happened\""
+    },
+    {
+     "n": 3,
+     "kind": "world",
+     "why": "Check whether the PR exists: gh pr list --head fix/retry-jitter prints nothing."
+    },
+    {
+     "n": 4,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"10.4\", done: \"checked: no PR from fix/retry-jitter exists\", next_step: \"open the PR\", intent_done: \"not done: no PR existed at 10:47\", intent: \"open a PR from fix/retry-jitter against main\"}",
+     "spec": "§10.2 (intent_done closes the open intent whichever session opened it; a new intent is allowed in the same checkpoint that closes the old one)",
+     "guided_by": "§20.9 rule 3",
+     "why": "Record what the check found, and the new intent, before the outside action.",
+     "alternatives": "Two checkpoints (first intent_done, then intent) are equally good. A new intent while the old one is open is refused (invalid) with the remedy of §21."
+    },
+    {
+     "n": 5,
+     "kind": "world",
+     "why": "Open the PR: PR #59; wait for CI: green."
+    },
+    {
+     "n": 6,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"10.4\", intent_done: \"opened PR #59; CI green\", done, next_step}",
+     "spec": "§10.2",
+     "guided_by": "§20.9 rule 3",
+     "why": "Close the intent."
+    },
+    {
+     "n": 7,
+     "kind": "forum",
+     "call": "talk decide {at: \"platform/retry-jitter\", text, settles: [\"r3\"]}",
+     "spec": "§9.4, §11.1",
+     "guided_by": "instructions (§22)",
+     "why": "Record the outcome that settles Maya's request.",
+     "expect": "next_calls (rule 6): talk said {at: \"platform/retry-jitter\", kind: result}"
+    },
+    {
+     "n": 8,
+     "kind": "forum",
+     "call": "talk said {at: \"platform/retry-jitter\", kind: \"result\", text: <jitter added in PR #59; CI green; lands when merged>}",
+     "spec": "§9.2 (record before sending), §9.4 (a result in r3's conversation answers it; where defaults to issue:platform#88)",
+     "guided_by": "§20.9 rule 6",
+     "why": "Record the reply to Maya before posting it.",
+     "expect": "settled [r3]; commitment c2 fulfilled; next_calls (rule 2): talk said {said_id, confirmed}"
+    },
+    {
+     "n": 9,
+     "kind": "world",
+     "why": "Post the comment in issue #88."
+    },
+    {
+     "n": 10,
+     "kind": "forum",
+     "call": "talk said {said_id: <result>, confirmed: <comment link>}",
+     "spec": "§9.2",
+     "guided_by": "§20.9 rule 2",
+     "why": "Confirm after sending."
+    },
+    {
+     "n": 11,
+     "kind": "forum",
+     "call": "node close {path: \"platform/retry-jitter\", token: \"10.4\", outcome: \"done\", summary, verified: \"CI green on PR #59\"}",
+     "spec": "§5",
+     "guided_by": "§20.9 rule 8",
+     "why": "Clean close: no warnings.",
+     "alternatives": "hold release {reason: blocked, waits_for: {external: \"PR #59 merged\", recheck_after}} is fine too."
+    },
+    {
+     "n": 12,
+     "kind": "forum",
+     "call": "hold next {} (→ #11) or end",
+     "spec": "§10.4",
+     "guided_by": "§20.9 rule 13",
+     "why": "Continue if time allows.",
+     "optional": true
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "S5-C1",
+   "severity": "must",
+   "criterion": "Session 1 records an intent on #10 before opening the PR (it is then killed). If it opened the PR without an intent, that is a deviation of session 1, and session 2's criteria still apply."
+  },
+  {
+   "id": "S5-C2",
+   "severity": "must",
+   "criterion": "Session 2 takes #10 before any other node."
+  },
+  {
+   "id": "S5-C3",
+   "severity": "must",
+   "criterion": "Session 2 checks in the world whether the PR exists before opening one, and records intent_done for session 1's intent stating what it found."
+  },
+  {
+   "id": "S5-C4",
+   "severity": "must",
+   "criterion": "Session 2 records its own intent before opening the PR and intent_done after; at the end there is exactly one PR for the jitter change, and no open_intent on #10."
+  },
+  {
+   "id": "S5-C5",
+   "severity": "must",
+   "criterion": "Maya's request r3 is settled: a decision lists it and a said of kind result in issue:platform#88, recorded before posting and confirmed after; the open commitment c2 is fulfilled."
+  },
+  {
+   "id": "S5-C6",
+   "severity": "must",
+   "criterion": "At the end #10 carries none of open_intent, unanswered_request, open_commitment, or unconfirmed_said, and is closed done or released with a wait; no hold of session 2 is left to expire."
+  },
+  {
+   "id": "S5-C7",
+   "severity": "should",
+   "criterion": "Session 2 does not open a new invalid intent while session 1's is open (or, if refused, recovers with the remedy)."
+  }
+ ],
+ "ids_note": "The intended flow and the criteria are those of the Wizard-of-Oz rounds: their ids (e31, r2, #14, s-52) name the seed of those rounds; a live run's ids differ."
+}

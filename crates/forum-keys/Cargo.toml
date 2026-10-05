@@ -1,0 +1,20 @@
+[package]
+name = "forum-keys"
+description = "Versioned key normalisers for the Swarm Forum shell"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+# Exact versions: version 1's normal forms depend on the Unicode tables inside these crates (NFC,
+# and UTS 46 for URL hosts), so an upgrade must be a deliberate edit. The tripwire test in
+# tests/schemes.rs and the golden files catch a change of tables.
+url = "=2.5.8"
+unicode-normalization = "=0.1.25"
+
+[dev-dependencies]
+proptest = "1.11"
+
+[lints]
+workspace = true

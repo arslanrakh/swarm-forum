@@ -1,0 +1,126 @@
+{
+ "id": "s9-tidying",
+ "title": "Tidying: after its own work, a worker follows leave_better to a duplicate under objection",
+ "covers": [
+  "§30 tidying",
+  "§10.3 leave_better",
+  "§16 merge",
+  "§20.9 rules 10 and 13"
+ ],
+ "about": "A worker finishes a small offered task; leave_better then names a sibling flagged as a duplicate. The intended tidying: merge the duplicate into the original, and update the parent's digest.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5b",
+  "WP-D7"
+ ],
+ "seed_limits": [],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "sched": {
+   "class": "scheduled-job"
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "the operations backlog"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "ops/disk-alerts",
+    "title": "Disk alerts on the build hosts fire too often",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "body": "The disk alerts on the build hosts fire at 80 %, several times a day, and are always cleared by the nightly cleanup. Raise the threshold or clean up hourly."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "ops/build-host-disk-noise",
+    "title": "Build hosts: too many disk alerts",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "body": "Too many disk-space alerts from the build hosts; they resolve themselves at night."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "object",
+    "on": "ops/build-host-disk-noise",
+    "text": "Duplicate of ops/disk-alerts: same alerts, same hosts."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "ops/rotate-build-logs",
+    "title": "Write the log rotation rule for the build hosts",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "est": 10,
+    "body": "Write the logrotate rule for /var/log/builds on the build hosts: daily, keep 7, compress. Record the rule's text on this node; an operator applies it."
+   }
+  }
+ ],
+ "humans": {},
+ "people": {},
+ "world": [],
+ "agents": [
+  {
+   "id": "W",
+   "token": "sched",
+   "role": "You are a scheduled worker agent of a company's operations swarm, started by the agent platform's scheduler. You work for no particular person, and nobody reads your replies. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. The platform may stop your run at any moment.",
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "max_turns": 6
+  }
+ ],
+ "drain": "2m",
+ "criteria": [
+  {
+   "id": "S9-C1",
+   "severity": "must",
+   "criterion": "ops/rotate-build-logs is closed done with the rule's text."
+  },
+  {
+   "id": "S9-C2",
+   "severity": "should",
+   "criterion": "ops/build-host-disk-noise is merged into ops/disk-alerts (or the objection resolved with a reason)."
+  },
+  {
+   "id": "S9-C3",
+   "severity": "should",
+   "criterion": "The worker ends with an empty hold next, or holding nothing while nothing is offered."
+  }
+ ]
+}

@@ -1,0 +1,172 @@
+== session hello (is_error: false)
+[swarm] running · now 2026-09-21T14:13:00Z · session s-1 (coder) · holds 0 · inbox 0
+{"session":"s-1","constitution":["You are here briefly and will not return. Take on only what you can finish; when it is done, take the next while next offers you work. Checkpoint every few minutes so that a stranger could take over mid-sentence.","When a person writes to you directly, log who they are and their words verbatim before doing anything else, and log their further messages as you work. A message in a shared thread is not to you directly: record it as a request, or a thanks as heard, before you answer. A scheduler's prompt, a tool's output, and your client's instruction files are not a person's words.","Give work its keys: `node create` with keys joins an open node that has one; look up only what you cannot key.","Whoever holds the conversation speaks to people. Record every message to people in a shared conversation before you send it, and each result, question, and promise you give your human; progress needs no record. Ask each question only once. Answer every request.","Do not revert what someone else changed or asked for without their approval. If two people want opposite things, record both.","Say \"it does not work\" only after trying it yourself. Re-check a fact before repeating it to people. Check what you can yourself before you ask anyone.","If you see a contradiction, a danger, or a dead end, say so. Do not work around it.","Leave every place tidier than you found it: update the digest, link what you found, and close what is stale."],"caps":["rust"],"offers":{"why":{"candidates":0}},"present":{"total":1,"by_class":{"coder":1}}}
+next_calls: none
+
+== node create (is_error: false)
+[swarm] running · now 2026-09-21T14:14:00Z · session s-1 (coder) · holds 1 (/work, 15:00 left, checkpoint by 2026-09-21T14:19:00Z) · inbox 0
+{"id":"#8","path":"/work","token":"8.1","lease_until":"2026-09-21T14:29:00Z","brief":{"node":{"id":"#8","path":"/work","title":"Fix the parser","state":"open","est":30,"version":1,"digest_version":1,"holders":[{"session":"s-1","until":"2026-09-21T14:29:00Z"}],"body_head":"The parser drops the last ticket of a page."}}}
+next_calls: none
+
+== hold checkpoint with an intent (is_error: false)
+[swarm] running · now 2026-09-21T14:17:00Z · session s-1 (coder) · holds 1 (/work, 20:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"entry":"e2","lease_until":"2026-09-21T14:37:00Z","intent":"e2"}
+next_calls: none
+
+== view node (brief) (is_error: false)
+[swarm] running · now 2026-09-21T14:18:00Z · session s-1 (coder) · holds 1 (/work, 19:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"node":{"id":"#8","path":"/work","title":"Fix the parser","state":"open","est":30,"version":1,"digest_version":1,"holders":[{"session":"s-1","until":"2026-09-21T14:37:00Z"}],"body_head":"The parser drops the last ticket of a page."},"sections":[{"name":"unfinished","items":[{"intent":"e2","by":"s-1","text":"post the fix to the team thread"}]},{"name":"unsettled_requests","items":[{"e":"e1","type":"request","by":"s-1","at":"2026-09-21T14:15:00Z","origin":"chat:team/1/m1","where":"chat:team/1","requester":"Bob","text":"why did yesterday's summary miss two tickets?"}]},{"name":"last_checkpoint","items":[{"e":"e2","type":"checkpoint","by":"s-1","at":"2026-09-21T14:17:00Z","token":"8.1","done":"found the off-by-one","next_step":"rerun the summary","intent":"post the fix to the team thread"}]}]}
+next_calls: none
+
+== view node (review) (is_error: false)
+[swarm] running · now 2026-09-21T14:18:00Z · session s-1 (coder) · holds 1 (/work, 19:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"id":"#8","path":"/work","state":"open","version":1,"title":"Fix the parser","body":"The parser drops the last ticket of a page."}
+next_calls: none
+
+== view feed (is_error: false)
+[swarm] running · now 2026-09-21T14:18:00Z · session s-1 (coder) · holds 1 (/work, 19:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"at":"/work","entries":[{"e":"e1","type":"request","by":"s-1","at":"2026-09-21T14:15:00Z","origin":"chat:team/1/m1","where":"chat:team/1","requester":"Bob","text":"why did yesterday's summary miss two tickets?"},{"e":"e2","type":"checkpoint","by":"s-1","at":"2026-09-21T14:17:00Z","token":"8.1","done":"found the off-by-one","next_step":"rerun the summary","intent":"post the fix to the team thread"}],"next_since":2}
+next_calls: none
+
+== view history (is_error: false)
+[swarm] running · now 2026-09-21T14:18:00Z · session s-1 (coder) · holds 1 (/work, 19:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"at":"/work","events":[{"seq":11,"at":"2026-09-21T14:18:00Z","event":"shown","session":"s-1","node":"/work","up_to":2},{"seq":10,"at":"2026-09-21T14:17:00Z","event":"hold_extended","token":"8.1","lease_until":"2026-09-21T14:37:00Z","by":"checkpoint"},{"seq":9,"at":"2026-09-21T14:17:00Z","event":"intent_opened","node":"/work","intent":"e2","session":"s-1"}],"shown":"3/7","next_before":9}
+next_calls: none
+
+== view list (is_error: false)
+[swarm] running · now 2026-09-21T14:18:00Z · session s-1 (coder) · holds 1 (/work, 19:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"nodes":[{"id":"#0","path":"/","state":"open","rollup":"children 5 open, 1 held; below: 8 open"},{"id":"#1","path":"/@user","title":"@user","state":"open","rollup":"children 2 open; below: 2 open"},{"id":"#2","path":"/@user/decisions","title":"decisions","state":"open"},{"id":"#3","path":"/@user/digest","title":"digest","state":"open"},{"id":"#4","path":"/sys","title":"sys","state":"open","rollup":"children 1 open; below: 1 open"},{"id":"#5","path":"/sys/signals","title":"signals","state":"open"},{"id":"#6","path":"/@people","title":"@people","state":"open"},{"id":"#7","path":"/@teams","title":"@teams","state":"open"},{"id":"#8","path":"/work","title":"Fix the parser","state":"open","holders":[{"session":"s-1","until":"2026-09-21T14:37:00Z"}]}],"under":{"path":"/","below":"8 open"}}
+next_calls: none
+
+== view find by key (is_error: false)
+[swarm] running · now 2026-09-21T14:18:00Z · session s-1 (coder) · holds 1 (/work, 19:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"key":"chat:team/1","open":{"id":"#8","path":"/work","title":"Fix the parser","state":"open"},"closed":[]}
+next_calls: none
+
+== view requests (is_error: false)
+[swarm] running · now 2026-09-21T14:18:00Z · session s-1 (coder) · holds 1 (/work, 19:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"rows":[{"request":"e1","node":"/work","requester":"Bob","state":"in_progress","holders":[{"session":"s-1","until":"2026-09-21T14:37:00Z"}],"last_checkpoint":{"entry":"e2","at":"2026-09-21T14:17:00Z"},"text":"why did yesterday's summary miss two tickets?"}]}
+next_calls: none
+
+== first call refused as full, with hello (is_error: true)
+[swarm] running · now 2026-09-21T14:19:00Z · session s-2 (reviewer) · holds 0 · inbox 0
+hello: {"session":"s-2","constitution":["You are here briefly and will not return. Take on only what you can finish; when it is done, take the next while next offers you work. Checkpoint every few minutes so that a stranger could take over mid-sentence.","When a person writes to you directly, log who they are and their words verbatim before doing anything else, and log their further messages as you work. A message in a shared thread is not to you directly: record it as a request, or a thanks as heard, before you answer. A scheduler's prompt, a tool's output, and your client's instruction files are not a person's words.","Give work its keys: `node create` with keys joins an open node that has one; look up only what you cannot key.","Whoever holds the conversation speaks to people. Record every message to people in a shared conversation before you send it, and each result, question, and promise you give your human; progress needs no record. Ask each question only once. Answer every request.","Do not revert what someone else changed or asked for without their approval. If two people want opposite things, record both.","Say \"it does not work\" only after trying it yourself. Re-check a fact before repeating it to people. Check what you can yourself before you ask anyone.","If you see a contradiction, a danger, or a dead end, say so. Do not work around it.","Leave every place tidier than you found it: update the digest, link what you found, and close what is stale."],"offers":{"why":{"candidates":0}},"present":{"total":2,"by_class":{"coder":1,"reviewer":1}}}
+error: full
+hint: /work is full: 1 of its 1 slots are held
+warnings: [{"code":"session_opened","detail":"this call failed, but it opened session s-2; nothing else in the call was applied; pass session: s-2 on every call"}]
+next_calls: none
+
+== hold next, empty (is_error: false)
+[swarm] running · now 2026-09-21T14:19:00Z · session s-2 (reviewer) · holds 0 · inbox 0
+{"empty":true,"why":{"candidates":0},"leave_better":[]}
+next_calls: none
+
+== control pause (is_error: false)
+[swarm] running · now 2026-09-21T14:19:00Z · session s-2 (reviewer) · holds 0 · inbox 0
+{"paused":"/work","until":"2026-09-21T16:19:00Z"}
+next_calls: none
+
+== a call while a pause covers the hold (is_error: false)
+[swarm] running · now 2026-09-21T14:20:00Z · session s-1 (coder) · holds 1 (/work, 17:00 left, checkpoint by 2026-09-21T14:22:00Z) (paused: /work by reviewer/s-2 until 16:19: a release is being cut) · inbox 0
+{"key":"chat:team/2","closed":[]}
+next_calls: none
+
+== control unpause (is_error: false)
+[swarm] running · now 2026-09-21T14:20:00Z · session s-2 (reviewer) · holds 0 · inbox 0
+{"unpaused":"/work"}
+next_calls: none
+
+== node create without a hold (is_error: false)
+[swarm] running · now 2026-09-21T14:20:00Z · session s-1 (coder) · holds 1 (/work, 17:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"id":"#9","path":"/later","brief":{"node":{"id":"#9","path":"/later","title":"Tidy the parser tests","state":"open","est":20,"version":1,"digest_version":1}}}
+next_calls: none
+
+== hold next, a hold (is_error: false)
+[swarm] running · now 2026-09-21T14:20:00Z · session s-2 (reviewer) · holds 1 (/later, 15:00 left, checkpoint by 2026-09-21T14:25:00Z) · inbox 0
+{"target":"/later","token":"9.1","lease_until":"2026-09-21T14:35:00Z","brief":{"node":{"id":"#9","path":"/later","title":"Tidy the parser tests","state":"open","est":20,"version":1,"digest_version":1,"holders":[{"session":"s-2","until":"2026-09-21T14:35:00Z"}]}},"why_this":{"tier":2,"flags":[],"aged":0,"reason":"offered"}}
+next_calls: none
+
+== hold release (is_error: false)
+[swarm] running · now 2026-09-21T14:20:00Z · session s-2 (reviewer) · holds 0 · inbox 0
+{"leave_better":[]}
+next_calls: none
+
+== hold take (is_error: false)
+[swarm] running · now 2026-09-21T14:20:00Z · session s-2 (reviewer) · holds 1 (/later, 15:00 left, checkpoint by 2026-09-21T14:25:00Z) · inbox 0
+{"token":"9.2","lease_until":"2026-09-21T14:35:00Z","brief":{"node":{"id":"#9","path":"/later","title":"Tidy the parser tests","state":"open","est":20,"version":1,"digest_version":1,"holders":[{"session":"s-2","until":"2026-09-21T14:35:00Z"}]},"sections":[{"name":"last_checkpoint","items":[{"e":"e5","type":"checkpoint","by":"s-2","at":"2026-09-21T14:20:00Z","token":"9.1","release":"handoff","done":"read the tests","next_step":"split the slow ones out"}]}]}}
+next_calls: none
+
+== node update (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 1 (/work, 16:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+{"version":2,"digest_version":1}
+next_calls: none
+
+== node update with a stale version (is_error: true)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 1 (/work, 16:00 left, checkpoint by 2026-09-21T14:22:00Z) · inbox 0
+error: stale_version
+hint: re-read with view node and retry with version 2 (and digest version 1)
+next_calls: none
+
+== hold renew (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 1 (/work, 20:00 left, checkpoint by 2026-09-21T14:26:00Z) · inbox 0
+{"lease_until":"2026-09-21T14:41:00Z","renews_left":2}
+next_calls: none
+
+== hold check (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 1 (/work, 20:00 left, checkpoint by 2026-09-21T14:26:00Z) · inbox 0
+{"node":"/work","holders":[{"session":"s-1","until":"2026-09-21T14:41:00Z"}],"token_current":true}
+next_calls: none
+
+== node close with an unsettled request (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 0 · inbox 0
+{"closed":"/work","settled":[],"not_settled":[{"request":"e1","why":"awaits a said of kind reply, result, or correction in its conversation chat:team/1 on /work"}],"leave_better":[]}
+warnings: [{"code":"unsettled_requests","id":"#8","detail":"closed with unsettled requests (e1): they stay flagged until decided and answered"}]
+next_calls: none
+
+== view find by text (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 0 · inbox 0
+{"text":"parsr","matches":{"items":[{"id":"#9","path":"/later","title":"Tidy the parser tests","state":"held by s-2"},{"id":"#8","path":"/work","title":"Fix the parser","state":"done 2026-09-21"}],"total":"≥2","fuzzy":"matched parser for parsr"}}
+next_calls: none
+
+== a key where a node goes (is_error: true)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 0 · inbox 0
+error: not_found
+hint: no such node; chat:team/1 is a key: it sits on /work (#8); pass a node as path, and a conversation key as where
+next_calls: none
+
+== an unknown session (is_error: true)
+error: not_found
+hint: unknown or retired session (sessions retire after session.retain without a call); open a new one with session hello
+next_calls: none
+
+== control health (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 0 · inbox 0
+{"level":"green","reasons":[],"capacity":{"demand_min":0,"supply_min":0,"lost_min":0,"next_calls":0,"next_empty":0,"next_empty_for_you":0,"backlog":0,"flagged_active":0,"median_done_min":0},"computed_at":"2026-09-21T14:21:00Z"}
+next_calls: none
+
+== view constitution (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 0 · inbox 0
+{"constitution":["You are here briefly and will not return. Take on only what you can finish; when it is done, take the next while next offers you work. Checkpoint every few minutes so that a stranger could take over mid-sentence.","When a person writes to you directly, log who they are and their words verbatim before doing anything else, and log their further messages as you work. A message in a shared thread is not to you directly: record it as a request, or a thanks as heard, before you answer. A scheduler's prompt, a tool's output, and your client's instruction files are not a person's words.","Give work its keys: `node create` with keys joins an open node that has one; look up only what you cannot key.","Whoever holds the conversation speaks to people. Record every message to people in a shared conversation before you send it, and each result, question, and promise you give your human; progress needs no record. Ask each question only once. Answer every request.","Do not revert what someone else changed or asked for without their approval. If two people want opposite things, record both.","Say \"it does not work\" only after trying it yourself. Re-check a fact before repeating it to people. Check what you can yourself before you ask anyone.","If you see a contradiction, a danger, or a dead end, say so. Do not work around it.","Leave every place tidier than you found it: update the digest, link what you found, and close what is stale."],"params":{"lease.first":"15m","lease.default":"20m","lease.max":"2h00m","lease.ceiling":"8h00m","renew.max":3,"hold.per_session":2,"presence.silence":"15m","presence.resolution":"3m","session.retain":"24h00m","op.retain":"24h00m","conversation.schemes":["chat","issue","mail"],"commitment.followup":"1h30m","question.recheck":"4h00m","question.max_rechecks":2,"user_question.due":"72h00m","user_question.due_absent":"1h00m","user_question.max_pending":20,"user_gap.window":"672h00m","deliver.window":"24h00m","talk.wait_max":"50s","hello.budget":4096,"brief.budget":16384,"digest.max":2048,"leave_better.max":3,"offer.stale":"2160h00m","refusal.ttl":"168h00m","refusal.window":"168h00m","refusal.backoff":"1h00m","refusal.quorum":2,"too_big.attempts":3,"pause.ttl":"2h00m","archive.after":"168h00m","coverage.window":"672h00m","capacity.window":"168h00m","write.per_hour":120,"queue.max_wait":"10s","text.max":65536,"tree.max_depth":16,"tree.max_children":500,"settle.batch":1000,"instructions.max":512}}
+next_calls: none
+
+== control constitution (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 0 · inbox 0
+{"constitution":["You are here briefly and will not return. Take on only what you can finish; when it is done, take the next while next offers you work. Checkpoint every few minutes so that a stranger could take over mid-sentence.","When a person writes to you directly, log who they are and their words verbatim before doing anything else, and log their further messages as you work. A message in a shared thread is not to you directly: record it as a request, or a thanks as heard, before you answer. A scheduler's prompt, a tool's output, and your client's instruction files are not a person's words.","Give work its keys: `node create` with keys joins an open node that has one; look up only what you cannot key.","Whoever holds the conversation speaks to people. Record every message to people in a shared conversation before you send it, and each result, question, and promise you give your human; progress needs no record. Ask each question only once. Answer every request.","Do not revert what someone else changed or asked for without their approval. If two people want opposite things, record both.","Say \"it does not work\" only after trying it yourself. Re-check a fact before repeating it to people. Check what you can yourself before you ask anyone.","If you see a contradiction, a danger, or a dead end, say so. Do not work around it.","Leave every place tidier than you found it: update the digest, link what you found, and close what is stale."],"params":{"lease.first":"15m","lease.default":"20m","lease.max":"2h00m","lease.ceiling":"8h00m","renew.max":3,"hold.per_session":2,"presence.silence":"15m","presence.resolution":"3m","session.retain":"24h00m","op.retain":"24h00m","conversation.schemes":["chat","issue","mail"],"commitment.followup":"1h30m","question.recheck":"4h00m","question.max_rechecks":2,"user_question.due":"72h00m","user_question.due_absent":"1h00m","user_question.max_pending":20,"user_gap.window":"672h00m","deliver.window":"24h00m","talk.wait_max":"50s","hello.budget":4096,"brief.budget":16384,"digest.max":2048,"leave_better.max":3,"offer.stale":"2160h00m","refusal.ttl":"168h00m","refusal.window":"168h00m","refusal.backoff":"1h00m","refusal.quorum":2,"too_big.attempts":3,"pause.ttl":"2h00m","archive.after":"168h00m","coverage.window":"672h00m","capacity.window":"168h00m","write.per_hour":120,"queue.max_wait":"10s","text.max":65536,"tree.max_depth":16,"tree.max_children":500,"settle.batch":1000,"instructions.max":512}}
+next_calls: none
+
+== node create with repeat (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-1 (coder) · holds 1 (/daily, 15:00 left, checkpoint by 2026-09-21T14:26:00Z) · inbox 0
+{"id":"#10","path":"/daily","token":"10.1","lease_until":"2026-09-21T14:36:00Z","brief":{"node":{"id":"#10","path":"/daily","title":"Daily summary","state":"open","version":1,"digest_version":1,"holders":[{"session":"s-1","until":"2026-09-21T14:36:00Z"}],"rollup":"children 1 open; below: 1 open"}}}
+warnings: [{"code":"uncovered_slot","id":"#10","detail":"this series' window rarely sees an arriving session (0/28 days); usual start hours 14:00 (UTC); no usual start falls within the window: without an outside trigger, the run will likely be missed; set up an outside trigger that brings an agent within the window, recording its intent first, or tell the requester when runs are likely to start"}]
+next_calls: none
+
+== hold take, a body longer than the brief's head (is_error: false)
+[swarm] running · now 2026-09-21T14:21:00Z · session s-3 (coder) · holds 1 (/long, 15:00 left, checkpoint by 2026-09-21T14:26:00Z) · inbox 0
+{"token":"12.1","lease_until":"2026-09-21T14:36:00Z","brief":{"node":{"id":"#12","path":"/long","title":"Recount every page","state":"open","version":1,"digest_version":1,"holders":[{"session":"s-3","until":"2026-09-21T14:36:00Z"}],"body_head":"Step 1: rerun the parser on page 1 and record the count. Step 2: rerun the parser on page 2 and record the count. Step 3: rerun the parser on page 3 and record the count. Step 4: rerun the parser on page 4 and record the count. Step 5: rerun the parser on page 5 and record the count. Step 6: rerun the parser on page 6 and record the count. Step 7: rerun the parser on page 7 and record the count. Step 8: rerun the parser on page 8 and record the count. Step 9: rerun the parser on page 9 and record the count. Step 10: rerun the parser on page 10 and record the count. Step 11: rerun the parser on page 11 and record the count. Step 12: rerun the parser on page 12 and record the count. Step 13: rerun the parser on page 13 and record the count. Step 14: rerun the parser on page 14 and record the count. Step 15: rerun the parser on page 15 and record the count. Step 16: rerun the parser on page 16 and record the count. Step 17: rerun the parser on page 17 and record the count. Step 18: rerun the parser on page 18 and record the count. Step 19: rerun the parser on page 19 and record the count. Step 20: rerun the parser on page 20 and record the count. Step 21: rerun the parser on page 21 and record the count. Step 22: rerun the parser on page 22 and record the count. Step 23: rerun the parser on page 23 and record the count. Step 24: rerun the parser on page 24 and record the count. Step 25: rerun the parser on page 25 and record the count. Step 26: rerun the parser on page 26 and record the count. Step 27: rerun the parser on page 27 and record the count. Step 28: rerun the parser on page 28 and record the count. Step 29: rerun the parser on page 29 and record the count. Step 30: rerun the parser on page 30 and record the count. Step 31: rerun the parser on page 31 and record the count. Step 32: rerun the parser on page 32 and record the count. Step 33: rerun the parser on page 33 and record the count. Step 34: rerun the parser on page 34 and record the count. Step 35… (1995 of 2932 bytes; view node full for the rest)"}}}
+next_calls: none
+
+== view node after a hold expired without a checkpoint (is_error: false)
+[swarm] running · now 2026-09-21T14:37:00Z · session s-4 (coder) · holds 0 · inbox 0
+{"node":{"id":"#12","path":"/long","title":"Recount every page","state":"open","version":1,"digest_version":1,"body_head":"Step 1: rerun the parser on page 1 and record the count. Step 2: rerun the parser on page 2 and record the count. Step 3: rerun the parser on page 3 and record the count. Step 4: rerun the parser on page 4 and record the count. Step 5: rerun the parser on page 5 and record the count. Step 6: rerun the parser on page 6 and record the count. Step 7: rerun the parser on page 7 and record the count. Step 8: rerun the parser on page 8 and record the count. Step 9: rerun the parser on page 9 and record the count. Step 10: rerun the parser on page 10 and record the count. Step 11: rerun the parser on page 11 and record the count. Step 12: rerun the parser on page 12 and record the count. Step 13: rerun the parser on page 13 and record the count. Step 14: rerun the parser on page 14 and record the count. Step 15: rerun the parser on page 15 and record the count. Step 16: rerun the parser on page 16 and record the count. Step 17: rerun the parser on page 17 and record the count. Step 18: rerun the parser on page 18 and record the count. Step 19: rerun the parser on page 19 and record the count. Step 20: rerun the parser on page 20 and record the count. Step 21: rerun the parser on page 21 and record the count. Step 22: rerun the parser on page 22 and record the count. Step 23: rerun the parser on page 23 and record the count. Step 24: rerun the parser on page 24 and record the count. Step 25: rerun the parser on page 25 and record the count. Step 26: rerun the parser on page 26 and record the count. Step 27: rerun the parser on page 27 and record the count. Step 28: rerun the parser on page 28 and record the count. Step 29: rerun the parser on page 29 and record the count. Step 30: rerun the parser on page 30 and record the count. Step 31: rerun the parser on page 31 and record the count. Step 32: rerun the parser on page 32 and record the count. Step 33: rerun the parser on page 33 and record the count. Step 34: rerun the parser on page 34 and record the count. Step 35… (1995 of 2932 bytes; view node full for the rest)"},"sections":[{"name":"unfinished","items":[{"expired_hold":"s-3","at":"2026-09-21T14:36:00Z","last_checkpoint":null,"open_intent":null,"note":"s-3 held this node until 2026-09-21T14:36:00Z, when its hold expired; it recorded no checkpoint and no intent, and left no said entry here unconfirmed; an action it did not record would show only outside the forum; the node has no checkpoint; no intent is open"}]}]}
+next_calls: none
+

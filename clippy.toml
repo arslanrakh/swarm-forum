@@ -1,0 +1,11 @@
+disallowed-types = [
+  { path = "std::collections::HashMap", reason = "iteration order is not deterministic" },
+  { path = "std::collections::HashSet", reason = "iteration order is not deterministic" },
+  { path = "std::time::SystemTime",     reason = "time enters the core through Ctx only" },
+  { path = "std::time::Instant",        reason = "time enters the core through Ctx only" },
+]
+disallowed-methods = [
+  { path = "std::time::SystemTime::now", reason = "only forum_server::clock::now_ms reads the clock" },
+  { path = "std::time::Instant::now",    reason = "only the shell's long poll measures time" },
+  { path = "std::env::var",              reason = "configuration is read once, in forum_server::config" },
+]

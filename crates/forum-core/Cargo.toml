@@ -1,0 +1,34 @@
+[package]
+name = "forum-core"
+description = "The pure, deterministic, verified core of the Swarm Forum: settle, decide, evolve"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+serde = ["dep:serde", "forum-cron/serde"]
+# Test-only features (design D.1.2): they add code and change nothing else, so no value the server
+# computes with depends on them. That matters because Cargo unifies features within one build:
+# forum-conformance enables `conformance`, so a build of the whole workspace compiles every member,
+# the server included, with it. The server enables neither.
+testkit = []
+conformance = []
+
+[dependencies]
+forum-cron = { path = "../forum-cron" }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"], optional = true }
+
+[dev-dependencies]
+# The JSON round trip of every type (design D.7.6, D.13.2 WP-D1); tests/json_roundtrip.rs runs with
+# the feature `serde`, which `cargo test --workspace` enables through forum-server.
+serde_json = "1"
+
+# Without `serde` the round trip is not built at all, rather than run as zero tests that pass:
+# `cargo test -p forum-core --features serde` runs it on its own.
+[[test]]
+name = "json_roundtrip"
+required-features = ["serde"]
+
+[lints]
+workspace = true

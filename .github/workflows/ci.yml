@@ -1,0 +1,246 @@
+# Continuous integration (design D.12.9, WP-F3).
+#
+# On every push to main and every pull request:
+#   verify  scripts/verify.sh --no-model --no-kani: cargo fmt; clippy with -D warnings on the
+#           default build, the usability build, and the scale gates' build (bench-gates profile,
+#           cfg forum_bench); the three guard rails of D.1.3; cargo test --workspace (the committed
+#           conformance fixtures among them), the usability build's tests, and the bench-gates
+#           build's; the generated tables of docs/verification.md; and the usability harness's own
+#           unit tests, which spend no model tokens.
+#   model   the Quint model's typecheck and run tests (npm ci in model/), then the conformance
+#           tests with the model's Quint on PATH (D.10.8).
+#
+# Nightly, and on a manual run, the formal checks of the key invariants only (D.0.3):
+#   kani    cargo kani on forum-cron and forum-core;
+#   tlc     TLC on the holds and keys slices in both class configurations, and the liveness of
+#           holds, each under MODEL_CHECK_SECONDS;
+#   sweep   the conformance sweep: hundreds of model traces of the key slices replayed against
+#           the core.
+# The model's simulation of every instance, Apalache, the scale gates, and the live usability
+# test are not run here: the first two belong to scripts/verify.sh's full run, the gates need the
+# reference hardware (D.12.8), and the usability test spends model tokens (D.12.9, step 9).
+#
+# No secrets are used. The formal jobs need more memory than a small runner has (the model's
+# compiler and TLC take up to about 14 and 8 GB): set the repository variable FORMAL_RUNNER to a
+# larger runner's label if ubuntu-latest is too small.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+    inputs:
+      model_check_seconds:
+        description: Time limit of each TLC run, in seconds
+        default: "1800"
+        required: false
+
+permissions:
+  contents: read
+
+# bash with -e and pipefail, so that a command piped into tee still fails its step.
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  KANI_VERSION: "0.68.0"
+
+jobs:
+  verify:
+    name: verify.sh (Rust, guard rails, tests, harness)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the Rust toolchain pinned in rust-toolchain.toml
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal --component clippy,rustfmt
+          rustup show active-toolchain
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: scripts/verify.sh --no-model --no-kani
+        run: scripts/verify.sh --no-model --no-kani
+
+  model:
+    name: Quint model and conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the Rust toolchain pinned in rust-toolchain.toml
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal
+          rustup show active-toolchain
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: model/package-lock.json
+      - name: npm ci
+        working-directory: model
+        run: npm ci
+      - name: npm run typecheck
+        working-directory: model
+        run: npm run typecheck
+      - name: npm test
+        working-directory: model
+        run: npm test
+      - name: Conformance tests, with the model's Quint on PATH
+        run: |
+          export PATH="$GITHUB_WORKSPACE/model/node_modules/.bin:$PATH"
+          cargo test -p forum-conformance
+
+  kani:
+    name: Kani (${{ matrix.crate }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ${{ vars.FORMAL_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        crate: [forum-cron, forum-core]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the Rust toolchain pinned in rust-toolchain.toml
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal
+          rustup show active-toolchain
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/cargo-kani
+            ~/.cargo/bin/kani
+            ~/.kani
+          key: kani-${{ env.KANI_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+      - name: Install Kani
+        run: |
+          if ! cargo kani --version 2>/dev/null | grep -q "$KANI_VERSION"; then
+            cargo install --locked kani-verifier --version "$KANI_VERSION"
+            cargo kani setup
+          fi
+          cargo kani --version
+      - name: cargo kani -p ${{ matrix.crate }}
+        run: cargo kani -p ${{ matrix.crate }}
+
+  tlc:
+    name: TLC (${{ matrix.check }} ${{ matrix.module }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ${{ vars.FORMAL_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { check: tlc, slice: holds, module: holds_two }
+          - { check: tlc, slice: holds, module: holds_one }
+          - { check: tlc, slice: keys, module: keys_two }
+          - { check: tlc, slice: keys, module: keys_one }
+          - { check: liveness, slice: holds, module: holds_two }
+          - { check: liveness, slice: holds, module: holds_one }
+    env:
+      MODEL_CHECK_SECONDS: ${{ github.event.inputs.model_check_seconds || '1800' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: model/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.quint
+          key: quint-apalache-${{ runner.os }}-${{ hashFiles('model/package-lock.json') }}
+      - name: npm ci
+        working-directory: model
+        run: npm ci
+      - name: Fetch Apalache, which runs TLC, through Quint
+        working-directory: model
+        run: |
+          # Quint 0.33.0, which model/package.json pins, downloads Apalache 0.62.1 on its first
+          # verify; model/scripts/verify-file.sh runs TLC from that Apalache's JAR.
+          apalache=$HOME/.quint/apalache-dist-0.62.1/apalache
+          if [ ! -x "$apalache/bin/apalache-mc" ]; then
+            cat > "$RUNNER_TEMP/probe.qnt" <<'EOF'
+          module probe {
+            var x: int
+            action init = x' = 0
+            action step = x' = x
+            val inv = x == 0
+          }
+          EOF
+            npx quint verify "$RUNNER_TEMP/probe.qnt" --invariant inv --max-steps 1
+          fi
+          test -x "$apalache/bin/apalache-mc"
+      - name: scripts/check.sh ${{ matrix.check }} ${{ matrix.slice }} ${{ matrix.module }}
+        working-directory: model
+        run: |
+          status=0
+          scripts/check.sh ${{ matrix.check }} ${{ matrix.slice }} ${{ matrix.module }} \
+            | tee "$RUNNER_TEMP/check.out" || status=$?
+          { echo "### ${{ matrix.check }} ${{ matrix.module }}"; echo; cat "$RUNNER_TEMP/check.out"; } \
+            >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Keep the log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.check }}-${{ matrix.module }}
+          path: model/traces/${{ matrix.module }}/*.log
+          if-no-files-found: ignore
+
+  sweep:
+    name: Conformance sweep
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ${{ vars.FORMAL_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the Rust toolchain pinned in rust-toolchain.toml
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal
+          rustup show active-toolchain
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: model/package-lock.json
+      - name: npm ci
+        working-directory: model
+        run: npm ci
+      - name: Generate the sweep's traces (fixed seeds)
+        run: crates/forum-conformance/scripts/traces.sh --sweep
+      - name: Replay each group against the core
+        run: |
+          status=0
+          for group in model/traces/conformance/*/; do
+            echo "::group::${group%/}"
+            FORUM_CONFORMANCE_TRACES="$GITHUB_WORKSPACE/${group%/}" \
+              cargo test -p forum-conformance --test sweep -- --ignored --nocapture \
+              | tee "$RUNNER_TEMP/sweep.out" || status=1
+            echo "::endgroup::"
+            grep -E '^[0-9]+ traces, ' "$RUNNER_TEMP/sweep.out" | sed "s|^|${group%/}: |" >> "$GITHUB_STEP_SUMMARY" || true
+          done
+          exit "$status"

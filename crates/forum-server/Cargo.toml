@@ -1,0 +1,55 @@
+[package]
+name = "forum-server"
+description = "The Swarm Forum shell: MCP over streamable HTTP, sessions, the SQLite log, and rendering"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+# WP-U's usability test only (design D.13.2): a configuration switch serves 1.2's instructions and
+# `session` description and renders no `next_calls` block. Never enabled in a release build: the
+# crate refuses to compile with it outside a debug build.
+usability = []
+# The scale gates only (WP-F4, design D.12.8): a compressed clock that a gate can move forward
+# (`serve --clock-scale`, and the jump file beside the stats), the writer's counters written as
+# JSON lines (`serve --bench-stats`), a `shell_version` bump with an empty step (`serve
+# --bench-shell-bump`, gate G-7), `checkpoint` (gate G-8), `replay-verify` (gate G-10),
+# `commit-probe` (the machine record), and the instruments of src/bench.rs (SQLite's WAL hook and
+# its statement trace, hence `rusqlite/trace`). Never in a release build: the crate compiles with
+# it only under `--cfg forum_bench`, which scripts/bench sets for its own profile, `bench-gates`,
+# whose binaries land in target/bench-gates.
+bench = ["rusqlite/trace"]
+
+[dependencies]
+forum-core = { path = "../forum-core", features = ["serde"] }
+forum-cron = { path = "../forum-cron", features = ["serde"] }
+forum-keys = { path = "../forum-keys" }
+rmcp = { version = "3.5", features = ["server", "transport-streamable-http-server"] }
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "signal"] }
+rusqlite = { version = "0.40", features = ["bundled", "hooks", "backup"] }
+zstd = "0.14"
+jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
+jiff-tzdb = "0.1"
+sha2 = "0.11"
+serde = { version = "1", features = ["derive"] }
+# `preserve_order`: `structuredContent` keeps §20.1's order of its keys (1.5, R3), since a client
+# that shows its model only the structured content reads it from the top. Ordering never decides
+# anything: the request digest and `control export`'s lines sort their keys themselves
+# (src/digest.rs, src/export.rs), and the decoder checks arguments in name order. The input
+# schemas of `tools/list` list their properties in declaration order. Cargo unifies the feature
+# across the workspace, so swarm-sim and forum-conformance get it in a workspace build: neither
+# depends on key order (design D.11.7).
+serde_json = { version = "1", features = ["preserve_order"] }
+toml = "1"
+regex = "1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+[dev-dependencies]
+rmcp = { version = "3.5", features = ["client", "transport-streamable-http-client-reqwest"] }
+proptest = "1.11"
+
+[lints]
+workspace = true

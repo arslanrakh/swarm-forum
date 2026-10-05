@@ -1,0 +1,376 @@
+{
+ "id": "s32-example",
+ "title": "§32's example, step by step: a user's series, a team thread with two runs, a split, a question to a person, a takeover after an intent, and the user's \"what about my tasks?\"",
+ "covers": [
+  "§32 steps 1 to 8",
+  "§30 a message from the user",
+  "§30 a person's message",
+  "§30 long work",
+  "§30 \"What about my tasks?\""
+ ],
+ "about": "Every session of §32 is a live agent; the harness plays the user, Priya in the team thread, the test environment, and the scheduler. Session s-5 (agent S5) is ended right after its first checkpoint with an intent; S6 starts after S5's lease has ended.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5a",
+  "WP-D5b",
+  "WP-D6",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "§32's forum starts empty; so does this one. 'Yesterday's summary' is the world's: the logs and the replica lag are those of scenario S2."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "chat": {
+   "class": "chat-assistant"
+  },
+  "coding": {
+   "class": "coding-agent",
+   "caps": [
+    "repo"
+   ]
+  },
+  "chatbot": {
+   "class": "chat-worker",
+   "caps": [
+    "chat",
+    "repo"
+   ]
+  }
+ },
+ "prelude": [],
+ "humans": {
+  "user": {
+   "who": "the user",
+   "principal": null,
+   "replies": [
+    {
+     "when": "asked",
+     "match": [
+      "time",
+      "when",
+      "hour",
+      "zone"
+     ],
+     "say": "8 in the morning, Lisbon time."
+    },
+    {
+     "when": "asked",
+     "match": [
+      "deliver",
+      "email",
+      "mail",
+      "where",
+      "how"
+     ],
+     "say": "By email, like always."
+    },
+    {
+     "when": "asked",
+     "say": "Whatever you think is best."
+    }
+   ]
+  }
+ },
+ "people": {
+  "priya": {
+   "who": "Priya Shah (support lead)",
+   "where": "thread T1001 of #support-ops (chat:support-ops/T1001)",
+   "replies": [
+    {
+     "when": "asked",
+     "match": [
+      "cutoff",
+      "created",
+      "after",
+      "before",
+      "08:00",
+      "time"
+     ],
+     "say": "Both were created a minute or two before 08:00: 07:58 and 07:59.",
+     "then": {
+      "event": "priya-answers",
+      "delay": "1m"
+     }
+    }
+   ]
+  }
+ },
+ "world": [
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "log",
+    "run of",
+    "summary run"
+   ],
+   "say": "support/daily-summary run of 2026-10-01 08:00:31Z: query on the read replica 'created_at >= 2026-09-30T08:00:00Z AND created_at < 2026-10-01T08:00:00Z' returned 14 tickets. Replica lag at 08:00:31 was 312 s (monitoring graph helpdesk-replica-lag)."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "lag",
+    "dashboard",
+    "replica",
+    "monitor"
+   ],
+   "say": "helpdesk-replica-lag: 312 s at 2026-10-01T08:00:31Z; tickets #4411 and #4412 reached the replica at 08:04:02 and 08:04:05, after the query."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "query.py",
+    "code",
+    "git"
+   ],
+   "say": "summary/query.py selects tickets with created_at >= the previous cutoff and < the run's start, on the read replica; each run's cutoff is its start time."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "check",
+    "whether",
+    "did the",
+    "status",
+    "result"
+   ],
+   "say": "The test environment shows one re-run of the 2026-10-01 digest, finished 10 minutes ago: it lists 16 tickets, #4411 and #4412 included."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "re-run",
+    "rerun",
+    "test environment"
+   ],
+   "say": "The re-run of yesterday's digest in the test environment started; it finishes in about 10 minutes.",
+   "once": true
+  }
+ ],
+ "agents": [
+  {
+   "id": "U1",
+   "token": "chat",
+   "human": "user",
+   "role": "You are the user's chat assistant on their phone. Your chat client gives the user no id. You cannot read the helpdesk or send mail yourself, and you have no tools besides the swarm forum's. Your reply is shown to the user in the chat.",
+   "lines": [
+    {
+     "from": "human",
+     "text": "summarise new support tickets every morning"
+    },
+    {
+     "from": "human",
+     "text": "and skip tickets tagged spam",
+     "after_call": {
+      "tool": "node",
+      "action": "create",
+      "ok": true
+     }
+    }
+   ],
+   "max_turns": 5,
+   "about": "§32 step 1"
+  },
+  {
+   "id": "R1",
+   "token": "chatbot",
+   "conversation": "priya",
+   "role": "You are an AI agent of a software company's swarm, started by the platform for the support team. You can read and post in the team's #support-ops threads, read the support-tools repository, logs, and dashboards, and run jobs in the test environment. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "U1",
+    "delay": "30s"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "New message in #support-ops, thread T1001 (key chat:support-ops/T1001), message M1001 (key chat:support-ops/T1001/M1001), from Priya Shah (support lead): \"why did yesterday's summary miss two tickets?\" Handle it."
+    }
+   ],
+   "max_turns": 6,
+   "about": "§32 steps 2 and 3 (s-1)"
+  },
+  {
+   "id": "R2",
+   "token": "chatbot",
+   "conversation": "priya",
+   "role": "You are an AI agent of a software company's swarm, started by the platform for the support team. You can read and post in the team's #support-ops threads, read the support-tools repository, logs, and dashboards, and run jobs in the test environment. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "U1",
+    "delay": "60s"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "New message in #support-ops, thread T1001 (key chat:support-ops/T1001), message M1001 (key chat:support-ops/T1001/M1001), from Priya Shah (support lead): \"why did yesterday's summary miss two tickets?\" Handle it."
+    }
+   ],
+   "max_turns": 3,
+   "about": "§32 step 2, the second run on the same message"
+  },
+  {
+   "id": "S3",
+   "token": "chatbot",
+   "conversation": "priya",
+   "role": "You are an AI agent of a software company's swarm, started by the platform for the support team. You can read and post in the team's #support-ops threads, read the support-tools repository, logs, and dashboards, and run jobs in the test environment. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "R1",
+    "delay": "30s"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "max_turns": 4,
+   "about": "§32 step 4 (s-3)"
+  },
+  {
+   "id": "S4",
+   "token": "chatbot",
+   "conversation": "priya",
+   "role": "You are an AI agent of a software company's swarm, started by the platform for the support team. You can read and post in the team's #support-ops threads, read the support-tools repository, logs, and dashboards, and run jobs in the test environment. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "on": "priya-answers"
+   },
+   "lines": [],
+   "max_turns": 4,
+   "about": "§32 step 5 (s-4), started by Priya's answer"
+  },
+  {
+   "id": "S5",
+   "token": "chatbot",
+   "role": "You are an AI agent of a software company's swarm, started by the platform for the support team. You can read and post in the team's #support-ops threads, read the support-tools repository, logs, and dashboards, and run jobs in the test environment. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "S3",
+    "delay": "2m"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "end": {
+    "after_call": {
+     "tool": "hold",
+     "action": "checkpoint",
+     "ok": true,
+     "with": "intent"
+    },
+    "nth": 1
+   },
+   "max_turns": 4,
+   "about": "§32 step 6 (s-5): ended right after its first checkpoint with an intent"
+  },
+  {
+   "id": "S6",
+   "token": "chatbot",
+   "role": "You are an AI agent of a software company's swarm, started by the platform for the support team. You can read and post in the team's #support-ops threads, read the support-tools repository, logs, and dashboards, and run jobs in the test environment. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "S5",
+    "delay": "4m"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "max_turns": 5,
+   "about": "§32 step 6 (s-6)"
+  },
+  {
+   "id": "S7",
+   "token": "chatbot",
+   "conversation": "priya",
+   "role": "You are an AI agent of a software company's swarm, started by the platform for the support team. You can read and post in the team's #support-ops threads, read the support-tools repository, logs, and dashboards, and run jobs in the test environment. To post in the thread, write the post on its own line of your reply as `POST: <text>`; the chat integration posts it there as your message. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "start": {
+    "after": "S6",
+    "delay": "30s"
+   },
+   "lines": [
+    {
+     "from": "event",
+     "text": "The scheduler started you. Pick up work on the forum."
+    }
+   ],
+   "max_turns": 5,
+   "about": "§32 step 7 (s-7)"
+  },
+  {
+   "id": "U2",
+   "token": "coding",
+   "human": "user",
+   "start": {
+    "after": "S7",
+    "delay": "30s"
+   },
+   "role": "You are the user's coding agent in their editor. Your client gives the user no id. You have no tools besides the swarm forum's. Your reply is shown to the user in the editor's chat.",
+   "lines": [
+    {
+     "from": "human",
+     "text": "what about my tasks?"
+    }
+   ],
+   "max_turns": 3,
+   "about": "§32 step 8"
+  }
+ ],
+ "drain": "3m",
+ "criteria": [
+  {
+   "id": "X-1",
+   "severity": "must",
+   "criterion": "Step 1: the user's words are logged with hello {from_user}; one recurring node carries user:<entry>; the clarification is logged with from_user {clarifies}; the request is decided and answered with to_user {kind: result}."
+  },
+  {
+   "id": "X-2",
+   "severity": "must",
+   "criterion": "Step 2: one node carries the thread's key; both runs record the same request (one origin); the second run leaves."
+  },
+  {
+   "id": "X-3",
+   "severity": "must",
+   "criterion": "Step 3: said ack is recorded, sent, and confirmed; audit and rerun-test are split off with take: false and the offer tag; summary-gap is released."
+  },
+  {
+   "id": "X-4",
+   "severity": "must",
+   "criterion": "Step 4: the question in the thread is recorded with talk ask, and audit released with waits_for: {question}."
+  },
+  {
+   "id": "X-5",
+   "severity": "must",
+   "criterion": "Step 5: the answer is recorded with heard {answers}, not as a new request."
+  },
+  {
+   "id": "X-6",
+   "severity": "must",
+   "criterion": "Step 6: S6 checks whether the re-run happened before intent_done, does not re-run it, and closes rerun-test with verified."
+  },
+  {
+   "id": "X-7",
+   "severity": "must",
+   "criterion": "Step 7: summary-gap is decided with settles, said result is recorded, sent, and confirmed, and the node closes done without warnings."
+  },
+  {
+   "id": "X-8",
+   "severity": "must",
+   "criterion": "Step 8: the question is logged, view requests is read, the user gets a to_user result, and the entry is routed to none."
+  }
+ ]
+}

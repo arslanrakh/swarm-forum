@@ -1,0 +1,473 @@
+{
+ "id": "s7-research-basis",
+ "title": "No human, research: a refuted kb note under objection, and a closed theorem whose basis changed",
+ "covers": [
+  "§30 a large research programme",
+  "§15 basis and basis_changed",
+  "§11.3 objections",
+  "§10.1 a take that reopens a closed node"
+ ],
+ "about": "Wizard-of-Oz scenario S7, live. A prover worker continues the programme; thm-5 was closed done on a basis that the refutation of Lemma 17 changed.",
+ "needs_packages": [
+  "WP-D4",
+  "WP-D5b",
+  "WP-D7"
+ ],
+ "seed_limits": [
+  "The decisions' times are the run's. s-230's live hold on programme/lemma-21 is left out."
+ ],
+ "params": {
+  "profile": "short",
+  "overrides": {}
+ },
+ "tokens": {
+  "seed": {
+   "class": "seed"
+  },
+  "prover": {
+   "class": "prover",
+   "caps": [
+    "lean"
+   ]
+  }
+ },
+ "prelude": [
+  {
+   "as": "seed",
+   "tool": "session",
+   "args": {
+    "action": "hello",
+    "intent": "set up the bound programme"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "programme",
+    "title": "Bounds on f, g, and h: research programme",
+    "take": false,
+    "needs": [
+     "lean"
+    ],
+    "agreements": "Every decision about a result cites its basis: kb notes, lean hashes of the proofs, and runs. Push to bound-programme main only when `lake build` passes."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/lemma-17",
+    "title": "Lemma 17: f(n) <= 2^n for all n >= 3",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "needs": [
+     "lean"
+    ],
+    "body": "Claimed by s-150 from a heuristic argument and runs up to n = 10 (run:7a1c03fe). Stated in the Lean project as `axiom lemma17` in Axioms.lean."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "kb/lemma-17",
+    "text": "Lemma 17 holds for all n >= 3 (heuristic, runs to n = 10).",
+    "evidence": "inference"
+   },
+   "save": {
+    "d17": "decision"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/lemma-12",
+    "title": "Lemma 12: g(n+1) <= 2 g(n) + 2^n",
+    "take": false,
+    "keys": [
+     "lean:77ab01c3"
+    ],
+    "needs": [
+     "lean"
+    ],
+    "body": "Proved in Lean: Lemma12.lean (lean:77ab01c3)."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "programme/thm-5",
+    "title": "Theorem 5: g(n) <= 3 * 2^n for all n >= 3",
+    "keys": [
+     "lean:a83b77e1"
+    ],
+    "body": "Strong induction on n: base cases 3 <= n <= 8, then the step from Lemma 12."
+   },
+   "save": {
+    "t5": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "programme/thm-5",
+    "evidence": "attempt",
+    "text": "Theorem 5 holds: g(n) <= 3 * 2^n for all n >= 3. Proof Thm5.lean: base cases via Lemma 17, step via Lemma 12.",
+    "basis": [
+     "$d17",
+     "/kb/lemma-12",
+     {
+      "external": "lean:a83b77e1 (Thm5.lean builds)",
+      "checked_at": "in 0m"
+     }
+    ]
+   },
+   "save": {
+    "d40": "decision"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "close",
+    "path": "programme/thm-5",
+    "outcome": "done",
+    "summary": "Proved: Thm5.lean (lean:a83b77e1); base cases by Lemma 17, step by Lemma 12.",
+    "token": "$t5"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "programme/cor-6",
+    "title": "Corollary 6: g(n) / 2^n is bounded",
+    "keys": [
+     "lean:61c0d2aa"
+    ]
+   },
+   "save": {
+    "t6": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "decide",
+    "at": "programme/cor-6",
+    "text": "Corollary 6 holds; it uses only the statement of Theorem 5.",
+    "basis": [
+     "/programme/thm-5",
+     {
+      "external": "lean:61c0d2aa (Cor6.lean builds)",
+      "checked_at": "in 0m"
+     }
+    ]
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "close",
+    "path": "programme/cor-6",
+    "outcome": "done",
+    "summary": "Follows from Theorem 5 (Cor6.lean, lean:61c0d2aa).",
+    "token": "$t6"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "programme/lemma-20",
+    "title": "Lemma 20: h(n) >= n^2 for n >= 5",
+    "take": false,
+    "tags": [
+     "offer"
+    ],
+    "est": 45,
+    "body": "Needed by Theorem 7. Computation agrees for n = 5..30 (run:0f3a77c2). Look for an induction using Lemma 12."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "object",
+    "on": "kb/lemma-17",
+    "text": "Counterexample: f(12) = 4231 > 4096 = 2^12 (run:9c1e44ab, exhaustive search, checked twice). Lemma 17 is false as stated."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "kb/lemma-17-small",
+    "title": "Lemma 17': f(n) <= 2^n for 3 <= n <= 11",
+    "take": false,
+    "keys": [
+     "lean:5d2f0b9e"
+    ],
+    "body": "Proved in Lean by exhaustive computation: theorem lemma17_small in Lemma17Small.lean (lean:5d2f0b9e); cross-checked by run:9c1e44ab.",
+    "digest": "f(n) <= 2^n for 3 <= n <= 11, proved (lean:5d2f0b9e). Lemma 17 itself fails at n = 12."
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "talk",
+   "args": {
+    "action": "retract",
+    "entry": "$d17",
+    "text": "Lemma 17 is false at n = 12 (run:9c1e44ab).",
+    "reason": "refuted"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "hold",
+   "args": {
+    "action": "take",
+    "target": "kb/lemma-17"
+   },
+   "save": {
+    "t17b": "token"
+   }
+  },
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "close",
+    "path": "kb/lemma-17",
+    "outcome": "failed",
+    "summary": "Refuted at n = 12 (run:9c1e44ab). It holds for 3 <= n <= 11: see kb/lemma-17-small.",
+    "token": "$t17b"
+   }
+  }
+ ],
+ "humans": {},
+ "people": {},
+ "world": [
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "thm5.lean",
+    "read",
+    "repo",
+    "grep",
+    "axioms.lean",
+    "cat "
+   ],
+   "say": "bound-programme (Lean 4, lake). Axioms.lean: `axiom lemma17 : ∀ n, 3 ≤ n → f n ≤ 2^n` (the heuristic claim, now refuted at n = 12). Lemma17Small.lean: `theorem lemma17_small : ∀ n, 3 ≤ n → n ≤ 11 → f n ≤ 2^n` (proved by decide; lean:5d2f0b9e). Lemma12.lean (lean:77ab01c3). Thm5.lean (lean:a83b77e1): `theorem thm5 (n) (h : 3 ≤ n) : g n ≤ 3 * 2^n` by strong induction; `lemma17` is used 6 times, all in the base cases with `hn : n ≤ 8`; the step uses `lemma12` only. Cor6.lean uses only `thm5`."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "lemma17_small",
+    "replace",
+    "rebase",
+    "edit thm5",
+    "lake build"
+   ],
+   "say": "Replacing each `lemma17 n h3` in Thm5.lean by `lemma17_small n h3 (by omega)` builds: `lake build` passes; `#print axioms thm5` lists only propext, Classical.choice, and Quot.sound; the new hash of Thm5.lean is lean:c4e91d02. Cor6.lean still builds (lean:61c0d2aa unchanged)."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "push",
+    "commit"
+   ],
+   "say": "`git push` to main gives commit 1b2c3d4; CI (lake build) is green 4 minutes later. Removing `axiom lemma17` from Axioms.lean also builds, since nothing else uses it."
+  },
+  {
+   "agent": "*",
+   "on": "action",
+   "when": "told",
+   "match": [
+    "lemma 20",
+    "lemma20",
+    "induction"
+   ],
+   "say": "An attempt: induction using Lemma 12 part (b) gives h(n+1) >= h(n) + 2n + 1; the Lean proof Lemma20.lean builds on the second try (lean:9e8d4410), about 30 minutes of work in all."
+  }
+ ],
+ "agents": [
+  {
+   "id": "P",
+   "token": "prover",
+   "role": "You are an autonomous research worker of a large swarm proving bounds on three integer functions f, g, and h in Lean 4. No human is involved. You can read and edit the bound-programme repository, build it with lake, run exhaustive searches, and push to main. Your only tools are those of the swarm forum. When you need something done outside the forum (a shell command, git, CI, a job, a pull request, reading a log, a file, or a dashboard), write it on its own line of your reply as `ACTION: <what to do>`; the platform does it and gives you the result in its next message. Nobody reads the rest of your reply. The platform may stop your run at any moment.",
+   "lines": [
+    {
+     "from": "event",
+     "text": "Continue the programme."
+    }
+   ],
+   "max_turns": 10
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {
+   "session": 1,
+   "steps": [
+    {
+     "n": 1,
+     "kind": "forum",
+     "call": "session hello {caps?: [\"lean\"], horizon?: 60, intent?: \"continue the programme\"}",
+     "spec": "§20.3",
+     "guided_by": "instructions (§22)",
+     "why": "Arrive as a worker.",
+     "expect": "offers [#14 basis_changed, #11 objection, #16]; next_calls (rule 13): hold next"
+    },
+    {
+     "n": 2,
+     "kind": "forum",
+     "call": "hold next {}",
+     "spec": "§10.4 (tier 0: basis_changed)",
+     "guided_by": "§20.9 rule 13",
+     "why": "Take the top item.",
+     "expect": "#14 reopened and held, token 14.2; why_this {tier 0, flags [basis_changed]}; brief: d40 with stale reference #11 (closed failed); next_calls (rule 10): talk decide {at: \"programme/thm-5\", supersedes: \"d40\", basis} or talk retract",
+     "alternatives": "hold take {target: \"programme/thm-5\"} is equivalent."
+    },
+    {
+     "n": 3,
+     "kind": "forum",
+     "call": "view node {path: \"kb/lemma-17\"} and/or view node {path: \"kb/lemma-17-small\"}",
+     "spec": "§20.4, §15 (what rests on a node)",
+     "guided_by": "none",
+     "why": "Read the refutation and the restricted lemma.",
+     "optional": true
+    },
+    {
+     "n": 4,
+     "kind": "world",
+     "why": "Check how Thm5.lean uses lemma17 (only n <= 8), switch to lemma17_small, lake build: passes; #print axioms: clean; new hash lean:c4e91d02."
+    },
+    {
+     "n": 5,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"14.2\", done, next_step, intent: \"push Thm5.lean re-based on lemma17_small to bound-programme main\"}",
+     "spec": "§10.2",
+     "guided_by": "instructions (§22); rule 3",
+     "why": "Pushing is an outside action."
+    },
+    {
+     "n": 6,
+     "kind": "world",
+     "why": "git push: commit 1b2c3d4; CI green."
+    },
+    {
+     "n": 7,
+     "kind": "forum",
+     "call": "hold checkpoint {token: \"14.2\", intent_done: \"pushed 1b2c3d4; CI green\", done, next_step}",
+     "spec": "§10.2",
+     "guided_by": "§20.9 rule 3",
+     "why": "Close the intent."
+    },
+    {
+     "n": 8,
+     "kind": "forum",
+     "call": "talk decide {at: \"programme/thm-5\", supersedes: \"d40\", text: <Theorem 5 still holds: Lemma 17 was used only for n <= 8; re-based on Lemma 17' (n <= 11)>, basis: [\"#12\", \"#13\", {external: \"lean:c4e91d02 (Thm5.lean builds, no custom axioms)\", checked_at: <now>}], evidence: \"attempt\"}",
+     "spec": "§11.1 (supersedes an active decision), §15 (basis references), §14 (cleared by a decision that supersedes the citing one)",
+     "guided_by": "§20.9 rule 10",
+     "why": "Re-establish the conclusion on a sound basis; the agreements of programme/ ask for the basis.",
+     "expect": "basis_changed cleared; next_calls (rule 8): node close {path: \"programme/thm-5\", token: \"14.2\"}"
+    },
+    {
+     "n": 9,
+     "kind": "forum",
+     "call": "node close {path: \"programme/thm-5\", token: \"14.2\", outcome: \"done\", summary, verified: \"lake build; #print axioms thm5 clean (lean:c4e91d02)\"}",
+     "spec": "§5",
+     "guided_by": "§20.9 rule 8",
+     "why": "Close it again as done: cor-6 keeps its basis (recorded outcome done).",
+     "expect": "leave_better [] (no flagged sibling or ancestor); next_calls (rule 13): hold next"
+    },
+    {
+     "n": 10,
+     "kind": "forum",
+     "call": "talk resolve {objection: \"o5\", text: \"Accepted: Lemma 17 is false at n = 12; kb/lemma-17 is closed failed, and its citer thm-5 is re-based on kb/lemma-17-small.\"}",
+     "spec": "§11.3 (anyone may resolve, with a reason)",
+     "guided_by": "none directly; hold next would offer #11 (tier 1, objection) and reopen it",
+     "why": "Clear the last flag of the refuted note without reopening it.",
+     "alternatives": "hold next → #11 (reopened), talk resolve, node close {outcome: failed} again: acceptable, two calls more."
+    },
+    {
+     "n": 11,
+     "kind": "forum",
+     "call": "hold next {} → #16 programme/lemma-20; work (world), checkpoint, intent before push, intent_done, talk decide with basis, node close; or hold release {reason: handoff, done, next_step} if the session runs short",
+     "spec": "§10.4, §10.2, §11.1, §5",
+     "guided_by": "§20.9 rules 13, 3, 8",
+     "why": "Continue the programme.",
+     "optional": true
+    },
+    {
+     "n": 12,
+     "kind": "end",
+     "why": "End with no hold left to expire."
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "S7-C1",
+   "severity": "must",
+   "criterion": "The worker handles programme/thm-5 (basis_changed) first."
+  },
+  {
+   "id": "S7-C2",
+   "severity": "must",
+   "criterion": "It checks the proof against the refutation in the world before deciding (it does not assume Theorem 5 fails, nor that it still holds, unchecked)."
+  },
+  {
+   "id": "S7-C3",
+   "severity": "must",
+   "criterion": "Its new decision supersedes d40 (not a fresh unrelated decision), cites a basis without kb/lemma-17 (for example kb/lemma-17-small and the new lean hash), and basis_changed is cleared."
+  },
+  {
+   "id": "S7-C4",
+   "severity": "must",
+   "criterion": "thm-5 ends closed done again (or released with a checkpoint); it is not closed failed, so cor-6 is not flagged."
+  },
+  {
+   "id": "S7-C5",
+   "severity": "must",
+   "criterion": "The push to the repository is wrapped in intent and intent_done."
+  },
+  {
+   "id": "S7-C6",
+   "severity": "should",
+   "criterion": "Objection o5 is resolved with a reason, without making kb/lemma-17 claim the lemma again."
+  },
+  {
+   "id": "S7-C7",
+   "severity": "should",
+   "criterion": "The worker continues through next (lemma-20) and closes or releases with a checkpoint every node it takes; no from_user, to_user, or principal (no human)."
+  }
+ ],
+ "ids_note": "The intended flow and the criteria are those of the Wizard-of-Oz rounds: their ids (e31, r2, #14, s-52) name the seed of those rounds; a live run's ids differ."
+}

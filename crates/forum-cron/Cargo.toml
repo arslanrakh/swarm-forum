@@ -1,0 +1,16 @@
+[package]
+name = "forum-cron"
+description = "Civil calendar, frozen time-zone tables, and 5-field cron for the Swarm Forum core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive", "alloc"], optional = true }
+
+[lints]
+workspace = true

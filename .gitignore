@@ -1,0 +1,7 @@
+/target/
+node_modules/
+*.db
+*.db-wal
+*.db-shm
+_apalache-out/
+model/traces/

@@ -1,0 +1,30 @@
+== the brief, before the lemma failed (is_error: false)
+[swarm] running · now 2026-09-21T14:15:00Z · session s-1 (coder) · holds 1 (/proof, 13:00 left, checkpoint by 2026-09-21T14:18:00Z) · inbox 0
+{"node":{"id":"#10","path":"/proof","title":"The main theorem","state":"open","version":2,"digest_version":1,"holders":[{"session":"s-1","until":"2026-09-21T14:28:00Z"}],"rollup":"children 1 open; below: 1 open, 1 done, 1 failed"},"sections":[{"name":"decisions_and_agreements","items":[{"decision":"e3","by":"s-1","at":"2026-09-21T14:15:00Z","text":"go on with step 3 by the lemma","basis":["#9@1 (open)","external: the 2025 survey of bounds (checked 2026-09-21, recheck 2026-10-21)"]}]},{"name":"digest","items":[{"digest":"Three steps; step 2 refuted, step 3 open."}]}]}
+next_calls: none
+
+== the brief with a stale basis and the rollup (is_error: false)
+[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/proof, 12:00 left, checkpoint by 2026-09-21T14:18:00Z) · inbox 0
+{"node":{"id":"#10","path":"/proof","title":"The main theorem","state":"open","version":2,"digest_version":1,"holders":[{"session":"s-1","until":"2026-09-21T14:28:00Z"}],"rollup":"children 1 open; below: 1 open, 1 done, 1 failed","rests_on":[{"node":"/kb/lemma-3","state":"closed failed","via":"depends_on"}]},"sections":[{"name":"flags","items":["basis_changed"]},{"name":"decisions_and_agreements","items":[{"decision":"e3","by":"s-1","at":"2026-09-21T14:15:00Z","text":"go on with step 3 by the lemma","basis":["#9@1: now closed failed","external: the 2025 survey of bounds (checked 2026-09-21, recheck 2026-10-21)"],"stale_basis":true}]},{"name":"digest","items":[{"digest":"Three steps; step 2 refuted, step 3 open."}]}]}
+next_calls: none
+
+== view node full with what rests on it (is_error: false)
+[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/proof, 12:00 left, checkpoint by 2026-09-21T14:18:00Z) · inbox 0
+{"brief":{"node":{"id":"#9","path":"/kb/lemma-3","title":"Lemma 3 holds for every n","state":"closed failed","version":2,"digest_version":1,"body_head":"By induction on n."},"sections":[{"name":"everything_else","items":[{"e":"e4","type":"system","by":"s-1","at":"2026-09-21T14:16:00Z","system":"closed","outcome":"failed","summary":"fails for n = 7"}]}]},"content":{"title":"Lemma 3 holds for every n","body":"By induction on n.","created_at":"2026-09-21T14:13:00Z","closed":{"at":"2026-09-21T14:16:00Z","outcome":"failed"}},"feed":{"in_brief":["e4"]},"rests_on":{"links":{"items":[{"rel":"derived_from","from":"/proof"}]},"dependents":{"items":["/proof"]},"cited_by":{"items":[{"decision":"e3","at":"/proof"}]}}}
+next_calls: none
+
+== view list with the subtree counts (is_error: false)
+[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/proof, 12:00 left, checkpoint by 2026-09-21T14:18:00Z) · inbox 0
+{"nodes":[{"id":"#10","path":"/proof","title":"The main theorem","state":"open","rollup":"children 1 open; below: 1 open, 1 done, 1 failed","holders":[{"session":"s-1","until":"2026-09-21T14:28:00Z"}]},{"id":"#11","path":"/proof/step-1","title":"Reduce to the bounded case","state":"closed done"},{"id":"#12","path":"/proof/step-2","title":"Bound the error term","state":"closed failed"},{"id":"#13","path":"/proof/step-3","title":"Close the gap","state":"open"}],"under":{"path":"/proof","below":"1 open, 1 done, 1 failed"}}
+next_calls: none
+
+== view list of closed nodes (is_error: false)
+[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/proof, 12:00 left, checkpoint by 2026-09-21T14:18:00Z) · inbox 0
+{"nodes":[{"id":"#11","path":"/proof/step-1","title":"Reduce to the bounded case","state":"closed done"},{"id":"#12","path":"/proof/step-2","title":"Bound the error term","state":"closed failed"}],"under":{"path":"/proof","below":"1 open, 1 done, 1 failed"}}
+next_calls: none
+
+== a brief with a predecessor (is_error: false)
+[swarm] running · now 2026-09-21T14:16:00Z · session s-1 (coder) · holds 1 (/proof, 12:00 left, checkpoint by 2026-09-21T14:18:00Z) · inbox 0
+{"node":{"id":"#14","path":"/kb/lemma-3b","title":"Lemma 3 for n other than 7","state":"open","version":2,"digest_version":1},"continues":{"items":[{"node":"/kb/lemma-3","state":"closed failed","summary":"fails for n = 7"}]}}
+next_calls: none
+

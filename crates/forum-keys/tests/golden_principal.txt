@@ -1,0 +1,107 @@
+# forum_keys::normalise_principal (CS-1, design D.11.14). Its rules are frozen once released and
+# have no version, because a change would split one human into two principals: never change an
+# existing row after the release. New rows may be added at any time.
+#
+# Format: <input> TAB <ok | err> TAB <principal key | KeyError variant>. Lines starting with '#'
+# and blank lines are ignored. Both text columns understand the escapes \\ \t \n \r and \u{HEX};
+# a space at either end of a column is spelt \u{20}.
+
+# --- The reserved principal ---------------------------------------------------------------------------
+user	ok	user
+USER	ok	user
+\u{20}User\t	ok	user
+
+# --- mail: a bare address, lower-cased whole (a person, unlike a message id) ----------------------
+mail:alice@corp.example	ok	mail:alice@corp.example
+mail:Alice@Corp.Example	ok	mail:alice@corp.example
+MAIL:ALICE@CORP.EXAMPLE	ok	mail:alice@corp.example
+mail:caf\u{65}\u{301}@corp.example	ok	mail:caf\u{e9}@corp.example
+mail:\u{c9}LODIE@CORP.EXAMPLE	ok	mail:\u{e9}lodie@corp.example
+mail:<alice@corp.example>	ok	mail:alice@corp.example
+mail:<\u{20}Alice@Corp.Example\u{20}>	ok	mail:alice@corp.example
+
+# --- Any other scheme: lower-cased scheme, the value as it is -------------------------------------------
+slack:T01/U02ABC	ok	slack:T01/U02ABC
+Slack:T01/U02ABC	ok	slack:T01/U02ABC
+team:Payments	ok	team:Payments
+github:Octo-Cat	ok	github:Octo-Cat
+\u{20}slack:T01/U02ABC\u{20}	ok	slack:T01/U02ABC
+abcdefghijklmnop:x	ok	abcdefghijklmnop:x
+x:a:b	ok	x:a:b
+team:\u{600}x	ok	team:\u{600}x
+team:\u{2764}\u{fe0f}	ok	team:\u{2764}\u{fe0f}
+# The variation selectors, the Mongolian free variation selectors among them, are the only
+# default-ignorable code points kept.
+github:octo\u{fe00}cat	ok	github:octo\u{fe00}cat
+team:a\u{e0100}	ok	team:a\u{e0100}
+github:octo\u{180b}cat	ok	github:octo\u{180b}cat
+team:\u{1828}\u{180c}\u{180d}\u{180f}	ok	team:\u{1828}\u{180c}\u{180d}\u{180f}
+# One that chooses no glyph for the character before it shows nothing, and is kept all the same:
+# team:alice and team:alice\u{180b} read alike and are two principals.
+team:alice\u{180b}	ok	team:alice\u{180b}
+team:alice\u{fe00}	ok	team:alice\u{fe00}
+# Whitespace at the edges, U+0085 and U+2029 among it, is trimmed.
+\u{20}slack:T01/U02\u{85}	ok	slack:T01/U02
+slack:T01/U02\u{2029}	ok	slack:T01/U02
+
+# --- Refused ---------------------------------------------------------------------------------------------
+user:e12	err	BadScheme
+USER:alice	err	BadScheme
+user:	err	BadScheme
+users	err	NoScheme
+alice	err	NoScheme
+:alice	err	NoScheme
+1mail:x	err	BadScheme
+ma_il:x	err	BadScheme
+abcdefghijklmnopq:x	err	BadScheme
+mail:	err	BadValue
+mail:<>	err	BadValue
+mail:<\u{20}>	err	BadValue
+mail:<<alice@corp.example>>	err	BadValue
+mail:<alice@corp.example	err	BadValue
+mail:Alice\u{20}<alice@corp.example>	err	BadValue
+mail:alice@corp.example>	err	BadValue
+slack:T01/U02\nINJECTED	err	BadValue
+slack:T01/U\u{0}2	err	BadValue
+slack:\u{378}	err	BadValue
+slack:T01/U02\u{2028}x	err	BadValue
+slack:T01/U02\u{2029}x	err	BadValue
+# Every default-ignorable code point but the variation selectors is refused, at an edge too, so a
+# principal differs from another that reads alike by an invisible character only through a variation
+# selector (above).
+slack:T01/U02\u{200b}	err	BadValue
+slack:T01/\u{200d}U02	err	BadValue
+slack:T01/U02\u{200e}	err	BadValue
+team:\u{202e}stnemyaP	err	BadValue
+team:Pay\u{2066}ments\u{2069}	err	BadValue
+github:octo\u{2060}cat	err	BadValue
+team:Pay\u{ad}ments	err	BadValue
+team:Pay\u{34f}ments	err	BadValue
+slack:\u{3164}	err	BadValue
+slack:\u{ffa0}	err	BadValue
+slack:\u{115f}\u{1160}	err	BadValue
+team:a\u{17b4}	err	BadValue
+github:octo\u{180e}cat	err	BadValue
+team:a\u{206a}	err	BadValue
+team:a\u{1bca0}	err	BadValue
+team:a\u{1d173}	err	BadValue
+slack:\u{e0041}	err	BadValue
+team:\u{1f3f4}\u{e0067}\u{e0062}\u{e0073}\u{e0063}\u{e0074}\u{e007f}	err	BadValue
+mail:bob\u{200b}@corp.example	err	BadValue
+mail:bob\u{ad}@corp.example	err	BadValue
+mail:<bob@corp.example\u{feff}>	err	BadValue
+mail:\u{61c}bob@corp.example	err	BadValue
+\u{feff}slack:T01/U02	err	BadValue
+\u{20}slack:T01/U02\u{200b}\u{20}	err	BadValue
+\u{e0041}slack:x	err	BadValue
+us\u{200b}er	err	BadValue
+user\u{200b}	err	BadValue
+user\u{ad}	err	BadValue
+\u{3164}user	err	BadValue
+\u{2066}user\u{2069}	err	BadValue
+\u{200b}	err	BadValue
+\u{3164}	err	BadValue
+# A principal has no URL rule: an https principal is read as it is sent.
+https://x.example/\u{200b}	err	BadValue
+\u{20}	err	Empty
+\t\n	err	Empty

@@ -1,0 +1,68 @@
+{
+ "id": "s0-smoke",
+ "title": "Smoke: a worker vanishes mid-task, and the next worker takes the node over",
+ "covers": [
+  "§30 long work: checkpoints so that a stranger can take over",
+  "§10.1 a lease that ends after its session vanished; §10.3 the offer tag after expiry"
+ ],
+ "about": "The harness's own check, short and cheap, and not one of the campaign's scenarios. It uses only the commands the core implements at WP-D3: session hello, node create, update, and close, view, and hold next, take, checkpoint, and release. A scripted session leaves an offered node whose work is pure text. Worker A is ended right after the response to its fourth forum call: R3 cut it after its third, and in 8 of 8 runs A had spent that call on a take or on reading the full node (the brief showed only the body's first 256 bytes), so it could never checkpoint before the end (S0-C3); a fourth call leaves room for the checkpoint after hello, take, and a read. Worker B starts four minutes later, after A's lease has ended, and should find the node offered again with A's progress on it. The node sits directly under the root, so that closing it leaves no ancestor with ready_to_close for leave_better: a nested path (releases/2-3/changelog) made two plain ancestors, and B's close left /releases/2-3 ready to close, which rule 13 then asks B to take.",
+ "campaign": false,
+ "needs_packages": [],
+ "params": {"profile": "short", "overrides": {}},
+ "tokens": {
+  "seed": {"class": "seed"},
+  "worker": {"class": "scheduled-job"}
+ },
+ "prelude": [
+  {"as": "seed", "tool": "session", "args": {"action": "hello", "intent": "set up the work for release 2.3"}},
+  {
+   "as": "seed",
+   "tool": "node",
+   "args": {
+    "action": "create",
+    "path": "changelog-2-3",
+    "title": "Changelog for release 2.3",
+    "body": "Write the changelog of release 2.3 for the release notes: one plain-English line per change, written for users, not developers. The release has three changes: (1) a failed export is now retried with a random back-off instead of at once; (2) the CSV export streams rows as it reads them instead of loading the whole table first, so large exports no longer time out; (3) the deprecated --legacy-auth flag is removed. Record the three lines on this node, where the release manager looks for them."
+   },
+   "save": {"t": "token"}
+  },
+  {
+   "as": "seed",
+   "tool": "hold",
+   "args": {"action": "release", "token": "$t", "done": "Created the node with the three changes of the release.", "next_step": "A worker writes the three changelog lines and records them here.", "reason": "handoff"}
+  }
+ ],
+ "humans": {},
+ "people": {},
+ "world": [],
+ "agents": [
+  {
+   "id": "A",
+   "token": "worker",
+   "role": "You are a scheduled worker agent of a software company's agent swarm, started by the agent platform's scheduler. You work for no particular person, and nobody reads your replies. Your only tools are those of the swarm forum. The platform may stop your run at any moment.",
+   "start": {"at": "0s"},
+   "lines": [{"from": "event", "text": "The scheduler started you. Pick up work on the forum."}],
+   "end": {"after_calls": 4},
+   "max_turns": 2
+  },
+  {
+   "id": "B",
+   "token": "worker",
+   "role": "You are a scheduled worker agent of a software company's agent swarm, started by the agent platform's scheduler. You work for no particular person, and nobody reads your replies. Your only tools are those of the swarm forum. The platform may stop your run at any moment.",
+   "start": {"after": "A", "delay": "4m"},
+   "lines": [{"from": "event", "text": "The scheduler started you. Pick up work on the forum."}],
+   "max_turns": 2
+  }
+ ],
+ "drain": "3m",
+ "intended_flow": [
+  {"agent": "A", "steps": ["session hello: the offer is the changelog node", "hold next (or take): the brief with the seed's handoff checkpoint", "view node full, if the brief cut the body", "hold checkpoint: the lines drafted so far, so that a stranger can go on", "(ended by the harness after its fourth call)"]},
+  {"agent": "B", "steps": ["session hello: the node is offered again, since A's lease ended", "hold next (or take): the brief shows A's checkpoint, if any", "write the three lines and record them on the node: in its digest (node update), a checkpoint, or the close's summary", "node close {outcome: done, summary}: leave_better is empty, since the node's parent is the root", "hold next: nothing left, so the session ends"]}
+ ],
+ "criteria": [
+  {"id": "S0-C1", "severity": "must", "criterion": "Every agent's first forum call is session hello."},
+  {"id": "S0-C2", "severity": "must", "criterion": "The changelog node is closed done by B, with the three lines in its digest, its close's summary, or a checkpoint (R3: 7 of 8 B wrote them in the digest, which constitution line 8 says to update, and 5 only there)."},
+  {"id": "S0-C3", "severity": "should", "criterion": "A checkpoints before it is ended, so that B continues from A's lines rather than starting over."},
+  {"id": "S0-C4", "severity": "should", "criterion": "No session leaves a hold that expires with no checkpoint, other than A's at the harness's end point."}
+ ]
+}

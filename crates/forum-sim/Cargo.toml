@@ -1,0 +1,17 @@
+[package]
+name = "forum-sim"
+description = "Test-only: the year simulation (WP-Y), simulated agents and humans driving the core in process"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+# It drives `forum-core` in process with simulated time (design D.15.4, WP-Y): `apply` and `settle`
+# directly, no shell and no HTTP, so that a run of 30 simulated days takes seconds and repeats
+# exactly with its seed. It links no other forum crate.
+[dependencies]
+forum-core = { path = "../forum-core" }
+
+[lints]
+workspace = true
