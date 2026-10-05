@@ -202,7 +202,7 @@ Node.js with `npm ci` in `model/`, a JDK 17 or later for TLC, and `cargo kani`; 
 skipped and said. [`docs/verification.md`](docs/verification.md) records what each level checks and
 what the checks have found. CI runs the quick form and the model's tests on every push to `main` and
 every pull request; the formal checks of the key invariants (Kani, TLC, and the conformance sweep)
-run only when the workflow is started by hand (`workflow_dispatch`), as there is no nightly run.
+are not part of CI and run locally, through `scripts/verify.sh`.
 
 **The scale gates.** `scripts/bench/run-all.sh --smoke` runs gates G-1 to G-12 of design D.12.8,
 scaled down to minutes, and `--full` runs them as specified, for the reference hardware (16 vCPU,
