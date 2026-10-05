@@ -15,10 +15,12 @@
 //! engine skips it if it is still queued.
 //!
 //! [`router`] mounts the handler at `/mcp` behind the bearer layer: an unknown token gets HTTP
-//! 401, and a request body over 1 MiB HTTP 413 before any tool call is decoded (the transport's
-//! own limit, §19). `legacy_session_mode` keeps an `Mcp-Session-Id` for clients on protocol
-//! versions before `2026-07-28` (A-32), and an idle MCP session expires after
-//! `presence.silence` (CS-17).
+//! 401, a `Host` that `allowed_hosts` does not name HTTP 403 (rmcp's validation, D.11.9), and a
+//! request body over 1 MiB HTTP 413 before any tool call is decoded (the transport's own limit,
+//! §19). `legacy_session_mode` keeps an `Mcp-Session-Id` for clients on protocol versions before
+//! `2026-07-28` (A-32), and an idle MCP session expires after `presence.silence` (CS-17). Beside
+//! it, `GET /healthz` answers `ok` without a token, whatever the `Host`, for a container's health
+//! check; it is the only route outside the bearer layer.
 
 use std::future::Future;
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -40,6 +42,7 @@ use serde_json::Value;
 
 use super::tools::tools;
 use crate::auth::{Caller, SharedTokens, bearer};
+use crate::config::ANY_HOST;
 use crate::decode::{DecodeEnv, EntryLookup, Prepared, ShellAnswer, no_session, prepare};
 use crate::session_bind::{Claim, Opening, SessionBinding};
 
@@ -383,7 +386,8 @@ impl<B: Backend> ServerHandler for ForumServer<B> {
 /// The HTTP settings of the route.
 #[derive(Clone, Debug)]
 pub struct HttpSettings {
-    /// rmcp's `Host` validation (D.11.9).
+    /// rmcp's `Host` validation (D.11.9); with [`crate::config::ANY_HOST`] among them, or none,
+    /// every `Host` is accepted.
     pub allowed_hosts: Vec<String>,
     /// An idle MCP session expires after `presence.silence` (CS-17).
     pub mcp_idle: Duration,
@@ -408,7 +412,17 @@ impl std::fmt::Debug for StopStreams {
     }
 }
 
-/// The `/mcp` route: the handler behind the bearer layer, with the 1 MiB body cap.
+/// The path of the health check (D.11.2).
+pub const HEALTHZ: &str = "/healthz";
+
+/// `GET /healthz`: 200 and `ok` while the server accepts connections. It reads no forum state, so
+/// a container's health check costs the writer nothing, and it is the only route without a token.
+async fn healthz() -> &'static str {
+    "ok"
+}
+
+/// The `/mcp` route: the handler behind the bearer layer, with the 1 MiB body cap; and
+/// `/healthz`, outside the bearer layer and rmcp's `Host` validation.
 pub fn router<B: Backend>(
     server: ForumServer<B>,
     tokens: SharedTokens,
@@ -423,8 +437,14 @@ pub fn router_with_stop<B: Backend>(
     tokens: SharedTokens,
     http: &HttpSettings,
 ) -> (Router, StopStreams) {
-    let mut config = StreamableHttpServerConfig::default()
-        .with_allowed_hosts(http.allowed_hosts.clone())
+    let config = StreamableHttpServerConfig::default();
+    // `*` turns the validation off, which rmcp does with an empty list.
+    let config = if http.allowed_hosts.iter().any(|h| h == ANY_HOST) {
+        config.disable_allowed_hosts()
+    } else {
+        config.with_allowed_hosts(http.allowed_hosts.clone())
+    };
+    let mut config = config
         .with_legacy_session_mode(true)
         .with_max_request_body_bytes(MAX_BODY_BYTES);
     config.sse_keep_alive = Some(Duration::from_secs(15));
@@ -434,9 +454,12 @@ pub fn router_with_stop<B: Backend>(
     sessions.session_config.keep_alive = Some(http.mcp_idle);
     let service: StreamableHttpService<ForumServer<B>, LocalSessionManager> =
         StreamableHttpService::new(move || Ok(server.clone()), Arc::new(sessions), config);
+    // The layer wraps the routes before it and the fallback, so an unknown path without a token is
+    // still 401; `/healthz`, added after it, is not wrapped.
     let router = Router::new()
         .nest_service("/mcp", service)
-        .layer(axum::middleware::from_fn_with_state(tokens, bearer));
+        .layer(axum::middleware::from_fn_with_state(tokens, bearer))
+        .route(HEALTHZ, axum::routing::get(healthz));
     (router, stop)
 }
 
@@ -466,7 +489,8 @@ pub(crate) mod test_http {
         addr
     }
 
-    /// Sends one request and reads the whole response (`Connection: close`).
+    /// Sends one request and reads the whole response (`Connection: close`), with `Host:
+    /// localhost` unless `headers` name another.
     pub(crate) async fn request(
         addr: SocketAddr,
         method: &str,
@@ -476,9 +500,12 @@ pub(crate) mod test_http {
     ) -> Response {
         let mut s = TcpStream::connect(addr).await.unwrap();
         let mut head = format!(
-            "{method} {path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Length: {}\r\n",
+            "{method} {path} HTTP/1.1\r\nConnection: close\r\nContent-Length: {}\r\n",
             body.len()
         );
+        if !headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("host")) {
+            head.push_str("Host: localhost\r\n");
+        }
         for (k, v) in headers {
             head.push_str(&format!("{k}: {v}\r\n"));
         }
@@ -681,13 +708,29 @@ mod tests {
         binding: &Arc<Mutex<SessionBinding>>,
         tokens: SharedTokens,
     ) -> SocketAddr {
+        serve_hosts(
+            backend,
+            binding,
+            tokens,
+            crate::config::Config::default().allowed_hosts,
+        )
+        .await
+    }
+
+    /// [`serve`], with `allowed_hosts`.
+    async fn serve_hosts<B: Backend>(
+        backend: &Arc<B>,
+        binding: &Arc<Mutex<SessionBinding>>,
+        tokens: SharedTokens,
+        allowed_hosts: Vec<String>,
+    ) -> SocketAddr {
         let server = ForumServer::new(
             Arc::clone(backend),
             INSTRUCTIONS.to_string(),
             Arc::clone(binding),
         );
         let http = HttpSettings {
-            allowed_hosts: vec!["localhost".into(), "127.0.0.1".into()],
+            allowed_hosts,
             mcp_idle: Duration::from_secs(900),
         };
         test_http::serve(router(server, tokens, &http)).await
@@ -1039,6 +1082,121 @@ mod tests {
         big.extend_from_slice(br#""}}}"#);
         let r = test_http::request(addr, "POST", "/mcp", &good, &big).await;
         assert_eq!(r.status, 413, "{}", r.body);
+        assert!(backend.calls.lock().unwrap().is_empty());
+    }
+
+    /// D.11.2, D.11.3, D.11.9: `GET /healthz` answers `ok` without a token, whatever the `Host`,
+    /// and reaches nothing else; `/mcp` without a token is still 401, a `Host` that the allowed
+    /// hosts do not name still 403 with a token, and an unknown path without a token still 401.
+    #[tokio::test]
+    async fn healthz_answers_without_a_token_and_mcp_still_needs_one() {
+        let (backend, binding, addr) = start().await;
+        let get = |path: &'static str, host: Option<&'static str>, method: &'static str| {
+            let headers: Vec<(&str, &str)> = host.map(|h| ("host", h)).into_iter().collect();
+            async move { test_http::request(addr, method, path, &headers, b"").await }
+        };
+        let r = get("/healthz", None, "GET").await;
+        assert_eq!((r.status, r.body.as_str()), (200, "ok"));
+        let r = get("/healthz", Some("forum.example.com"), "GET").await;
+        assert_eq!(
+            (r.status, r.body.as_str()),
+            (200, "ok"),
+            "no Host validation"
+        );
+        assert_eq!(get("/healthz", None, "HEAD").await.status, 200);
+        // Everything else needs a token.
+        let body = br#"{"jsonrpc":"2.0","id":1,"method":"tools/list"}"#;
+        let json = [
+            ("content-type", "application/json"),
+            ("accept", "application/json, text/event-stream"),
+        ];
+        let r = test_http::request(addr, "POST", "/mcp", &json, body).await;
+        assert_eq!(r.status, 401);
+        let r = test_http::request(
+            addr,
+            "POST",
+            "/mcp",
+            &[json[0], json[1], ("host", "forum.example.com")],
+            body,
+        )
+        .await;
+        assert_eq!(r.status, 401, "the token first, then the Host");
+        assert_eq!(get("/healthz/", None, "GET").await.status, 401);
+        assert_eq!(get("/nowhere", None, "GET").await.status, 401);
+        // With a token, a Host the allowed hosts do not name is refused by rmcp; one they name
+        // passes at any port (a PUT then gets 405 from rmcp, after its Host check).
+        let auth = format!("Bearer {TOKEN}");
+        let put = |host: &'static str| {
+            let auth = auth.clone();
+            async move {
+                test_http::request(
+                    addr,
+                    "PUT",
+                    "/mcp",
+                    &[("authorization", auth.as_str()), ("host", host)],
+                    b"",
+                )
+                .await
+                .status
+            }
+        };
+        assert_eq!(put("forum.example.com").await, 403);
+        assert_eq!(put("localhost").await, 405);
+        assert_eq!(put("localhost:9999").await, 405);
+        assert_eq!(put("127.0.0.1:8640").await, 405);
+        assert!(backend.calls.lock().unwrap().is_empty());
+        assert!(backend.refusals.lock().unwrap().is_empty());
+        assert!(binding.lock().unwrap().is_empty());
+
+        // A domain as a platform gives it, reduced to its name (D.11.9): it passes at any port,
+        // and loopback no longer does.
+        let hosts = crate::config::allowed_hosts(["https://Forum.Example.com:8640/"])
+            .unwrap()
+            .unwrap();
+        let addr = serve_hosts(&backend, &binding, tokens(), hosts).await;
+        let put = |host: &'static str| {
+            let auth = auth.clone();
+            async move {
+                test_http::request(
+                    addr,
+                    "PUT",
+                    "/mcp",
+                    &[("authorization", auth.as_str()), ("host", host)],
+                    b"",
+                )
+                .await
+                .status
+            }
+        };
+        assert_eq!(put("forum.example.com").await, 405);
+        assert_eq!(put("FORUM.example.com:443").await, 405);
+        assert_eq!(put("localhost").await, 403);
+        let r = test_http::request(addr, "GET", "/healthz", &[], b"").await;
+        assert_eq!((r.status, r.body.as_str()), (200, "ok"));
+
+        // `*`: every Host passes rmcp; the token is still required.
+        let addr = serve_hosts(&backend, &binding, tokens(), vec![ANY_HOST.into()]).await;
+        let r = test_http::request(
+            addr,
+            "PUT",
+            "/mcp",
+            &[
+                ("authorization", auth.as_str()),
+                ("host", "anything.example.org"),
+            ],
+            b"",
+        )
+        .await;
+        assert_eq!(r.status, 405);
+        let r = test_http::request(
+            addr,
+            "POST",
+            "/mcp",
+            &[json[0], json[1], ("host", "anything.example.org")],
+            body,
+        )
+        .await;
+        assert_eq!(r.status, 401);
         assert!(backend.calls.lock().unwrap().is_empty());
     }
 

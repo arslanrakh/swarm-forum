@@ -42,9 +42,11 @@ is reported as passed and bounded, with the depth it reached; `MODEL_CHECK_STRIC
 **CI** (`.github/workflows/ci.yml`, no secrets). On every push to `main` and every pull request: the
 `verify` job runs `scripts/verify.sh --no-model --no-kani`, and the `model` job runs `npm ci`,
 `npm run typecheck`, and `npm test` in `model/`, then the conformance tests with the model's Quint on
-`PATH`. Nightly and on a manual run, the formal checks of the key invariants: `cargo kani` on both
-crates, TLC on `holds_two`, `holds_one`, `keys_two`, and `keys_one`, the liveness of `holds_two` and
-`holds_one`, and the conformance sweep. The model's simulation, Apalache, the scale gates, and the
+`PATH`. On a manual run only (`workflow_dispatch`), the formal checks of the key invariants as well:
+`cargo kani` on both crates, TLC on `holds_two`, `holds_one`, `keys_two`, and `keys_one`, the
+liveness of `holds_two` and `holds_one`, and the conformance sweep. There is no scheduled run: the
+nightly one was removed, so these jobs run when someone starts them, after a change to the core or
+the model and before a release. The model's simulation, Apalache, the scale gates, and the
 usability test are left to `scripts/verify.sh`.
 
 ## What is checked at each level
@@ -522,7 +524,7 @@ What it replays:
 - fixtures tampered in six ways (a lease, a fence, an outcome, the clock, an `op_id` record, a key),
   which the replay must catch;
 - the sweep: `traces.sh --sweep` writes 200 traces of each module with fixed seeds, and each group is
-  replayed (`tests/sweep.rs`, opt-in; `scripts/verify.sh` step 7 and CI's nightly `sweep` job);
+  replayed (`tests/sweep.rs`, opt-in; `scripts/verify.sh` step 7 and CI's manual `sweep` job);
   since 1.9 it includes `said_held_two`, whose `said` entries are recorded while another session may
   hold their conversation node (1.9 withheld them; since 1.10 they count), and since 1.10
   `review_two`, the `people` slice's objections, resolves of each verdict, closes, takes,
@@ -825,7 +827,7 @@ lab on it before changing more, and change less per version.
 ## Kani harnesses
 
 `cargo kani -p forum-cron` and `cargo kani -p forum-core` run every harness (`scripts/verify.sh`
-step 5, CI's nightly `kani` job). The harnesses are behind `#[cfg(kani)]`, in
+step 5, CI's manual `kani` job). The harnesses are behind `#[cfg(kani)]`, in
 `crates/forum-core/src/kani/` and `crates/forum-cron/src/kani.rs`, each with an explicit unwind
 bound and unwinding assertions on.
 

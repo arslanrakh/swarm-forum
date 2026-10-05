@@ -1,0 +1,16 @@
+# The image is built from Cargo.toml, Cargo.lock, rust-toolchain.toml, and crates/ alone
+# (Dockerfile); the rest stays out of the build context, which keeps it small and local files out.
+.git
+.claude
+target
+model/node_modules
+model/traces
+model/_apalache-out
+usability/out
+**/__pycache__
+# Tokens and local databases never reach an image.
+.env
+**/.env
+**/*.db
+**/*.db-wal
+**/*.db-shm

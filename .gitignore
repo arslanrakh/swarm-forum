@@ -5,3 +5,5 @@ node_modules/
 *.db-shm
 _apalache-out/
 model/traces/
+# A `.env` of tokens (FORUM_TOKEN_*) and other local secrets.
+.env

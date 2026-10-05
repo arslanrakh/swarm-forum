@@ -10,7 +10,9 @@
 #   model   the Quint model's typecheck and run tests (npm ci in model/), then the conformance
 #           tests with the model's Quint on PATH (D.10.8).
 #
-# Nightly, and on a manual run, the formal checks of the key invariants only (D.0.3):
+# On a manual run only (workflow_dispatch: Actions, CI, Run workflow), also the formal checks of
+# the key invariants (D.0.3); there is no scheduled run, so start one after a change to the core
+# or the model, and before a release:
 #   kani    cargo kani on forum-cron and forum-core;
 #   tlc     TLC on the holds and keys slices in both class configurations, and the liveness of
 #           holds, each under MODEL_CHECK_SECONDS;
@@ -30,8 +32,6 @@ on:
   push:
     branches: [main]
   pull_request:
-  schedule:
-    - cron: "17 2 * * *"
   workflow_dispatch:
     inputs:
       model_check_seconds:
@@ -108,7 +108,7 @@ jobs:
 
   kani:
     name: Kani (${{ matrix.crate }})
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ${{ vars.FORMAL_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 240
     strategy:
@@ -141,7 +141,7 @@ jobs:
 
   tlc:
     name: TLC (${{ matrix.check }} ${{ matrix.module }})
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ${{ vars.FORMAL_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 120
     strategy:
@@ -211,7 +211,7 @@ jobs:
 
   sweep:
     name: Conformance sweep
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ${{ vars.FORMAL_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 180
     steps:

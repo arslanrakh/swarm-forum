@@ -8883,7 +8883,7 @@ manifest:
 | Need | Choice | Notes |
 |---|---|---|
 | MCP | `rmcp = "3.5"`, features `server`, `transport-streamable-http-server` | The official SDK (`modelcontextprotocol/rust-sdk`). `StreamableHttpService` is a tower service; `StreamableHttpServerConfig` has `legacy_session_mode` and `allowed_hosts`. The handler implements `ServerHandler` by hand (`get_info`, `list_tools`, `call_tool`): six tools with hand-written schemas keep decoding, and the digest, under our control |
-| HTTP | `axum = "0.8"` | `Router::new().nest_service("/mcp", service)` plus the bearer layer |
+| HTTP | `axum = "0.8"` | `Router::new().nest_service("/mcp", service)` plus the bearer layer, and `/healthz` outside it |
 | Runtime | `tokio = "1"` (`rt-multi-thread`, `macros`, `sync`, `time`, `signal`) | The core never sees it |
 | SQLite | `rusqlite = "0.40"`, features `bundled`, `hooks`, `backup` | Pins SQLite (`libsqlite3-sys` 0.38), with FTS5, into the binary (WP-E1 confirms FTS5 and `contentless_delete` with `PRAGMA compile_options` and a probe); `hooks` gives the progress handler that bounds a search (D.11.12), `backup` the online backup of D.11.8 |
 | Time zones | `jiff = "0.2"` (`default-features = false`, `std`, `tzdb-bundle-always`) and `jiff-tzdb = "0.1"` | Bundled database: the system zoneinfo is never read; `jiff_tzdb::VERSION` (currently `2026c`) is the provenance recorded in each `TzTable` |
@@ -8899,13 +8899,14 @@ manifest:
 
 ```
 main
- ├─ config::load(path)                       TOML, the environment, and `.env`, once (the only
+ ├─ config::resolve(environment, flags)      TOML, the environment, and `.env`, once (the only
  │                                           std::env and fs reads, D.11.3, D.11.9)
  ├─ store::open(db)                          schema creation, migrations (D.7.6), PRAGMAs
  ├─ engine::start(store, config)             load the state tables (D.11.8), then the threads
  └─ axum server
       /mcp   rmcp StreamableHttpService<ForumServer, LocalSessionManager>
       layer  auth::bearer                    Authorization → class and default caps, or HTTP 401
+      /healthz                               200 `ok`, outside the layer (no token, no Host check)
 threads: the writer; the checkpointer; the search feeder; a pool of read-only search connections
 ```
 
@@ -8984,6 +8985,12 @@ threads: the writer; the checkpointer; the search feeder; a pool of read-only se
 - **Search feeder** (CS-19). A thread with a read-only connection to the database reads the
   committed events in `seq` order and feeds the search file (D.11.12); it may lag the writer by
   seconds and never delays it.
+- **Health check.** `GET /healthz` answers 200 and `ok` while the process accepts connections. It
+  sits outside the bearer layer and outside rmcp's `Host` validation, so a container's health check
+  needs neither a token nor the public name, and it reads no forum state, so it costs the writer
+  nothing. It is the only route without a token: `/mcp` is unchanged, and an unknown path still gets
+  401 without one. The listener binds only once the state has loaded (D.11.8), so the check fails
+  until the server serves.
 - **Crash-only.** Any storage error after `evolve` ran, and any database constraint violation (a core
   bug, §24), aborts the process after logging; so does a panic on the writer thread; restart loads
   the state tables (D.11.8).
@@ -9014,12 +9021,13 @@ does, as a call's own class and caps would (`txs.class`, `SessionOpened`).
 
 The auth layer hashes the `Authorization: Bearer` value, looks it up, and inserts the `ClassName` and
 the token's default caps, if any, into the request extensions; they become `Ctx.class` and `Ctx.caps`
-(D.5.1). An unknown token gets HTTP 401 before MCP sees the request. A token's caps are validated as
-`Label`s when the configuration is loaded; a value that fails stops the server (at startup) or keeps
-the old map (at a reload). A class and caps are never used for permissions (§3): a shared chat bot
-serves thousands of people with one token, and a team's token carries its team's label as caps, so
-that its agents are offered their team's work, and other teams' agents are not, without each agent
-knowing the label (CS-26), while any agent may still pass other caps.
+(D.5.1). An unknown token gets HTTP 401 before MCP sees the request; `GET /healthz` is the only route
+outside the layer (D.11.2). A token's caps are validated as `Label`s when the configuration is
+loaded; a value that fails stops the server (at startup) or keeps the old map (at a reload). A class
+and caps are never used for permissions (§3): a shared chat bot serves thousands of people with one
+token, and a team's token carries its team's label as caps, so that its agents are offered their
+team's work, and other teams' agents are not, without each agent knowing the label (CS-26), while
+any agent may still pass other caps.
 
 Tokens change without a restart: on SIGHUP the shell re-reads the `FORUM_TOKEN_*` lines of `.env`
 and swaps its token map at a job boundary (D.11.2), so a leaked token is revoked by removing its line
@@ -9664,7 +9672,7 @@ days (review §4, TP-10). An upgrade costs a migration of the state and shell ta
 listen          = "127.0.0.1:8640"
 database        = "forum.db"
 search_database = "forum-search.db"                  # the search index (D.11.12)
-allowed_hosts   = ["localhost", "127.0.0.1"]        # rmcp Host validation
+allowed_hosts   = ["localhost", "127.0.0.1"]        # rmcp Host validation; ["*"]: none
 instructions    = "default"                          # or a custom text ≤ instructions.max
 [params]                                             # any field of Params; the rest default (§22)
 lease_first     = "15m"
@@ -9679,6 +9687,32 @@ conversation_schemes = ["chat", "issue", "mail"]     # CS-36
 ```
 
 Bearer tokens are not in this file: they come from the environment or a `.env` file (D.11.3, CS-27).
+
+**The environment.** A container is configured by its variables rather than by a file, so the
+settings other than the instructions and the parameters each have a variable, read from the process
+environment (not from `.env`, which holds tokens only): `FORUM_CONFIG` (the file itself),
+`FORUM_LISTEN`, `FORUM_DATABASE`, `FORUM_SEARCH_DATABASE`, and `FORUM_ALLOWED_HOSTS`. A command-line
+flag wins over its variable (`--config`, `--listen`, `--db`, `--search-db`), a variable over the
+file, and the file over the default. An empty variable counts as unset, so that a variable a
+platform leaves empty changes nothing, except `FORUM_SEARCH_DATABASE`, where empty means no search,
+as `--search-db ""` and `search_database = ""` do. `FORUM_ALLOWED_HOSTS` is a list separated by
+commas or whitespace; one with no entry counts as unset too.
+
+**Allowed hosts.** rmcp refuses a request at `/mcp` whose `Host` header the list does not name, with
+HTTP 403, against DNS rebinding. rmcp 3.5 parses an entry and the header as `host[:port]`, compares
+the host names without case or IPv6 brackets, and compares the ports only when the entry has one;
+an empty list accepts every host. Every entry, from the file or the environment, is therefore
+reduced to its host name in lower case: a scheme, a path, a query, a trailing slash, and a port are
+dropped, so that `https://forum.example.com:8640/` gives `forum.example.com`. A value that a platform
+generates then works as it is: Coolify's `SERVICE_URL_*` carries a scheme, and its domains may name
+the container's port while clients come through the proxy's 443. Dropping the port loses nothing,
+since the server listens on one port and the validation guards against a foreign name, not a
+foreign port. `*` alone turns the validation off, and the bearer tokens alone guard `/mcp`. An entry
+that names no host, a port that is not a number, a wildcard within a name (which rmcp would compare
+as text), and an empty list in the file stop the server, since rmcp would take an empty list for
+`*`. The startup logs a warning when the list is `*`, and when the server listens beyond loopback
+(`0.0.0.0` in a container) with loopback names alone allowed, as by default: a request through a
+domain would get 403 until `FORUM_ALLOWED_HOSTS` names it.
 
 The forum holds the coordination state and references; its configuration holds no directory of
 its humans, and no default addressee (FQ-5). Principals are interned on first use, a principal who
@@ -10282,7 +10316,7 @@ D.8.11); the normaliser merges nothing.
 | `forum-core`, 1.4 (D.14.4) | The replies say what the call did (R3, R9): `from_user`, `hello {from_user}`, and `route` return each `routed` branch (a new request with its node, an answer, a clarification, `{none}`, unrouted for a question no longer pending, and unrouted with no target at 0 and at 2 holds), `route` of a routed entry returns its first routing with `existing`; `create`, a join, and `key add` of a `user:e<n>` key name the requests their routing recorded, a known origin none; a `said` returns `answered`, `settled`, and `fulfilled`, all empty for an `ack`, and on a node with two conversations only its own conversation's; a checkpoint returns its entry and the intents it opened and closed, another session's included; a decision's `not_settled` names a request settled before, a user request still awaiting a `result` to its requester, and an external one awaiting a `said` in its conversation, and a listed answered request always settles; a close of a series returns `dropped` and the `series_stopped` warning naming that occurrence, a merge from a series returns that warning too, and a plain close neither (R2). A take and a `next` of a closed node reply `reopened: {was}` and store it in `Hold::reopened`, an open node `None` (R4). `hold release {intent_done}` closes any session's open intent, is `invalid(NoIntent)` with none open, and `not_found` when its wait target is also unknown (D.8.24), and a release that leaves the session's own intent open returns `open_intent`, while one that leaves another session's returns none (R15). `holder:` and `holders:` never deliver to the sender: a holder's note to `holder:` of its own node waits for the next other taker, `bind_holder_notes` skips the author, the sender's inbox skips its own `holders:` note without moving its cursor, and `session:<self>` still reaches it; `say` and `talk ask` to a retired `session:` are `not_found(Addressee)` (R12). A question for a human with `options: []` is recorded as an open question (R27). `say {expects: ack | reply}` is recorded with `expects_ignored`, `none` with no warning (R17). A basis naming `at`, and naming a node merged into `at`, is dropped with `self_basis_dropped { dropped }` and the decision keeps its other references and its effects (R14). The OccurrenceSlot firing copies the series' title, body, needs, and est edited while the occurrence waited, replaces an edit made to the waiting occurrence's own title or body, emits no `NodeUpdated` when nothing differs, bumps `version` only for title or body, and puts the available occurrence in the partition of its new needs and est (R10). `coverage`'s `first_start` at a slot whose own hour is usual, one later in the window the same day, one the next day in a window that reaches it, None when the first usual hour falls after the window's end, one across a DST gap (the hour skipped), and None with no usual hour (R18). A holder whose checkpoint within `presence.resolution` of its take extended the lease past `presence.silence` is not silent until its lease ends, gets no `STALE SESSION`, and falls silent at that end, after the Lease key (R27); when another session closes, moves, or merges such a holder's node after its `silence_at`, the holder's Silence key lies at that call's `now`, never before, and the post-settle fires it in the same call, so its pending `said` entries become unconfirmed there (D.4.8); `retire_at` still follows the last touch. `query::status_line` carries `now` and each hold's `checkpoint_by`, equal to rule 3's due time at 4:59 and 5:00 and near the lease's end (R8); `query::hello` returns `caps` (passed, and the token's defaults) and, with no offers, the `EmptyWhy` of the same read (R25); an empty `next` counts `waiting` for a node waiting on a question, a node, a time, and something outside, whatever the caller and the query (R27). The next calls: rule E after a refused `decide` still suggests the decision and the reply owed (R19); rule 3 after a `create` of a series that returned `uncovered_slot` and issued a hold suggests a `now` checkpoint with `intent`, and without the warning a `later` one; rule 3's why for another session's intent puts the check first (R6); rule 7 after a `from_user {node}` that recorded a request on an unheld node suggests its decision once, and nothing on a held node (R3); rule 8 after a checkpoint with `intent_done` on a node with no unsettled request suggests a `later` close once, with the alternative in `why`, and none after a checkpoint that closes one intent and opens another (R11); after a take reopened a node closed `failed` and a `decide {supersedes}` cleared its `basis_changed`, a close with outcome `failed`, and with outcome left to the agent for a node closed `missed`, and none while another flag a close would leave remains (R4); rule 11 never answers the session's own agent question (R12); rule 12 after `hello`, after a later `view`, and gone after a `to_user` to the person's alias (R13); the remedy of `invalid(IntentOpen)` for another session's intent leaves `intent` optional (R6) |
 | `forum-server`, 1.4 (D.14.4) | The instructions verbatim, 502 characters, and the `hold` and `talk` descriptions verbatim (R1, R5, R6); each tool's input schema one object with the `action` enum and no top-level `oneOf` (1.5, replacing R21's `oneOf`), every action's argument set equal to the decoder's; every argument description of §20.2's table (R20), and each tool's `outputSchema` describing `fill` (`?` is for the agent to write, R20); `ask` with `blocking` or `where` for a human, and with `options` for a person, is `invalid` naming the argument (R27); a first call that does not decode, or names an unknown session, has no status line, and one that names a live session keeps it (R27); the status line with `now` and `checkpoint by`, RFC 3339 with seconds, and a shown time passed back as `due` decodes to the same instant (R8); a key and an entry id where a node goes: the hint names the node that carries the key (open, else newest), "no node carries it", and the entry's kind and its call, also for a multi-step key such as `chat:C1/t2/m3` and for a URL key passed as `at`, which the decoder refuses as `invalid` (R5); the details of `open_intent`, `expects_ignored`, `series_stopped`, `self_basis_dropped`, `agreement` (no threshold), and `uncovered_slot` (options and the first likely start, in the series' zone) (R2, R14, R15, R17, R18, R24); `not_found(Addressee)` with no remedy (R12); `view node {view: full}` holds the whole brief, every section with `shown/total` (R27); `hello` with `caps` never dropped by the budget, and an empty `offers` with its `why` (R25); an empty `next` with its waiting count (R27) |
 | `forum-server`, 1.5 (D.14.7, WP-E6) | The instructions verbatim, 509 characters, and the `node` and `talk` descriptions verbatim; `structuredContent`'s keys in §20.1's order in every render test and in a replayed `op_id` answer, `hello`'s first field `session`, and the output schema listing them in that order; a failed first call's `hello`, error, and `session_opened` warning, none on a refusal of a call that names its session; a missing argument's refusal naming every required argument the call lacks, `digest_version` beside `digest`, and each `one_of` group it gives none of, with where to find each, and every required argument's source more than its kind's noun or a one-word echo of its name; a refusal independent of the order of the arguments; a refused `principal` with its own hint (`user:` reserved); each stub of a core package named with its call and package, what was applied (nothing, or only the opening of the session), and the call that works without the argument that makes it, checked against the core; a basis item that names no node, prose included, taught the forms of a basis, a key in a basis pointed at `{external}`, and an item that names a node adding nothing; `body_head` within 2 KiB, `digest.max`, and a quarter of `brief.budget`, with its note, never splitting a character, and cut with "…" alone under a bound too small for the note; the expired hold's note naming the holder, its expiry, the last checkpoint (its id also where the shell's tables lack the entry), the open intent, and the holder's unconfirmed `said` entries, never claiming that it announced no outside action; `control export`'s lines canonical, keys sorted at every depth, in the text and the structured content |
-| `forum-server` | JSON → `Cmd` for every action; the request digest (golden vectors; key order and whitespace do not matter; `session` and `op_id` are excluded); error and warning rendering; budgets (hello and brief never exceed their budgets except by the documented minimum; every non-empty section shows at least one item); masking (idempotent, every pattern, negative cases); rebuilding the shell's tables from the history equals writing them incrementally; the forms of a basis reference (`#12@4`, a path with `@4`, `#12`, a path (1.5), `e57`, `entry:e57`, `{external}`) and `view node {page}` (CS-22); the instructions length; tool descriptions equal §20.2; the tz builder with `TZ` unset and `TZDIR` pointing at a bogus directory gives the same tables (no system tz access); the status line and `control health` from the cache, a cache refreshed after a change followed only by reads, and each pause's source and reason (CS-9); the empty-`next` pause hint; the per-class queue order (deficit round-robin), a skipped job whose reply channel closed, `limit(Busy)` past `queue.max_wait`, and the `WriteSurge` counts (CS-29); §21's precedence for a session over `write.per_hour`: a missing target or a retired session gets `not_found`, an `op_id` repeat its stored answer, and a stale token `limit(WritesPerHour)` with no `late` entry (A-105); the instructions are §22's text verbatim, 509 characters (1.5; 502 in 1.4, 494 in 1.3); a request body over 1 MiB is answered with HTTP 413 before decoding (the transport's own limit, §19); a free-text argument of `text.max` bytes after masking is accepted, and one byte more, in any argument of any action (a title, a field value, an option, a checkpoint's `next_step`, a `from_user` text), is answered with `limit(TextTooLong)` before queueing: no event, no `txs` row, no session opened, and no `op_id` record, so a retry with a shorter text and the same `op_id` executes (§21's precedence, L1, A-114); a first call with a malformed argument is answered with `invalid` and opens no session either, and one that reuses a live record's `op_id` gets `invalid`, not the stored answer (§20.1, §21); a token's `caps` reaching `Ctx.caps` (CS-26), a token with a `principal=` field refused as malformed, and a SIGHUP that revokes a `.env` token at a job boundary; the substrate side (CS-13 to CS-15, CS-19, CS-27, CS-30, CS-35 to CS-37, FQ-2): a group of jobs commits once and replies only after its commit, a group that wrote nothing commits nothing, and a job that appended nothing writes no `txs` row; the two-pass writing of dirty facts never trips a constraint on a merge, a reopen that drops keys, a close and a create that pass one key on in one group, a capacity change, or a hold that ends and another that starts on one node in one group, and writes an `st_ops` row whole in step 4; a node event rewrites only the node's hot row; the history triggers abort an update or a delete; each event's body round-trips through zstd; the checkpointer keeps the WAL below WAL_RESTART under load; idle firing runs at the first deadline with empty queues, and its events equal those of firing at the next call; wake-ups go only to the sessions a commit concerns, and a commit between registering and the readiness check still wakes the waiter; search: the rarest terms with `bm25` (four, and up to twelve while their lists are short, 1.9), stop words, stemming, the columns' weights, corrections within their bounds, made by `view find {text}` alone and said in `fuzzy`, a node indexed again by a move or a key, disputed and retracted nodes last and absent from `knowledge`, the fallback past SEARCH_BUDGET with `≥k`, contentless deletes on hide, and a `create`'s `related`; the lab's recall set (1.9); the masking filter passes the review's eight code lines and masks its four secrets, and `fsk_` tokens are masked; URL keys lose their credential parameters; the `arxiv:`, `doi:`, `lean:`, and `run:` rules (golden file); the digest is computed after masking, so two requests that differ only in a masked secret share it, and a retry across a change of the masking version is still a `Replay` (the record's version); `FORUM_TOKEN_*` lines from the environment and `.env` (the environment wins; a malformed line stops the server); a `shell_version` migration of the shell's tables equals writing them incrementally under the new version; the wake-up of a hot node's waiters at most once per WAIT_COALESCE |
+| `forum-server` | JSON → `Cmd` for every action; the request digest (golden vectors; key order and whitespace do not matter; `session` and `op_id` are excluded); error and warning rendering; budgets (hello and brief never exceed their budgets except by the documented minimum; every non-empty section shows at least one item); masking (idempotent, every pattern, negative cases); rebuilding the shell's tables from the history equals writing them incrementally; the forms of a basis reference (`#12@4`, a path with `@4`, `#12`, a path (1.5), `e57`, `entry:e57`, `{external}`) and `view node {page}` (CS-22); the instructions length; tool descriptions equal §20.2; the tz builder with `TZ` unset and `TZDIR` pointing at a bogus directory gives the same tables (no system tz access); the status line and `control health` from the cache, a cache refreshed after a change followed only by reads, and each pause's source and reason (CS-9); the empty-`next` pause hint; the per-class queue order (deficit round-robin), a skipped job whose reply channel closed, `limit(Busy)` past `queue.max_wait`, and the `WriteSurge` counts (CS-29); §21's precedence for a session over `write.per_hour`: a missing target or a retired session gets `not_found`, an `op_id` repeat its stored answer, and a stale token `limit(WritesPerHour)` with no `late` entry (A-105); the instructions are §22's text verbatim, 509 characters (1.5; 502 in 1.4, 494 in 1.3); a request body over 1 MiB is answered with HTTP 413 before decoding (the transport's own limit, §19); a free-text argument of `text.max` bytes after masking is accepted, and one byte more, in any argument of any action (a title, a field value, an option, a checkpoint's `next_step`, a `from_user` text), is answered with `limit(TextTooLong)` before queueing: no event, no `txs` row, no session opened, and no `op_id` record, so a retry with a shorter text and the same `op_id` executes (§21's precedence, L1, A-114); a first call with a malformed argument is answered with `invalid` and opens no session either, and one that reuses a live record's `op_id` gets `invalid`, not the stored answer (§20.1, §21); a token's `caps` reaching `Ctx.caps` (CS-26), a token with a `principal=` field refused as malformed, and a SIGHUP that revokes a `.env` token at a job boundary; the substrate side (CS-13 to CS-15, CS-19, CS-27, CS-30, CS-35 to CS-37, FQ-2): a group of jobs commits once and replies only after its commit, a group that wrote nothing commits nothing, and a job that appended nothing writes no `txs` row; the two-pass writing of dirty facts never trips a constraint on a merge, a reopen that drops keys, a close and a create that pass one key on in one group, a capacity change, or a hold that ends and another that starts on one node in one group, and writes an `st_ops` row whole in step 4; a node event rewrites only the node's hot row; the history triggers abort an update or a delete; each event's body round-trips through zstd; the checkpointer keeps the WAL below WAL_RESTART under load; idle firing runs at the first deadline with empty queues, and its events equal those of firing at the next call; wake-ups go only to the sessions a commit concerns, and a commit between registering and the readiness check still wakes the waiter; search: the rarest terms with `bm25` (four, and up to twelve while their lists are short, 1.9), stop words, stemming, the columns' weights, corrections within their bounds, made by `view find {text}` alone and said in `fuzzy`, a node indexed again by a move or a key, disputed and retracted nodes last and absent from `knowledge`, the fallback past SEARCH_BUDGET with `≥k`, contentless deletes on hide, and a `create`'s `related`; the lab's recall set (1.9); the masking filter passes the review's eight code lines and masks its four secrets, and `fsk_` tokens are masked; URL keys lose their credential parameters; the `arxiv:`, `doi:`, `lean:`, and `run:` rules (golden file); the digest is computed after masking, so two requests that differ only in a masked secret share it, and a retry across a change of the masking version is still a `Replay` (the record's version); `FORUM_TOKEN_*` lines from the environment and `.env` (the environment wins; a malformed line stops the server); a `shell_version` migration of the shell's tables equals writing them incrementally under the new version; the wake-up of a hot node's waiters at most once per WAIT_COALESCE; the settings from the environment over the file and under the flags, allowed hosts reduced to their names (a bare host, a URL with a scheme and a path, a list, ports), the startup's warnings about them, and `/healthz` answering without a token while `/mcp` still answers 401 without one and 403 to a `Host` not allowed (D.11.9) |
 
 Every core test goes through `World`, in `forum-core/src/testkit.rs` behind the cargo feature
 `testkit` (integration tests in `tests/` cannot see the library's `#[cfg(test)]` items, so it cannot
@@ -10533,7 +10567,8 @@ basis references to nodes and decisions, supersessions, retractions, closes as `
 and moves in trees four deep, CS-22, CS-32, D-4); guided (1.3: a third of the sessions make
 `next_calls[0]` whenever it is `now`, with the standard fill, and otherwise do generated work, while
 the generator still drops sessions mid-task, item 15). CI: 256 cases × 200 steps
-per profile; nightly: 100,000 cases.
+per profile; a long run, started by hand with `FORUM_PROP_CASES`: 100,000 cases (there is no nightly
+run).
 
 **As built** (WP-D3 to WP-D7). `forum-core/tests/prop.rs` runs the profiles as universes, and
 parameterisations of them: the holds universe (WP-D3); the keys universe, which is the
@@ -10648,9 +10683,9 @@ either way.
 | `guide_close_clean` | core | 1.3: a node with symbolic requests (answered or not, listed or not), commitments, objections, children, a second holder, an intent of another session, and a role (plain, series, person, team): a `Close` item appears only when `validate`'s plan of that close raises none of the four warnings and the node has no open child and no other session's open intent, and never for a container (G1 (d)) | 4 |
 
 Kani is weak on large `BTreeMap` states. If a harness cannot finish within the CI budget (30 minutes
-for the whole set; nightly runs larger unwinds), it is narrowed to the pure helper that enforces the
-property (for example `extend`, `reaches`, `conv_node`), the end-to-end form stays a proptest, and
-`docs/verification.md` records which form each invariant has.
+for the whole set; a run started by hand may use larger unwinds), it is narrowed to the pure helper
+that enforces the property (for example `extend`, `reaches`, `conv_node`), the end-to-end form stays
+a proptest, and `docs/verification.md` records which form each invariant has.
 
 ### D.12.6 Shell tests
 
@@ -10674,7 +10709,12 @@ property (for example `extend`, `reaches`, `conv_node`), the end-to-end form sta
   `st_ops` row both committed or neither, and the retry gets the stored response or runs once.
 - **Signals** (`tests/signals.rs`, an integration test that runs the binary, outside D.13.2's
   in-crate rule): SIGTERM stops the server with an SSE stream open; a SIGHUP during startup is
-  handled once the server runs.
+  handled once the server runs; and `serve` is configured by the `FORUM_*` variables under its
+  flags (D.11.9), with `FORUM_ALLOWED_HOSTS` reduced to host names or `*`, `/healthz` answering
+  without a token, and `/mcp` still answering 401 without one and 403 to a `Host` the list does not
+  name. Every test and scale gate that runs `serve` removes the settings variables
+  (`config::ENV_SETTINGS`) from the environment it passes on, so that a developer's own do not
+  configure its server.
 - **Persist and reload** (FQ-2, D-5). After every job of the deterministic simulation below, and of
   the proptest universe of D.12.3 driven through the shell's writer, loading the resident state rows
   into a fresh `State` (D.11.8, step 2) equals the in-memory state, base and history parts compared
@@ -10770,9 +10810,10 @@ pause of `/` and its lifting (O(candidates × depth), not O(nodes)).
 
 **Scale gates** (CS-23; review TP-19, adapted to the decided storage). With the cost test above
 they replace 1.1's cost test, whose backlog of 50 could not fail on any path that grows with the
-backlog, the live sessions, the waiters, or the history. They run nightly (`verify.sh --bench`) and
-before every release, on reference hardware (16 vCPU, 64 GB, NVMe with a durable fsync of at most
-1 ms, measured and recorded with each run), with `swarm-sim` (WP-F4), a load driver that runs
+backlog, the live sessions, the waiters, or the history. They run when started by hand
+(`verify.sh --bench`), never on a schedule, and before every release, on reference hardware
+(16 vCPU, 64 GB, NVMe with a durable fsync of at most 1 ms, measured and recorded with each run),
+with `swarm-sim` (WP-F4), a load driver that runs
 simulated agents over MCP HTTP against a release-profile build with the `bench` feature (profile `bench-gates`, `--cfg forum_bench`: the writer's busy, wake-up, WAL, search, and size counters, a clock that can run fast or jump, and an MCP idle expiry scaled to it; never a release binary), with the call mixes and profiles of D.15.2;
 one in ten of its simulated sessions serves one of 1,000 principals, so the user side runs at
 scale too. D.15.4 says which scenario and which number each gate protects. The year simulation of

@@ -336,7 +336,12 @@ mod binary {
 
     impl Server {
         fn start(dir: &Path) -> Server {
-            let mut child = Command::new(env!("CARGO_BIN_EXE_forum-server"))
+            let mut cmd = Command::new(env!("CARGO_BIN_EXE_forum-server"));
+            // A developer's own settings variables (D.11.9) would configure the server.
+            for v in forum_server::config::ENV_SETTINGS {
+                cmd.env_remove(v);
+            }
+            let mut child = cmd
                 .args(["serve", "--db", "forum.db", "--listen", "127.0.0.1:0"])
                 .current_dir(dir)
                 .envs(token_vars())

@@ -1,0 +1,35 @@
+# Swarm Forum for Coolify's Docker Compose build pack (README, "Running in Coolify").
+#
+# Coolify builds the image from the Dockerfile, generates a domain for the service, routes it to
+# port 8640, and keeps /data in a named volume across deployments. The generated domain is plain
+# HTTP unless the server's Wildcard Domain is https: give the service an https:// domain before
+# making a token. Tokens are set in Coolify's Environment Variables, one FORUM_TOKEN_<NAME> per
+# token, as `forum-server token new` prints them, each with Build time set to "Not available during
+# build" (otherwise Coolify passes it to the build, and the image's history records it); Coolify
+# passes every variable of the application to the container, so they need no line here. Never put
+# a token line in this file.
+
+services:
+  forum:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # Coolify's magic variable: a generated domain, routed to port 8640 in the container. Replace
+      # it with https://<your domain>:8640 in the service's Domains field if it starts with http://.
+      - SERVICE_URL_FORUM_8640
+      # The service's domain, without scheme or port (the first one, if it has several): the Host
+      # that rmcp's validation must accept. It follows a domain changed in Coolify's UI.
+      - FORUM_ALLOWED_HOSTS=${SERVICE_FQDN_FORUM}
+    volumes:
+      - forum-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8640/healthz"]
+      interval: 10s
+      timeout: 3s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  forum-data:

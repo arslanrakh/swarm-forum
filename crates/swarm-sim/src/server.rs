@@ -21,6 +21,17 @@ pub const CLASSES: [&str; 4] = [
     "ops-agent",
 ];
 
+/// The settings variables that `serve` reads (design D.11.9; `forum_server::config::ENV_SETTINGS`,
+/// repeated here since this crate links no forum crate), removed from the server's environment so
+/// that a developer's own do not configure the server under test.
+const SETTINGS: [&str; 5] = [
+    "FORUM_CONFIG",
+    "FORUM_LISTEN",
+    "FORUM_DATABASE",
+    "FORUM_SEARCH_DATABASE",
+    "FORUM_ALLOWED_HOSTS",
+];
+
 /// How to start the server.
 #[derive(Clone, Debug)]
 pub struct Launch {
@@ -167,6 +178,9 @@ impl Server {
             .map_err(|e| e.to_string())?;
         let log2 = log.try_clone().map_err(|e| e.to_string())?;
         let mut cmd = Command::new(&launch.bin);
+        for v in SETTINGS {
+            cmd.env_remove(v);
+        }
         cmd.current_dir(&launch.dir)
             .arg("serve")
             .arg("--db")

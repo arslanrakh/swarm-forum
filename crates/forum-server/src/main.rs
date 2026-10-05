@@ -9,16 +9,17 @@
 //! forum-server usability-export --db <path>      (feature `usability` only, WP-U)
 //! ```
 //!
-//! `serve` loads the configuration (D.11.9) and the tokens (the environment, then `.env` in the
-//! working directory, D.11.3), starts the engine (D.11.8), and serves MCP over streamable HTTP at
-//! `/mcp` behind the bearer layer. SIGHUP re-reads the `.env` tokens; SIGTERM and Ctrl-C stop:
-//! parked waits answer, every stream of the route ends, the requests in flight drain (for at most
-//! [`DRAIN_MARGIN`] past `queue.max_wait` and `talk.wait_max`, or until a second signal), and the
-//! writer finishes its current group. Both signals are handled from before the engine starts, so a
-//! SIGHUP during startup reloads the tokens once it is up rather than end the process. `check`
-//! runs the full invariant check on the database, read-only; `--check` runs it at startup too.
-//! `--database` is accepted for `--db`; `--db` without `--search-db` puts the search file beside
-//! the database (`<stem>-search.db`).
+//! `serve` loads the configuration (D.11.9: each flag over its `FORUM_*` variable, over the file
+//! that `--config` or `FORUM_CONFIG` names, over the defaults) and the tokens (the environment,
+//! then `.env` in the working directory, D.11.3), starts the engine (D.11.8), and serves MCP over
+//! streamable HTTP at `/mcp` behind the bearer layer, and `GET /healthz` without a token. SIGHUP
+//! re-reads the `.env` tokens; SIGTERM and Ctrl-C stop: parked waits answer, every stream of the
+//! route ends, the requests in flight drain (for at most [`DRAIN_MARGIN`] past `queue.max_wait`
+//! and `talk.wait_max`, or until a second signal), and the writer finishes its current group. Both
+//! signals are handled from before the engine starts, so a SIGHUP during startup reloads the tokens
+//! once it is up rather than end the process. `check` runs the full invariant check on the
+//! database, read-only; `--check` runs it at startup too. `--database` is accepted for `--db`;
+//! `--db` without `--search-db` puts the search file beside the database (`<stem>-search.db`).
 //!
 //! With the feature `bench` (the scale gates only, WP-F4, design D.12.8; never in a release
 //! build), `serve` also takes `--clock-scale <k>` and `--clock-start <unix ms>` (a clock that runs
@@ -31,7 +32,7 @@
 //! and `forum-server commit-probe --dir <dir>` times durable commits made as the store makes them
 //! (the machine record of every gate).
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -178,19 +179,22 @@ fn serve(args: &[String]) -> Result<(), String> {
         let _in = rt.enter();
         Signals::install()
     };
-    let mut cfg = config::load(a.get("config").map(Path::new)).map_err(|e| e.to_string())?;
-    if let Some(db) = a.get("db") {
-        cfg.set_database(PathBuf::from(db));
-    }
-    if let Some(s) = a.get("search-db") {
-        cfg.search_database = (!s.is_empty()).then(|| PathBuf::from(s));
-    }
-    if let Some(l) = a.get("listen") {
-        cfg.listen = l.to_string();
-    }
+    // The flags over the environment, over the file, over the defaults (D.11.9).
+    let environment = config::environment();
+    let flags = config::Overrides {
+        config: a.get("config").map(PathBuf::from),
+        listen: a.get("listen").map(str::to_string),
+        database: a.get("db").map(PathBuf::from),
+        search_database: a
+            .get("search-db")
+            .map(|s| (!s.is_empty()).then(|| PathBuf::from(s))),
+        allowed_hosts: None,
+    };
+    let cfg = config::from_environment(&environment)
+        .and_then(|env| config::resolve(&env, &flags))
+        .map_err(|e| e.to_string())?;
     let dotenv = PathBuf::from(DOTENV);
-    let tokens =
-        config::load_tokens(config::token_environment(), &dotenv).map_err(|e| e.to_string())?;
+    let tokens = config::load_tokens(environment, &dotenv).map_err(|e| e.to_string())?;
     if tokens.is_empty() {
         tracing::warn!("no FORUM_TOKEN_* is configured: every request will get HTTP 401");
     }
@@ -282,10 +286,12 @@ async fn serve_engine(
     let listener = tokio::net::TcpListener::bind(&cfg.listen)
         .await
         .map_err(|err| format!("{}: {err}", cfg.listen))?;
-    let at = listener
-        .local_addr()
-        .map_or_else(|_| cfg.listen.clone(), |a| a.to_string());
+    let bound = listener.local_addr().ok();
+    let at = bound.map_or_else(|| cfg.listen.clone(), |a| a.to_string());
     tracing::info!(listen = %at, database = %cfg.database.display(), "serving MCP at /mcp");
+    if let Some(w) = bound.and_then(|a| config::host_warning(a.ip(), &cfg.allowed_hosts)) {
+        tracing::warn!(listen = %at, allowed_hosts = ?cfg.allowed_hosts, "{w}");
+    }
     let Signals { hangup, stops } = signals;
     tokio::spawn(reload_on_hangup(Arc::clone(engine), shared, dotenv, hangup));
     let drain_max =
