@@ -50,6 +50,6 @@
     "liveness:recurring_one": "scripts/check.sh liveness recurring recurring_one"
   },
   "devDependencies": {
-    "@informalsystems/quint": "0.33.0"
+    "@informalsystems/quint": "0.33.1"
   }
 }
